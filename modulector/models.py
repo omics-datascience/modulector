@@ -4,7 +4,7 @@ from django.db.models import UniqueConstraint
 
 class Mirna(models.Model):
     id = models.BigAutoField(primary_key=True)
-    mirna_code = models.CharField(max_length=200, db_index=True)
+    mirna_code = models.CharField(max_length=200, db_index=True, unique=True)
 
 
 class MirnaSource(models.Model):
@@ -26,6 +26,9 @@ class MirnaColumns(models.Model):
     position = models.BigIntegerField(blank=True, null=True)
     column_name = models.CharField(max_length=100, blank=True, null=True)
     field_to_map = models.CharField(max_length=50, blank=True, null=True)
+
+    class Meta:
+        ordering = ['position']
 
 
 class MirnaXGen(models.Model):

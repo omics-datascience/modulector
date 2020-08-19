@@ -15,7 +15,12 @@ class MirnaXGenList(generics.ListAPIView):
     serializer_class = MirnaXGenSerializer
 
     def get_queryset(self):
-        return MirnaXGen.objects.all()
+        gen = self.request.query_params.get("gen", None)
+        mirna = self.request.query_params.get("mirna", None)
+        if mirna is None or gen is None:
+            return None
+        mirna_id = Mirna.objects.get(mirna_code=mirna).id
+        return MirnaXGen.objects.filter(mirna=mirna_id, gen=gen)
 
 
 class MirnaSourcePostAndList(APIView):
