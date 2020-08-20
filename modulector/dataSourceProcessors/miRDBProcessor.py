@@ -1,72 +1,134 @@
+import concurrent
 import os
 import pathlib
+import queue
+import time
+from concurrent.futures._base import ALL_COMPLETED
+from concurrent.futures.thread import ThreadPoolExecutor
 from decimal import Decimal
+from functools import partial
+from multiprocessing import Manager
+from threading import Lock
 
+import django
+import numpy as np
 import pandas as pandas
-from django.core.exceptions import ObjectDoesNotExist
+from django.db import connection
 from django.utils.timezone import make_aware
 
-from modulector.models import Mirna, MirnaSource, MirnaXGen
+django.setup()
+from modulector.models import MirnaSource
 
-count = 0
+lock = Lock()
+
+
+def getn(q, n):
+    result = q.get() + ";"
+    try:
+        while len(result) < n:
+            result = result + q.get(block=False) + ";"
+    except queue.Empty:
+        pass
+    return result
 
 
 def process(source_id):
     parent_dir = pathlib.Path(__file__).parent.absolute().parent
     file_path = os.path.join(parent_dir, "files/miRDB_v6.0_prediction_result.txt")
+    # file_path = os.path.join(parent_dir, "files/test2.txt")
     # file_path = os.path.join(parent_dir, "files/testFile.txt")
-    data = pandas.read_csv(filepath_or_buffer=file_path,
-                           delimiter="\t", header=None, names=["MIRNA", "GEN", "SCORE"])
-    filtered_data = data[data["MIRNA"].str.contains("hsa")]
+    manager = Manager()
+    queue = manager.Queue()
+    start = time.time()
+    print("arranca carga de datos ")
     mirna_source = MirnaSource.objects.filter(id=source_id).get()
-    ##filtered_data.apply(lambda x: save_record(x.MIRNA, x.GEN, x.SCORE))
-    array = filtered_data.to_numpy()
-    updates = []
-    inserts = []
-    [save_record(mirna_source, row, updates, inserts) for row in array]
+    series_names = []
+    for item in mirna_source.mirnacolumns.all().order_by():
+        series_names.append(item.field_to_map)
+
+    data = pandas.read_csv(filepath_or_buffer=file_path,
+                           delimiter="\t", header=None, names=series_names)
+    filtered_data = data[data["MIRNA"].str.contains("hsa")]
+    # split = np.array_split(filtered_data, 100)
+    # pool = Pool(3)
+    # pool.map(partial(process_df, mirna_source=mirna_source, queue=queue), split)
+    # pool.close()
+    # pool.join()
+    print("file loaded")
+    split = np.array_split(filtered_data, 10000)
+    pool = ThreadPoolExecutor(max_workers=10000)
+    pool.map(partial(process_df, mirna_source=mirna_source, queue=queue), split)
+    pool.shutdown(wait=True)
+    end = time.time()
+    print("termino carga de datos tardo seg " + str(end - start))
+    start = time.time()
+    print("arranca queries")
+    runQueries(queue=queue)
+    end = time.time()
+    print("termino queries tardo seg " + str(end - start))
     mirna_source.synchronization_date = make_aware(mirna_source.synchronization_date.now())
     mirna_source.save()
-    print(updates)
-    print(inserts)
 
 
-# def saveData(data_frame, mirna_source):
-# for row in data_frame.iterrows():
-#     row = row[1]
-#     mirna_x_gen = MirnaXGen(mirna=mirna_from_db[0], gen=row.GEN, score=score)
-#     mirna_x_gen.mirna_source = mirna_source
-#     try:
-#         mirna_x_gen_db = MirnaXGen.objects.get(mirna_id=mirna_from_db[0].id, mirna_source_id=mirna_source.id,
-#                                                gen=row.GEN)
-#         with connection.cursor() as cursor:
-#             cursor.execute('Update modulector.modulector_mirnaxgen set score = %s '
-#                            'where modulector_mirnaxgen.id=%s', [score, mirna_x_gen_db.id])
-#     except ObjectDoesNotExist:
-#         with connection.cursor() as cursor:
-#             cursor.execute('Insert into modulector.modulector_mirnaxgen'
-#                            '(gen, score, pubmed_id, pubMedUrl, mirna_source_id, mirna_id) '
-#                            'values(%s, %s, %s, %s, %s, %s)', [row.GEN, score, None,
-#                            None, mirna_source.id, mirna_from_db[0].id])
-# mirna_source.synchronization_date = make_aware(mirna_source.synchronization_date.now())
-# mirna_source.save()
+def process_df(df, mirna_source, queue):
+    array = df.to_numpy()
+    if array.size != 0:
+        [save_record(row, mirna_source, queue) for row in array]
 
 
-def save_record(mirna_source, row, updates, inserts):
+def getOrCreateMirna(mirna_code):
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "select id from modulector.modulector_mirna where mirna_code=%s ",
+            [mirna_code])
+        result = cursor.fetchone()
+        if result is None:
+            cursor.execute("Insert into modulector.modulector_mirna (mirna_code) values(%s)", [mirna_code])
+            cursor.execute(
+                "select id from modulector.modulector_mirna where mirna_code=%s ", [mirna_code])
+            result = cursor.fetchone()
+    return result[0]
+
+
+def save_record(row, mirna_source, queue):
     mirna = row[0]
     gen = row[1]
-    data_set_score = row[2]
-    score = round(Decimal.from_float(data_set_score), 4)
-    mirna_from_db = Mirna.objects.get_or_create(mirna_code=mirna, defaults={'mirna_code': mirna})[0]
-    mirna_x_gen = MirnaXGen(mirna=mirna_from_db, gen=gen, score=score)
-    mirna_x_gen.mirna_source = mirna_source
+    score = round(Decimal.from_float(row[2]), 4)
     try:
-        mirna_x_gen_db = MirnaXGen.objects.get(mirna_id=mirna_from_db.id, mirna_source_id=mirna_source.id,
-                                               gen=gen)
-        updates.append(
-            "Update modulector.modulector_mirnaxgen set score = {0} where modulector_mirnaxgen.id={1}".format(score,
-                                                                                                              mirna_x_gen_db.id))
+        mirna_id = getOrCreateMirna(mirna)
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "select id from modulector.modulector_mirnaxgen where mirna_id = %s and mirna_source_id= %s and gen=%s",
+                [mirna_id, mirna_source.id, gen])
+            result = cursor.fetchone()
+            if result is None:
+                data = "Insert into modulector.modulector_mirnaxgen (gen, score, mirna_source_id, mirna_id) values('{0}', {1}, {2}, {3})".format(
+                    gen, score, mirna_source.id, mirna_id)
+            else:
+                data = "Update modulector.modulector_mirnaxgen set score = {0} where modulector_mirnaxgen.id= {1}".format(
+                    score, result[0])
+            queue.put(data, block=False)
+    except Exception as ex:
+        print(ex)
+        print("retry")
+        time.sleep(1)
+        save_record(row, mirna_source, queue)
 
-    except ObjectDoesNotExist:
-        inserts.append(
-            "Insert into modulector.modulector_mirnaxgen (gen, score, mirna_source_id, mirna_id) values({0}, {1}, {2}, {3})"
-                .format(gen, score, mirna_source.id, mirna_from_db.id))
+
+def runQueries(queue):
+    print("queue size:" + str(queue.qsize()))
+    pool = ThreadPoolExecutor(max_workers=100)
+    futures = []
+    while not queue.empty():
+        futures.append(pool.submit(saveChunk, getn(queue, 100)))
+    concurrent.futures.wait(futures, timeout=None, return_when=ALL_COMPLETED)
+    pool.shutdown(wait=True)
+
+
+def saveChunk(data):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(data)
+    except Exception as ex:
+        print(ex)
+        print('query to db failed')
