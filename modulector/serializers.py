@@ -31,6 +31,7 @@ class MirnaSourceSerializer(serializers.ModelSerializer):
 
 class MirnaXGenSerializer(serializers.ModelSerializer):
     name = serializers.CharField(read_only=True, source='mirna_source.name')
+    mirna = serializers.CharField(read_only=True, source='mirna.mirna_code  ')
 
     class Meta:
         model = MirnaXGen
