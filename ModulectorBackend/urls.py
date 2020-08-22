@@ -13,7 +13,6 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
 from django.urls import path
 
 from modulector import views
@@ -24,5 +23,4 @@ urlpatterns = [
     path('source/create', views.MirnaSourcePostAndList.as_view()),
     path('mirna', views.MirnaList.as_view()),
     path('process/', views.ProcessPost.as_view()),
-    path('admin/', admin.site.urls),
 ]
