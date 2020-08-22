@@ -6,6 +6,11 @@ class Mirna(models.Model):
     id = models.BigAutoField(primary_key=True)
     mirna_code = models.CharField(max_length=200, db_index=True, unique=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['mirna_code'], name='idx_mirna_code')
+        ]
+
 
 class MirnaSource(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -40,3 +45,9 @@ class MirnaXGen(models.Model):
     pubMedUrl = models.CharField(max_length=300, null=True)
     mirna_source = models.ForeignKey(MirnaSource, on_delete=models.CASCADE)
     UniqueConstraint(fields=["mirna", "gen", "source"], name='idx_unique_mirnaxgen')
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['mirna'], name='idx_mirna'),
+            models.Index(fields=['gen'], name='idx_gen')
+        ]

@@ -49,11 +49,6 @@ def process(source_id):
     data = pandas.read_csv(filepath_or_buffer=file_path,
                            delimiter="\t", header=None, names=series_names)
     filtered_data = data[data["MIRNA"].str.contains("hsa")]
-    # split = np.array_split(filtered_data, 100)
-    # pool = Pool(3)
-    # pool.map(partial(process_df, mirna_source=mirna_source, queue=queue), split)
-    # pool.close()
-    # pool.join()
     print("file loaded")
     split = np.array_split(filtered_data, 10000)
     pool = ThreadPoolExecutor(max_workers=10000)

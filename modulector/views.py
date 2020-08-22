@@ -1,6 +1,8 @@
 import time
 
+from django.core.cache import caches
 from rest_framework import status, generics
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -10,17 +12,36 @@ from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, M
     MirnaSourceListSerializer
 
 
-class MirnaXGenList(generics.ListAPIView):
-    queryset = MirnaXGen.objects.all()
-    serializer_class = MirnaXGenSerializer
+class MirnaXGenList(APIView):
+    display_page_controls = True
 
-    def get_queryset(self):
+    def get(self, request):
+        cache = caches['default']
         gen = self.request.query_params.get("gen", None)
         mirna = self.request.query_params.get("mirna", None)
-        if mirna is None or gen is None:
+        if mirna is None and gen is None:
             return None
         mirna_id = Mirna.objects.get(mirna_code=mirna).id
-        return MirnaXGen.objects.filter(mirna=mirna_id, gen=gen)
+        data = []
+        if mirna is not None and gen is not None:
+            key = str(mirna_id) + str(gen)
+            result = cache.get(key)
+            if result is None:
+                result = MirnaXGen.objects.filter(mirna=mirna_id, gen=gen)
+                cache.add(key, result)
+            data = Response(MirnaXGenSerializer(result, many=True).data, status=status.HTTP_200_OK)
+        else:
+            key = str(mirna_id)
+            result = cache.get(key)
+            paginator = PageNumberPagination()
+            page = self.request.query_params.get('page')
+            if result is None:
+                result = MirnaXGen.objects.filter(mirna=mirna_id)
+                cache.add(key, result)
+            result = paginator.paginate_queryset(result, self.request)
+            serializer = MirnaXGenSerializer(result, many=True)
+            data = paginator.get_paginated_response(serializer.data)
+        return data
 
 
 class MirnaSourcePostAndList(APIView):
@@ -56,4 +77,9 @@ class MirnaList(generics.ListAPIView):
     serializer_class = MirnaSerializer
 
     def get_queryset(self):
-        return Mirna.objects.all()
+        mirna = self.request.query_params.get("mirna", None)
+        if mirna is None:
+            result = Mirna.objects.all()
+        else:
+            result = Mirna.objects.filter(mirna_code=mirna)
+        return result
