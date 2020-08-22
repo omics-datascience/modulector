@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from modulector.models import MirnaXGen, MirnaSource, Mirna, MirnaColumns
 
 
@@ -33,7 +34,7 @@ class MirnaXGenSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MirnaXGen
-        fields = ['id', 'mirna', 'gen', 'score', 'pubmed_id', 'pubMedUrl', 'name']
+        fields = ['mirna', 'gen', 'score', 'pubmed_id', 'pubMedUrl', 'name']
 
 
 class MirnaSourceListSerializer(serializers.ModelSerializer):
@@ -47,4 +48,4 @@ class MirnaSourceListSerializer(serializers.ModelSerializer):
 class MirnaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mirna
-        fields = ['id', 'mirna_code']
+        fields = ['mirna_code']

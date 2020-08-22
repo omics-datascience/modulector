@@ -20,7 +20,7 @@ class MirnaXGenList(APIView):
         gen = self.request.query_params.get("gen", None)
         mirna = self.request.query_params.get("mirna", None)
         if mirna is None and gen is None:
-            return None
+            return Response([], status=status.HTTP_200_OK)
         mirna_id = Mirna.objects.get(mirna_code=mirna).id
         data = []
         if mirna is not None and gen is not None:
