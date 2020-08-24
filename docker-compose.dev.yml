@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+    # MySQL
+    db:
+        image: mysql:8
+        container_name: modulector_db
+        restart: always
+        command: --default-authentication-plugin=mysql_native_password
+        ports:
+            - 3306:3306
+        environment:
+            MYSQL_USER: root
+            MYSQL_PASSWORD: admin
+            MYSQL_DATABASE: modulector
+        volumes:
+            - mysql_data:/var/lib/mysql
+
+    # Web-based DB admin interface for MySQL management
+    adminer:
+        image: adminer
+        restart: always
+        ports:
+            - 8080:8080
+
+volumes:
+    mysql_data:

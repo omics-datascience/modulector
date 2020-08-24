@@ -1,0 +1,10 @@
+*.pyc
+.idea
+.vscode
+frontend/static/frontend/node_modules
+frontend/static/frontend/dist
+venv
+static
+uploads
+.mypy_cache
+src/ModulectorBackend/settings_prod.py
