@@ -60,6 +60,8 @@ coverage.xml
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+secretkey.txt
+static
 
 # Flask stuff:
 instance/
@@ -130,3 +132,5 @@ dmypy.json
 
 .idea
 /modulector/files/miRDB_v6.0_prediction_result.txt
+# Docker
+docker-compose.yml

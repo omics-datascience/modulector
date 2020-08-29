@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'modulector.apps.ModulectorConfig',
     'rest_framework',
+    'django_generate_secret_key'
 ]
 
 MIDDLEWARE = [
@@ -86,11 +87,11 @@ DB_CONNECTION_STRING = "mysql+mysqldb://root:admin@localhost:3306/modulector"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'modulector',
-        'USER': 'root',
-        'PASSWORD': 'admin',
-        'HOST': '127.0.0.1',
-        'PORT': 3306,
+        'NAME': os.getenv('MYSQL_NAME', 'modulector'),
+        'USER': os.getenv('MYSQL_USER', 'root'),
+        'PASSWORD': os.getenv('MYSQL_PASSWORD', 'admin'),
+        'HOST': os.getenv('MYSQL_HOST', '127.0.0.1'),
+        'PORT': os.getenv('MYSQL_PORT', 3306),
         'OPTIONS': {
             "init_command": "SET GLOBAL max_connections = 11000"
         }
@@ -135,5 +136,9 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
+
+# Media files
+MEDIA_ROOT = os.getenv('MEDIA_ROOT', os.path.join(BASE_DIR, ''))
+MEDIA_URL = os.getenv('MEDIA_URL', '/media/')

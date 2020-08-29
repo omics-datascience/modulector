@@ -35,9 +35,9 @@ def getn(q, n):
 
 def process(source_id):
     parent_dir = pathlib.Path(__file__).parent.absolute().parent
-    # file_path = os.path.join(parent_dir, "files/miRDB_v6.0_prediction_result.txt")
-    # file_path = os.path.join(parent_dir, "files/test2.txt")
-    file_path = os.path.join(parent_dir, "files/testFile.txt")
+    file_path = os.path.join(parent_dir, "files/miRDB_v6.0_prediction_result.txt")
+    #file_path = os.path.join(parent_dir, "files/test2.txt")
+    #file_path = os.path.join(parent_dir, "files/testFile.txt")
     manager = Manager()
     mirna_map = dict()
     gene_map = dict()
@@ -128,7 +128,7 @@ def generate_record(row, mirna_source, queue, mirna_map, gen_map):
         print(ex)
         print("retry")
         time.sleep(1)
-        generate_record(row, mirna_source, queue)
+        generate_record(row, mirna_source, queue, mirna_map, gen_map)
 
 
 def runQueries(queue):
@@ -157,7 +157,10 @@ def translateRefSec(df, gene_map):
 def getGeneSymbol(gen, gene_map):
     try:
         response = gene_api.MyGeneInfo().query(gen)['hits']
-        gen_symbol = response[0]['symbol']
+        if len(response) == 0:
+            gen_symbol = None
+        else:
+            gen_symbol = response[0]['symbol']
         gene_map[gen] = gen_symbol
     except Exception as ex:
         print("error during api call for id" + str(gen))

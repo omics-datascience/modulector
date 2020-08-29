@@ -1,0 +1,60 @@
+version: '3'
+
+services:
+    # MySQL
+    db:
+        image: mysql:8
+        container_name: modulector_db
+        restart: always
+        command: --default-authentication-plugin=mysql_native_password
+        environment:
+            MYSQL_USER: ''
+            MYSQL_PASSWORD: ''
+            MYSQL_DATABASE: modulector
+        volumes:
+            - mysql_data:/var/lib/mysql
+
+    # Django Proxi Server
+    nginx:
+        image: nginx:1.19
+        container_name: modulector_nginx_proxy
+        ports:
+            - 80:8000
+        volumes:
+            - ./:/src
+            - ./config/nginx/conf.d:/etc/nginx/conf.d
+            - ./static:/static
+        depends_on:
+            - web
+
+    # Django Backend Server
+    web:
+        image: omicsdatascience/modulector:1.0-beta
+        container_name: modulector_backend
+        # TODO: add frontend compilation when React code is ready
+        command: bash -c "python3 manage.py generate_secret_key --settings='ModulectorBackend.settings' &&
+            python3 manage.py collectstatic --no-input &&
+            python3 manage.py makemigrations &&
+            python3 manage.py migrate &&
+            uvicorn --host 0.0.0.0 --port 8000 ModulectorBackend.asgi:application"
+        volumes:
+            - ./:/src
+            - ./static:/static
+        # Exposes the port to be accessed by Nginx
+        expose:
+            - "8000"
+        depends_on:
+            - db
+        environment:
+            # Django
+            DJANGO_SETTINGS_MODULE: 'ModulectorBackend.settings_prod'
+
+            # MySQL DB connection parameters (MUST match the parameters defined in the "db" service above)
+            MYSQL_USERNAME: ''
+            MYSQL_PASSWORD: ''
+            MYSQL_HOST: 'db'
+            MYSQL_PORT: 3306
+            MYSQL_DB: 'modulector'
+
+volumes:
+    mysql_data:
