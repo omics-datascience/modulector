@@ -129,4 +129,4 @@ dmypy.json
 .pyre/
 
 .idea
-files/
+files/miRDB_v6.0_prediction_result.txt
