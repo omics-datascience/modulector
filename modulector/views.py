@@ -1,15 +1,17 @@
 import time
-
 from django.core.cache import caches
 from rest_framework import status, generics
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from modulector.dataSourceProcessors import miRDBProcessor
 from modulector.models import MirnaXGen, MirnaSource, Mirna, MirnaColumns
 from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
     MirnaSourceListSerializer
+
+# TODO: remove unused code
+# TODO: use Generics when possible
+# TODO: use '_' for unused params on the left of used params, remove the ones on the right
 
 
 class MirnaXGenList(APIView):
@@ -49,6 +51,7 @@ class MirnaSourcePostAndList(APIView):
         serializer = MirnaSourceSerializer(data=request.data)
         if serializer.is_valid():
             source = serializer.save()
+            # TODO: remove all() as filter() is already a QuerySet
             source.columns = MirnaColumns.objects.filter(mirna_source_id=source.id).all()
             serializer = MirnaSourceSerializer(source)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -67,6 +70,7 @@ class ProcessPost(APIView):
 
 
 class MirnaSourceList(APIView):
+    # TODO: implment with Generics.ListAPIView for simplicity
     def get(self, request):
         sources = MirnaSource.objects.all()
         serializer = MirnaSourceListSerializer(sources, many=True)
@@ -76,6 +80,7 @@ class MirnaSourceList(APIView):
 class MirnaList(generics.ListAPIView):
     serializer_class = MirnaSerializer
 
+    # TODO: refactor
     def get_queryset(self):
         mirna = self.request.query_params.get("mirna", None)
         if mirna is None:

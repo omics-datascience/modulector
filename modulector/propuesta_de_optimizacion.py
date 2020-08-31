@@ -34,26 +34,25 @@ data = pd.read_csv('/home/genaro/Proyectos/modulector-backend/modulector/files/p
 # El filtro queda igual, estaba joya
 filtered_data = data[data["MIRNA"].str.contains("hsa")]
 
-
-# Agrupa y devuelve [<mirna>, <lista de genes>]
+# Agrupa y devuelve [<mirna>, <lista de genes y list de scores>]
 grouped: pd.DataFrame = filtered_data.groupby('MIRNA').aggregate(lambda tdf: tdf.unique().tolist())
 
 # Recorre realizando las operaciones necesarias
 with transaction.atomic():
+    # Borramos todos los miRNAs x Genes que habia con respecto al mirna actual. Analizar, pero para mi es totalmente
+    # logico. Ademas con la transaccion aseguramos la integracion
+    MirnaXGen.objects.filter(mirna_source=mirna_source_id).delete()
+
     for mirna_code, genes_and_scores in grouped.iterrows():
         # Para DEBUG:
         # genes, scores = genes_and_scores
         # print('miRNA code:', mirna_code)
         # print('Genes list:', genes)
-        # print('Scores:', scores)
+        # print('Scores list:', scores)
 
         # Si no existe en la DB, lo inserta, aca no es necesario usar SQL plano ya que la performance de esta unica
         # operacion es re contra despreciable
         mirna_obj = get_or_create_mirna(mirna_code)
-
-        # Borramos todos los miRNAs x Genes que habia con respecto al mirna actual. Analizar, pero para mi es totalmente
-        # logico. Ademas con la transaccion aseguramos la integracion
-        MirnaXGen.objects.filter(mirna__mirna_code=mirna_code, mirna_source=mirna_source_id).delete()
 
         # Aca si usamos SQL plano para ganar performance en la insercion
         mirna_id = mirna_obj.pk
