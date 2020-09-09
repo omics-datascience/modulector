@@ -17,7 +17,7 @@ def get_or_create_mirna(mirna_code):
 
 mirna_source_id = 4
 
-# Hacer simplpemente get, en vez de filter y get
+# Hacer simplpemente get, en vez de filter y get //DONE
 mirna_source = MirnaSource.objects.get(id=mirna_source_id)
 
 # Con values_list podes hacer lo que hacias con un for loop
