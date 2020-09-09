@@ -1,0 +1,28 @@
+{
+  "name": "mirdb",
+  "site_url": "http://mirdb.org/index.html",
+  "min_score": 70,
+  "max_score": 100,
+  "score_interpretation": "score interpretation test",
+  "description": "test de description",
+  "synchronization_date": "2020-02-11T00:00:00.000Z",
+  "file_type": "csv",
+  "file_separator": "\\t",
+  "columns": [
+    {
+      "position": 1,
+      "column_name": "mirna_id",
+      "field_to_map": "MIRNA"
+    },
+    {
+      "position": 2,
+      "column_name": "gen",
+      "field_to_map": "GEN"
+    },
+    {
+      "position": 3,
+      "column_name": "score",
+      "field_to_map": "SCORE"
+    }
+  ]
+}
