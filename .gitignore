@@ -127,10 +127,19 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
-# Pyre type checker
-.pyre/
-
+# Pyre type check
+*.pyc
 .idea
 /modulector/files/miRDB_v6.0_prediction_result.txt
 # Docker
+.vscode
+/frontend/static/frontend/node_modules
+/frontend/static/frontend/dist
+/venv
+/static
+src/uploads
+.mypy_cache
+src/db.sqlite3
+src/api_service/experiments/venv
 docker-compose.yml
+/secretkey.txt

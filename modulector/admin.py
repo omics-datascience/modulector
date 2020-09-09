@@ -1,3 +1,4 @@
 from django.contrib import admin
+from modulector.models import MirnaSource
 
-# Register your models here.
+admin.site.register(MirnaSource)

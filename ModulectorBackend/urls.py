@@ -16,9 +16,10 @@ Including another URLconf
 from django.urls import path
 
 from modulector import views
+from django.contrib import admin
 
 urlpatterns = [
-    path('', views.MirnaXGenList.as_view()),
+    path('admin/', admin.site.urls),
     path('source', views.MirnaSourceList.as_view()),
     path('source/create', views.MirnaSourcePostAndList.as_view()),
     path('mirna', views.MirnaList.as_view()),

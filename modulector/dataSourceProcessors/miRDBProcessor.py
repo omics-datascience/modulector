@@ -17,10 +17,14 @@ import pandas as pandas
 from django.db import connection
 from django.utils.timezone import make_aware
 
-django.setup()
+django.setup()  # TODO: explain why
 from modulector.models import MirnaSource
 
-lock = Lock()
+
+# TODO: analyse/explain why not to use ThreadPool instead of Queue
+# TODO: use logging package instead of print in production
+
+lock = Lock()  # TODO: Explain why
 
 
 def getn(q, n):
