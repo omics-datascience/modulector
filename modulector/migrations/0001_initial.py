@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             name='Mirna',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('mirna_code', models.CharField(max_length=30, unique=True)),
+                ('mirna_code', models.CharField(max_length=40, unique=True)),
             ],
         ),
         migrations.CreateModel(
@@ -30,7 +30,6 @@ class Migration(migrations.Migration):
                 ('score_interpretation', models.TextField(blank=True, null=True)),
                 ('description', models.TextField(blank=True, null=True)),
                 ('synchronization_date', models.DateTimeField()),
-                ('file_type', models.CharField(max_length=50)),
                 ('file_separator', models.CharField(choices=[(',', 'Comma'), (';', 'Semicolon'), ('\t', 'Tab'), (':', 'Colon'), (' ', 'White space')], default='\t', max_length=1)),
             ],
         ),

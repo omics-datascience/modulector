@@ -12,7 +12,7 @@ class DatasetSeparator(models.TextChoices):
 
 
 class Mirna(models.Model):
-    mirna_code = models.CharField(max_length=30, unique=True)
+    mirna_code = models.CharField(max_length=40, unique=True)
 
 
 class MirnaSource(models.Model):
@@ -23,7 +23,6 @@ class MirnaSource(models.Model):
     score_interpretation = models.TextField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     synchronization_date = models.DateTimeField()
-    file_type = models.CharField(max_length=50)  # TODO: use Choices
     file_separator = models.CharField(max_length=1, choices=DatasetSeparator.choices, default=DatasetSeparator.TAB)
 
 

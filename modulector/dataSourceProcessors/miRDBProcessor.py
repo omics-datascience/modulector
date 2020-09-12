@@ -90,10 +90,10 @@ def process(source_id: int):
 
             # Generamos todas las tuplas de insercion. NOTA: no se ponen los espacios entre las comas para ahorrar megas
             # de ancho de banda ya que esta sentencia SQL podria quedar muy muy grande
-            template = "('{}',{}," + str(source_id) + "," + str(mirna_id) + ")"
+            insert_template = "('{}',{}," + str(source_id) + "," + str(mirna_id) + ")"
             for gene, score in zip(genes_and_scores['GEN'], genes_and_scores['SCORE']):
                 if gene in gene_map:
-                    insert_statements.append(template.format(gene_map[gene], score))
+                    insert_statements.append(insert_template.format(gene_map[gene], score))
 
             # Juntamos todas las sentencias e insertamos
             insert_query = insert_query_prefix + ','.join(insert_statements)
