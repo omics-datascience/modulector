@@ -18,8 +18,8 @@ services:
 
     # Web-based DB admin interface for MySQL management
     adminer:
-        container_name: modulector_dev_adminer
         image: adminer
+        container_name: modulector_dev_adminer
         restart: always
         ports:
             - 8080:8080
