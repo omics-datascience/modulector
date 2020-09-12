@@ -1,6 +1,5 @@
 from django.db import models
-from django.db.models import UniqueConstraint
-# TODO: remove 'id' fields in all Models, let Django manage that
+# from django.db.models import UniqueConstraint
 
 
 class DatasetSeparator(models.TextChoices):
@@ -13,17 +12,10 @@ class DatasetSeparator(models.TextChoices):
 
 
 class Mirna(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    mirna_code = models.CharField(max_length=200, db_index=True, unique=True)
-
-    class Meta:
-        indexes = [
-            models.Index(fields=['mirna_code'], name='idx_mirna_code')
-        ]
+    mirna_code = models.CharField(max_length=30, unique=True)
 
 
 class MirnaSource(models.Model):
-    id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=200)
     site_url = models.CharField(max_length=200)
     min_score = models.DecimalField(max_digits=20, decimal_places=4)
@@ -36,7 +28,6 @@ class MirnaSource(models.Model):
 
 
 class MirnaColumns(models.Model):
-    id = models.BigAutoField(primary_key=True)
     mirna_source = models.ForeignKey(MirnaSource, related_name="mirnacolumns", on_delete=models.CASCADE)
     position = models.BigIntegerField(blank=True, null=True)
     column_name = models.CharField(max_length=100, blank=True, null=True)
@@ -46,21 +37,14 @@ class MirnaColumns(models.Model):
         ordering = ['position']
 
 
-# TODO: english please: Gene
-class MirnaXGen(models.Model):
-    id = models.BigAutoField(primary_key=True)
+class MirnaXGene(models.Model):
     mirna = models.ForeignKey(Mirna, on_delete=models.CASCADE)
-    gen = models.CharField(max_length=50, db_index=True) # TODO: english please: Gene
+    gene = models.CharField(max_length=50)
     score = models.DecimalField(max_digits=20, decimal_places=4)
     pubmed_id = models.CharField(max_length=100, null=True)
     pubMedUrl = models.CharField(max_length=300, null=True)
     mirna_source = models.ForeignKey(MirnaSource, on_delete=models.CASCADE)
-    UniqueConstraint(fields=["mirna", "gen", "source"], name='idx_unique_mirnaxgen')
+    # UniqueConstraint(fields=["mirna", "gene", "source"], name='idx_unique_mirnaxgen')  # FIXME: it's not applying
 
     class Meta:
-        indexes = [
-            models.Index(fields=['mirna'], name='idx_mirna'),
-            models.Index(fields=['gen'], name='idx_gen'),
-            models.Index(fields=['mirna_source'], name="idx_mirna_source")
-        ]
         db_table = 'modulector_mirnaxgen'

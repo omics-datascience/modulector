@@ -1,7 +1,7 @@
 import logging
 from typing import List
 import pandas as pd
-from modulector.models import Mirna, MirnaXGen, MirnaSource
+from modulector.models import Mirna, MirnaXGene, MirnaSource
 from django.db import transaction, connection
 
 
@@ -41,7 +41,7 @@ grouped: pd.DataFrame = filtered_data.groupby('MIRNA').aggregate(lambda tdf: tdf
 with transaction.atomic():
     # Borramos todos los miRNAs x Genes que habia con respecto al mirna actual. Analizar, pero para mi es totalmente
     # logico. Ademas con la transaccion aseguramos la integracion
-    MirnaXGen.objects.filter(mirna_source=mirna_source_id).delete()
+    MirnaXGene.objects.filter(mirna_source=mirna_source_id).delete()
 
     for mirna_code, genes_and_scores in grouped.iterrows():
         # Para DEBUG:
@@ -56,8 +56,8 @@ with transaction.atomic():
 
         # Aca si usamos SQL plano para ganar performance en la insercion
         mirna_id = mirna_obj.pk
-        table_name = MirnaXGen._meta.db_table  # Obtenemos de manera dinamica el nombre de la tabla
-        insert_query_prefix = f'INSERT INTO {table_name} (gen, score, mirna_source_id, mirna_id) VALUES '
+        table_name = MirnaXGene._meta.db_table  # Obtenemos de manera dinamica el nombre de la tabla
+        insert_query_prefix = f'INSERT INTO {table_name} (gene, score, mirna_source_id, mirna_id) VALUES '
         insert_statements: List[str] = []
 
         # Generamos todas las tuplas de insercion. NOTA: no se ponen los espacios entre las comas para ahorrar megas

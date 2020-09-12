@@ -5,7 +5,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from modulector.dataSourceProcessors import miRDBProcessor, miRDBProcessor
-from modulector.models import MirnaXGen, MirnaSource, Mirna, MirnaColumns
+from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns
 from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
     MirnaSourceListSerializer
 
@@ -19,17 +19,17 @@ class MirnaXGenList(APIView):
 
     def get(self, request):
         cache = caches['default']
-        gen = self.request.query_params.get("gen", None)
+        gene = self.request.query_params.get("gene", None)
         mirna = self.request.query_params.get("mirna", None)
-        if mirna is None and gen is None:
+        if mirna is None and gene is None:
             return Response([], status=status.HTTP_200_OK)
         mirna_id = Mirna.objects.get(mirna_code=mirna).id
         data = []
-        if mirna is not None and gen is not None:
-            key = str(mirna_id) + str(gen)
+        if mirna is not None and gene is not None:
+            key = str(mirna_id) + str(gene)
             result = cache.get(key)
             if result is None:
-                result = MirnaXGen.objects.filter(mirna=mirna_id, gen=gen)
+                result = MirnaXGene.objects.filter(mirna=mirna_id, gene=gene)
                 cache.add(key, result)
             data = Response(MirnaXGenSerializer(result, many=True).data, status=status.HTTP_200_OK)
         else:
@@ -38,7 +38,7 @@ class MirnaXGenList(APIView):
             paginator = PageNumberPagination()
             page = self.request.query_params.get('page')
             if result is None:
-                result = MirnaXGen.objects.filter(mirna=mirna_id)
+                result = MirnaXGene.objects.filter(mirna=mirna_id)
                 cache.add(key, result)
             result = paginator.paginate_queryset(result, self.request)
             serializer = MirnaXGenSerializer(result, many=True)
