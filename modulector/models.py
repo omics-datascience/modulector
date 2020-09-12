@@ -51,6 +51,7 @@ class MirnaXGen(models.Model):
     class Meta:
         indexes = [
             models.Index(fields=['mirna'], name='idx_mirna'),
-            models.Index(fields=['gen'], name='idx_gen')
+            models.Index(fields=['gen'], name='idx_gen'),
+            models.Index(fields=['mirna_source'], name="idx_mirna_source")
         ]
-        db_table = 'modulector_mirnaxgene'
+        db_table = 'modulector_mirnaxgen'

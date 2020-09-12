@@ -24,4 +24,5 @@ urlpatterns = [
     path('source/create', views.MirnaSourcePostAndList.as_view()),
     path('mirna', views.MirnaList.as_view()),
     path('process/', views.ProcessPost.as_view()),
+    path('mirnaxgen/', views.MirnaXGenList.as_view()),
 ]

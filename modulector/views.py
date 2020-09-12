@@ -4,7 +4,7 @@ from rest_framework import status, generics
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from modulector.dataSourceProcessors import miRDBProcessor
+from modulector.dataSourceProcessors import miRDBProcessor, miRDBProcessor
 from modulector.models import MirnaXGen, MirnaSource, Mirna, MirnaColumns
 from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
     MirnaSourceListSerializer
