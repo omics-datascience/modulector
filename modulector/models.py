@@ -3,6 +3,15 @@ from django.db.models import UniqueConstraint
 # TODO: remove 'id' fields in all Models, let Django manage that
 
 
+class DatasetSeparator(models.TextChoices):
+    """Possible separators for datasets"""
+    COMMA = ',', 'Comma'
+    SEMICOLON = ';', 'Semicolon'
+    TAB = '\t', 'Tab'
+    COLON = ':', 'Colon'
+    WHITE_SPACE = ' ', 'White space'
+
+
 class Mirna(models.Model):
     id = models.BigAutoField(primary_key=True)
     mirna_code = models.CharField(max_length=200, db_index=True, unique=True)
@@ -23,7 +32,7 @@ class MirnaSource(models.Model):
     description = models.TextField(blank=True, null=True)
     synchronization_date = models.DateTimeField()
     file_type = models.CharField(max_length=50)  # TODO: use Choices
-    file_separator = models.CharField(max_length=4)  # TODO: use Choices
+    file_separator = models.CharField(max_length=1, choices=DatasetSeparator.choices, default=DatasetSeparator.TAB)
 
 
 class MirnaColumns(models.Model):
