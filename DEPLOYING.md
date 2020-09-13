@@ -19,12 +19,12 @@ Below are the steps to perform a production deploy.
         - `SECRET_KEY`: Django's secret key. If not specified, one is generated with [generate-secret-key application](https://github.com/MickaelBergem/django-generate-secret-key) automatically.
         - `MEDIA_ROOT`: absolute path where will be stored the uploaded files. By default `<project root>/uploads`.
         - `MEDIA_URL`: URL of the `MEDIA_ROOT` folder. By default `<url>/media/`.
-    - MySQL:
-        - `MYSQL_USERNAME`: DB username. **Must be equal to** `MYSQL_USER` in `db` service.
-        - `MYSQL_PASSWORD`: DB user's password. **Must be equal to** `MYSQL_PASSWORD` in `db` service.
-        - `MYSQL_HOST`: DB host.
-        - `MYSQL_PORT`: DB host's port.
-        - `MYSQL_DB`: DB's name. **Must be equal to** `POSTGRES_DB`.
+    - PostgreSQL:
+        - `POSTGRES_USERNAME`: DB username. **Must be equal to** `POSTGRES_USER` in `db` service.
+        - `POSTGRES_PASSWORD`: DB user's password. **Must be equal to** `POSTGRES_PASSWORD` in `db` service.
+        - `POSTGRES_HOST`: DB host.
+        - `POSTGRES_PORT`: DB host's port.
+        - `POSTGRES_DB`: DB's name. **Must be equal to** `POSTGRES_DB`.
 1. Go back to the project's root folder and run the following commands:
     - Docker Compose:
         - Start: `docker-compose up -d`. The service will available in `127.0.0.1`.

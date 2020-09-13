@@ -14,7 +14,7 @@ class MirnaSourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = MirnaSource
         fields = ['id', 'name', 'site_url', 'min_score', 'max_score', 'score_interpretation', 'description',
-                  'synchronization_date', 'file_type', 'file_separator', 'columns']
+                  'synchronization_date', 'file_separator', 'columns']
 
     def create(self, validated_data):
         columns = validated_data.pop('columns')
@@ -41,7 +41,7 @@ class MirnaSourceListSerializer(serializers.ModelSerializer):
     class Meta:
         model = MirnaSource
         fields = ['id', 'name', 'site_url', 'min_score', 'max_score', 'score_interpretation', 'description',
-                  'synchronization_date', 'file_type', 'file_separator', 'mirnacolumns']
+                  'synchronization_date', 'file_separator', 'mirnacolumns']
         depth = 1
 
 

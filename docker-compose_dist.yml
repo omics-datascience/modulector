@@ -1,18 +1,23 @@
 version: '3'
 
 services:
-    # MySQL
+    # PostgreSQL
     db:
-        image: mysql:8
+        image: postgres:12
         container_name: modulector_db
         restart: always
-        command: --default-authentication-plugin=mysql_native_password
+        ports:
+            - 5432:5432
+        command: postgres -c 'config_file=/etc/postgresql/postgresql.conf'
         environment:
-            MYSQL_USER: ''
-            MYSQL_PASSWORD: ''
-            MYSQL_DATABASE: modulector
+            # IMPORTANT: these three params must be the same than POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_DB
+            # below in 'web' service respectively
+            POSTGRES_USER: root
+            POSTGRES_PASSWORD: admin
+            POSTGRES_DB: modulector
         volumes:
-            - mysql_data:/var/lib/mysql
+            - postgres_data:/var/lib/postgresql/data/
+            - ./config/postgres/postgres.conf:/etc/postgresql/postgresql.conf
 
     # Django Proxi Server
     nginx:
@@ -49,12 +54,12 @@ services:
             # Django
             DJANGO_SETTINGS_MODULE: 'ModulectorBackend.settings_prod'
 
-            # MySQL DB connection parameters (MUST match the parameters defined in the "db" service above)
-            MYSQL_USERNAME: ''
-            MYSQL_PASSWORD: ''
-            MYSQL_HOST: 'db'
-            MYSQL_PORT: 3306
-            MYSQL_DB: 'modulector'
+            # PostgreSQL DB connection parameters (MUST match the parameters defined in the "db" service above)
+            POSTGRES_USERNAME: ''
+            POSTGRES_PASSWORD: ''
+            POSTGRES_HOST: 'db'
+            POSTGRES_PORT: 5432
+            POSTGRES_DB: 'modulector'
 
 volumes:
-    mysql_data:
+    postgres_data:

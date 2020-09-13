@@ -70,6 +70,8 @@ def process(source_id: int):
         print("mirna_gene delete start ")
         start = time.time()
         MirnaXGene.objects.filter(mirna_source=mirna_source).delete()
+        # for record in MirnaXGene.objects.filter(mirna_source=mirna_source).iterator(chunk_size=2000):
+        #     record.delete()
         print(f"mirna_gene delete -> {time.time() - start} segundos")
 
         start = time.time()
