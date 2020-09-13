@@ -13,8 +13,10 @@ from django.db import connection, transaction
 from django.utils.timezone import make_aware
 from modulector.models import MirnaSource, MirnaXGene, Mirna
 
-# TODO: analyse/explain why not to use ThreadPool instead of Queue
-# TODO: use logging package instead of print in production
+# TODO: add documentation to all the functions and remove fixed data.
+# TODO: use logging package instead of print in production as it'll run in a Thead.
+# TODO: check if it's needed to save skipped data.
+# TODO: remove time dependency and all its usage from this file.
 
 parent_dir = pathlib.Path(__file__).parent.absolute().parent
 file_map = dict()
@@ -53,7 +55,6 @@ def process(source_id: int):
                            delimiter=mirna_source.file_separator, header=None, names=series_names)
     print(f'Tiempo de lectura del CSV -> {time.time() - start} segundos')
 
-    print(data.head())
     start = time.time()
     filtered_data = data[data["MIRNA"].str.contains("hsa")]
     print(f'Tiempo de filtrado por hsa -> {time.time() - start} segundos')
@@ -65,8 +66,12 @@ def process(source_id: int):
 
     print("query insertion started ")
     grouped: pandas.DataFrame = filtered_data.groupby('MIRNA').aggregate(lambda tdf: tdf.unique().tolist())
-    with transaction.atomic():
 
+    # Some insertion stuff
+    table_name = MirnaXGene._meta.db_table  # Obtenemos de manera dinamica el nombre de la tabla
+    insert_query_prefix = f'INSERT INTO {table_name} (gene, score, mirna_source_id, mirna_id) VALUES '
+
+    with transaction.atomic():
         print("mirna_gene delete start ")
         start = time.time()
         MirnaXGene.objects.filter(mirna_source=mirna_source).delete()
@@ -84,8 +89,6 @@ def process(source_id: int):
 
             # Aca si usamos SQL plano para ganar performance en la insercion
             mirna_id: int = mirna_obj.pk
-            table_name = MirnaXGene._meta.db_table  # Obtenemos de manera dinamica el nombre de la tabla
-            insert_query_prefix = f'INSERT INTO {table_name} (gene, score, mirna_source_id, mirna_id) VALUES '
             insert_statements: List[str] = []
 
             # Generamos todas las tuplas de insercion. NOTA: no se ponen los espacios entre las comas para ahorrar megas
@@ -104,6 +107,8 @@ def process(source_id: int):
 
         mirna_source.synchronization_date = make_aware(mirna_source.synchronization_date.now())
         mirna_source.save()
+
+    # TODO: is this needed?
     print("total skipped " + str(skipped_queue.qsize()))
     saveSkipped(skipped_queue)
 
