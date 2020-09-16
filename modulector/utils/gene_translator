@@ -1,0 +1,32 @@
+from typing import List
+
+import requests
+from bs4 import BeautifulSoup
+
+
+def run():
+    input_data = ""
+    with open("input.txt", "r") as file:
+        input_data = file.read().split(";")
+    url_format = "https://www.ncbi.nlm.nih.gov/nuccore/%s"
+    out_path = "out.txt"
+    insert_query_prefix = f'INSERT INTO REF_SEQ_MAPPING(OLD_VALUE, NEW_VALUE) VALUES '
+    insert_statements: List[str] = []
+    with open(out_path, "w") as file:
+        for item in input_data:
+            url = url_format % item
+            res = requests.get(url)
+            print(res.status_code)
+            print(item)
+            html = res.text
+            data = BeautifulSoup(html, "html.parser")
+            if 0 != data.find_all(ref="log$=seqview").__len__():
+                new_value = data.find_all(ref="log$=seqview")[0].text
+                insert_statements.append(f'(\'{item}\',\'{new_value}\')')
+                print(new_value)
+            else:
+                print("skipped")
+
+    insert_query = insert_query_prefix + ','.join(insert_statements)
+    with open(out_path, 'w') as f:
+        f.write("%s" % insert_query)
