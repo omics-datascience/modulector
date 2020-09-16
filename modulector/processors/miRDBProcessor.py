@@ -1,6 +1,5 @@
 import os
 import pathlib
-import queue
 import time
 from multiprocessing import Manager
 from typing import List
@@ -21,16 +20,6 @@ file_map = dict()
 file_map["small"] = os.path.join(parent_dir, "files/testFile.txt")
 file_map["medium"] = os.path.join(parent_dir, "files/test2.txt")
 file_map["large"] = os.path.join(parent_dir, "files/miRDB_v6.0_prediction_result.txt")
-
-
-def getn(q, n):
-    result = q.get() + ";"
-    try:
-        while len(result) < n:
-            result = result + q.get(block=False) + ";"
-    except queue.Empty:
-        pass
-    return result
 
 
 def process(source_id: int):
@@ -59,7 +48,7 @@ def process(source_id: int):
 
     print("translating gene map")
     start = time.time()
-    translateRefSec(filtered_data, gene_map=gene_map, skipped_queue=skipped_queue)
+    translate_ref_seq(filtered_data, gene_map=gene_map, skipped_queue=skipped_queue)
     print(f"Translated genes -> {time.time() - start} segundos")
 
     print("query insertion started ")
@@ -117,7 +106,7 @@ def get_or_create_mirna(mirna_code):
     return mirna_obj
 
 
-def translateRefSec(df, gene_map, skipped_queue):
+def translate_ref_seq(df, gene_map, skipped_queue):
     api = gene_api.MyGeneInfo()
     unique_series = df["GEN"].drop_duplicates()
     start = time.time()
@@ -128,10 +117,10 @@ def translateRefSec(df, gene_map, skipped_queue):
     response = api.querymany(data, scopes="refseq", species="human")
     end = time.time()
     print("la pegada a la api tardo: " + str(end - start) + " segs")
-    [getGeneSymbol(gene=gene, gene_map=gene_map, skipped_queue=skipped_queue) for gene in response]
+    [get_gene_symbol(gene=gene, gene_map=gene_map, skipped_queue=skipped_queue) for gene in response]
 
 
-def getGeneSymbol(gene, gene_map, skipped_queue):
+def get_gene_symbol(gene, gene_map, skipped_queue):
     if "notfound" not in gene:
         gen_symbol = gene["symbol"]
         refseq = gene["query"]
