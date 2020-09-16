@@ -1,21 +1,19 @@
-import concurrent
 import os
 import pathlib
 import queue
 import time
-from concurrent.futures._base import ALL_COMPLETED
-from concurrent.futures.thread import ThreadPoolExecutor
 from multiprocessing import Manager
 from typing import List
+
 import mygene as gene_api
 import pandas as pandas
 from django.db import connection, transaction
 from django.utils.timezone import make_aware
+
 from modulector.models import MirnaSource, MirnaXGene, Mirna
 
 # TODO: add documentation to all the functions and remove fixed data.
 # TODO: use logging package instead of print in production as it'll run in a Thead.
-# TODO: check if it's needed to save skipped data.
 # TODO: remove time dependency and all its usage from this file.
 
 parent_dir = pathlib.Path(__file__).parent.absolute().parent
@@ -80,10 +78,10 @@ def process(source_id: int):
         start = time.time()
         for mirna_code, genes_and_scores in grouped.iterrows():
             # Para DEBUG:
-            #genes, scores = genes_and_scores
-            #print('miRNA code:', mirna_code)
-            #print('Genes list:', genes)
-            #print('Scores list:', scores)
+            # genes, scores = genes_and_scores
+            # print('miRNA code:', mirna_code)
+            # print('Genes list:', genes)
+            # print('Scores list:', scores)
 
             mirna_obj = get_or_create_mirna(mirna_code)
 
@@ -108,10 +106,6 @@ def process(source_id: int):
         mirna_source.synchronization_date = make_aware(mirna_source.synchronization_date.now())
         mirna_source.save()
 
-    # TODO: is this needed?
-    print("total skipped " + str(skipped_queue.qsize()))
-    saveSkipped(skipped_queue)
-
 
 def get_or_create_mirna(mirna_code):
     mirna_in_db = Mirna.objects.filter(mirna_code=mirna_code)
@@ -133,7 +127,7 @@ def translateRefSec(df, gene_map, skipped_queue):
     print("pegada a la api de genes")
     response = api.querymany(data, scopes="refseq", species="human")
     end = time.time()
-    print("la pegada a la api tardo: " + str(end-start) + " segs")
+    print("la pegada a la api tardo: " + str(end - start) + " segs")
     [getGeneSymbol(gene=gene, gene_map=gene_map, skipped_queue=skipped_queue) for gene in response]
 
 
@@ -144,19 +138,3 @@ def getGeneSymbol(gene, gene_map, skipped_queue):
         gene_map[refseq] = gen_symbol
     else:
         skipped_queue.put(gene["query"])
-
-
-def saveSkipped(queue):
-    pool = ThreadPoolExecutor(max_workers=1000)
-    futures = []
-    while not queue.empty():
-        futures.append(pool.submit(save_file, getn(queue, 1000)))
-    concurrent.futures.wait(futures, timeout=None, return_when=ALL_COMPLETED)
-    pool.shutdown(wait=True)
-
-
-def save_file(record):
-    parent_dir = pathlib.Path(__file__).parent.absolute().parent
-    file_path = os.path.join(parent_dir, "files/skipped.txt")
-    with open(file_path, 'a') as f:
-        f.write("%s" % record)

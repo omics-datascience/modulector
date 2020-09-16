@@ -1,4 +1,6 @@
 from django.db import models
+
+
 # from django.db.models import UniqueConstraint
 
 
@@ -13,6 +15,11 @@ class DatasetSeparator(models.TextChoices):
 
 class Mirna(models.Model):
     mirna_code = models.CharField(max_length=40, unique=True)
+
+
+class OldRefSeqMapping(models.Model):
+    old_value = models.CharField(max_length=40, unique=True)
+    new_value = models.CharField(max_length=40)
 
 
 class MirnaSource(models.Model):
@@ -43,6 +50,7 @@ class MirnaXGene(models.Model):
     pubmed_id = models.CharField(max_length=100, null=True)
     pubMedUrl = models.CharField(max_length=300, null=True)
     mirna_source = models.ForeignKey(MirnaSource, on_delete=models.CASCADE)
+
     # UniqueConstraint(fields=["mirna", "gene", "source"], name='idx_unique_mirnaxgen')  # FIXME: it's not applying
 
     class Meta:
