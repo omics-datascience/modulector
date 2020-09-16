@@ -10,7 +10,7 @@ def run():
         input_data = file.read().split(";")
     url_format = "https://www.ncbi.nlm.nih.gov/nuccore/%s"
     out_path = "out.txt"
-    insert_query_prefix = f'INSERT INTO REF_SEQ_MAPPING(OLD_VALUE, NEW_VALUE) VALUES '
+    insert_query_prefix = f'INSERT INTO modulector_oldrefseqmapping(OLD_VALUE, NEW_VALUE) VALUES '
     insert_statements: List[str] = []
     with open(out_path, "w") as file:
         for item in input_data:

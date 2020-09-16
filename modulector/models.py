@@ -22,6 +22,11 @@ class OldRefSeqMapping(models.Model):
     new_value = models.CharField(max_length=40)
 
 
+class GeneSymbolMapping(models.Model):
+    refseq = models.CharField(max_length=40, unique=True)
+    symbol = models.CharField(max_length=20)
+
+
 class MirnaSource(models.Model):
     name = models.CharField(max_length=200)
     site_url = models.CharField(max_length=200)
