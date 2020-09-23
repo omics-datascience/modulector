@@ -7,7 +7,7 @@
   "description": "test de description",
   "synchronization_date": "2020-02-11T00:00:00.000Z",
   "file_type": "csv",
-  "file_separator": "\\t",
+  "file_separator": "\t",
   "columns": [
     {
       "position": 1,
