@@ -1,13 +1,16 @@
 import time
+
 from django.core.cache import caches
 from rest_framework import status, generics
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from modulector.dataSourceProcessors import miRDBProcessor, miRDBProcessor
+
 from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns
+from modulector.processors import miRDBProcessor
 from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
     MirnaSourceListSerializer
+
 
 # TODO: remove unused code
 # TODO: use Generics when possible
