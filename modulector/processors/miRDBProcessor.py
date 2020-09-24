@@ -53,7 +53,7 @@ def process(source_id: int):
         ref_seq_map[old] = new
 
     gene_mapper = GeneMapper()
-    gene_mapper.execute(ref_seq_array=filtered_data["GEN"].to_numpy(), old_ref_seq_array=ref_seq_map.keys())
+    gene_mapper.execute()
     symbol_list = list(GeneSymbolMapping.objects.all().values_list())
     symbol_map = dict()
     for index, refseq, symbol in symbol_list:
