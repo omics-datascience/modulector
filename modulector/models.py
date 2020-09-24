@@ -13,6 +13,11 @@ class DatasetSeparator(models.TextChoices):
     WHITE_SPACE = ' ', 'White space'
 
 
+class MirbaseIdMirna(models.Model):
+    mirbase_id = models.CharField(max_length=20)
+    mature_mirna = models.CharField(max_length=30)
+
+
 class Mirna(models.Model):
     mirna_code = models.CharField(max_length=40, unique=True)
 

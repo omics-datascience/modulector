@@ -6,10 +6,10 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns
+from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna
 from modulector.processors import miRDBProcessor
 from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
-    MirnaSourceListSerializer
+    MirnaSourceListSerializer, MirbaseMatureMirnaSerializer
 
 
 # TODO: remove unused code
@@ -78,6 +78,18 @@ class MirnaSourceList(APIView):
         sources = MirnaSource.objects.all()
         serializer = MirnaSourceListSerializer(sources, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class MirbaseMatureList(generics.ListAPIView):
+    serializer_class = MirbaseMatureMirnaSerializer
+
+    # TODO: refactor
+    def get_queryset(self):
+        mirna = self.request.query_params.get("mirna", None)
+        result = MirbaseIdMirna.objects.all()
+        if mirna is not None:
+            result = result.filter(mature_mirna=mirna)
+        return result
 
 
 class MirnaList(generics.ListAPIView):

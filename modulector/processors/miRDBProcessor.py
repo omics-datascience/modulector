@@ -8,6 +8,7 @@ from django.db import connection, transaction
 from django.utils.timezone import make_aware
 
 from modulector.mappers.gene_mapper import GeneMapper
+from modulector.mappers.mature_mirna_mapper import MatureMirnaMapper
 from modulector.mappers.ref_seq_mapper import RefSeqMapper
 from modulector.models import MirnaSource, MirnaXGene, Mirna, OldRefSeqMapping, GeneSymbolMapping
 
@@ -17,12 +18,12 @@ from modulector.models import MirnaSource, MirnaXGene, Mirna, OldRefSeqMapping, 
 
 parent_dir = pathlib.Path(__file__).parent.absolute().parent
 file_map = dict()
-file_map["small"] = os.path.join(parent_dir, "files/testFile.txt")
-file_map["medium"] = os.path.join(parent_dir, "files/test2.txt")
 file_map["large"] = os.path.join(parent_dir, "files/miRDB_v6.0_prediction_result.txt")
 
 
 def process(source_id: int):
+    mirbase_mapper = MatureMirnaMapper()
+    mirbase_mapper.execute()
     file_path = file_map["large"]
     print("loading data")
     start = time.time()
