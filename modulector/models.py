@@ -18,6 +18,11 @@ class MirbaseIdMirna(models.Model):
     mature_mirna = models.CharField(max_length=30)
 
 
+class UrlTemplate(models.Model):
+    name = models.CharField(max_length=40)
+    url = models.CharField(max_length=100)
+
+
 class Mirna(models.Model):
     mirna_code = models.CharField(max_length=40, unique=True)
 

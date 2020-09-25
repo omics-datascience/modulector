@@ -19,7 +19,6 @@ class MatureMirnaMapper:
         insert_statements: List[str] = []
         insert_template = "('{}','{}')"
         for index, row in df.iterrows():
-            print(row)
             mirbase = row['mirbase']
             mirna_list = row['mirna']
             for mirna in mirna_list.split(';'):
@@ -27,4 +26,5 @@ class MatureMirnaMapper:
                     insert_statements.append(insert_template.format(mirbase, mirna))
         insert_query = insert_query_prefix + ','.join(insert_statements)
         with connection.cursor() as cursor:
+            cursor.execute("TRUNCATE TABLE modulector_mirbaseidmirna")
             cursor.execute(insert_query)

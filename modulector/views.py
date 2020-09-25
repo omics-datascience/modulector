@@ -10,11 +10,10 @@ from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, Mirb
 from modulector.processors import miRDBProcessor
 from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
     MirnaSourceListSerializer, MirbaseMatureMirnaSerializer
-
-
 # TODO: remove unused code
 # TODO: use Generics when possible
 # TODO: use '_' for unused params on the left of used params, remove the ones on the right
+from modulector.services import url_service
 
 
 class MirnaXGenList(APIView):
@@ -103,3 +102,10 @@ class MirnaList(generics.ListAPIView):
         else:
             result = Mirna.objects.filter(mirna_code=mirna)
         return result
+
+
+class LinksList(APIView):
+    def get(self, request):
+        mirna = self.request.query_params.get("mirna", None)
+        links = url_service.build_urls(mirna)
+        return Response(links, status=status.HTTP_200_OK)

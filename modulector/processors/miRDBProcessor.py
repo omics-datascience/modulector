@@ -39,7 +39,6 @@ def process(source_id: int):
 
     start = time.time()
     filtered_data = data[data["MIRNA"].str.contains("hsa")]
-    filtered_data["GEN"].drop_duplicates().to_csv(os.path.join(parent_dir, "files/out.csv"))
     print(f'Tiempo de filtrado por hsa -> {time.time() - start} segundos')
     print("query insertion started ")
     grouped: pandas.DataFrame = filtered_data.groupby('MIRNA').aggregate(lambda tdf: tdf.unique().tolist())
