@@ -6,15 +6,14 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns
+from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna
 from modulector.processors import miRDBProcessor
 from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
-    MirnaSourceListSerializer
-
-
+    MirnaSourceListSerializer, MirbaseMatureMirnaSerializer
 # TODO: remove unused code
 # TODO: use Generics when possible
 # TODO: use '_' for unused params on the left of used params, remove the ones on the right
+from modulector.services import url_service
 
 
 class MirnaXGenList(APIView):
@@ -80,6 +79,18 @@ class MirnaSourceList(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class MirbaseMatureList(generics.ListAPIView):
+    serializer_class = MirbaseMatureMirnaSerializer
+
+    # TODO: refactor
+    def get_queryset(self):
+        mirna = self.request.query_params.get("mirna", None)
+        result = MirbaseIdMirna.objects.all()
+        if mirna is not None:
+            result = result.filter(mature_mirna=mirna)
+        return result
+
+
 class MirnaList(generics.ListAPIView):
     serializer_class = MirnaSerializer
 
@@ -91,3 +102,10 @@ class MirnaList(generics.ListAPIView):
         else:
             result = Mirna.objects.filter(mirna_code=mirna)
         return result
+
+
+class LinksList(APIView):
+    def get(self, request):
+        mirna = self.request.query_params.get("mirna", None)
+        links = url_service.build_urls(mirna)
+        return Response(links, status=status.HTTP_200_OK)
