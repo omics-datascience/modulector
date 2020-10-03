@@ -16,16 +16,11 @@ def run():
         for item in input_data:
             url = url_format % item
             res = requests.get(url)
-            print(res.status_code)
-            print(item)
             html = res.text
             data = BeautifulSoup(html, "html.parser")
             if 0 != data.find_all(ref="log$=seqview").__len__():
                 new_value = data.find_all(ref="log$=seqview")[0].text
                 insert_statements.append(f'(\'{item}\',\'{new_value}\')')
-                print(new_value)
-            else:
-                print("skipped")
 
     insert_query = insert_query_prefix + ','.join(insert_statements)
     with open(out_path, 'w') as f:

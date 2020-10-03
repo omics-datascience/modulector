@@ -1,5 +1,3 @@
-import time
-
 from django.core.cache import caches
 from rest_framework import status, generics
 from rest_framework.pagination import PageNumberPagination
@@ -62,12 +60,7 @@ class MirnaSourcePostAndList(APIView):
 
 class ProcessPost(APIView):
     def post(self, request, *args, **kwargs):
-        start = time.time()
-        print("ARRANcO" + str(start))
         miRDBProcessor.process(request.data["source_id"])
-        end = time.time()
-        print(end - start)
-        print("termino")
         return Response("data processed", status=status.HTTP_200_OK)
 
 
