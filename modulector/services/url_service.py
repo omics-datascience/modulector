@@ -1,3 +1,5 @@
+from collections import namedtuple
+
 from modulector.models import MirbaseIdMirna, UrlTemplate
 
 
@@ -48,12 +50,13 @@ function_dict = {
 }
 
 
-## todo pasar a arreglos de links
 def build_urls(mirna_id):
-    urls = dict()
+    UrlItem = namedtuple("UrlItem", "source, url")
+    urls = []
     url_templates = UrlTemplate.objects.all().values_list()
     if mirna_id:
         for index, name, url in url_templates:
-            result = function_dict.get(name)(mirna_id, url)
-            urls[name] = result
+            url_string = function_dict.get(name)(mirna_id, url)
+            item = UrlItem(source=name, url=url_string)
+            urls.append(item._asdict())
     return urls
