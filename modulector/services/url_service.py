@@ -48,6 +48,7 @@ function_dict = {
 }
 
 
+## todo pasar a arreglos de links
 def build_urls(mirna_id):
     urls = dict()
     url_templates = UrlTemplate.objects.all().values_list()
