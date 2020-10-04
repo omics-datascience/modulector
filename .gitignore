@@ -130,7 +130,7 @@ dmypy.json
 # Pyre type check
 *.pyc
 .idea
-/modulector/files/miRDB_v6.0_prediction_result.txt
+/modulector/files/mirdb_data.txt
 # Docker
 .vscode
 /frontend/static/frontend/node_modules

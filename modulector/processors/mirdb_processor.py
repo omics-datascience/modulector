@@ -17,7 +17,7 @@ from modulector.processors import disease_processor
 logger = logging.getLogger(__name__)
 parent_dir = pathlib.Path(__file__).parent.absolute().parent
 file_map = dict()
-file_map["large"] = os.path.join(parent_dir, "files/miRDB_v6.0_prediction_result.txt")
+file_map["large"] = os.path.join(parent_dir, "files/mirdb_data.txt")
 
 
 def process(source_id: int):
