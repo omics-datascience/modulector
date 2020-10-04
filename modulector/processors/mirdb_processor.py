@@ -1,6 +1,7 @@
 import logging
 import os
 import pathlib
+import sys
 from typing import List
 
 import pandas as pandas
@@ -12,6 +13,9 @@ from modulector.models import MirnaSource, MirnaXGene, Mirna, OldRefSeqMapping, 
 # TODO: add documentation to all the functions and remove fixed data.
 
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.StreamHandler(sys.stdout))
+logger.setLevel(logging.INFO)
+
 parent_dir = pathlib.Path(__file__).parent.absolute().parent
 file_map = dict()
 file_map["large"] = os.path.join(parent_dir, "files/mirdb_data.txt")
@@ -60,7 +64,7 @@ def process(mirna_source: MirnaSource):
             insert_statements: List[str] = []
 
             # Generating tuples for insertion
-            insert_template = "('{}',{}," + str(source_id) + "," + str(mirna_id) + ")"
+            insert_template = "('{}',{}," + str(mirna_source.id) + "," + str(mirna_id) + ")"
             for gene, score in zip(genes_and_scores['GEN'], genes_and_scores['SCORE']):
                 if gene in ref_seq_map:
                     gene = ref_seq_map[gene]
