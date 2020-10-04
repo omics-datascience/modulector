@@ -13,8 +13,9 @@ logger.setLevel(logging.INFO)
 
 
 def load_data():
-    load_data = os.environ['LOAD_DATA']
-    if load_data == '1':
+    # this variable show be set when you before running the code
+    should_load_data = os.environ['LOAD_DATA']
+    if should_load_data == '1':
         logger.info("preloading required data")
         mirbase_mapper = MatureMirnaMapper()
         mirbase_mapper.execute()
