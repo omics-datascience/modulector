@@ -4,6 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 
 
+# this file is a snippet used for translating missing genes from ncbi webpage
 def run():
     input_data = ""
     with open("input.txt", "r") as file:
