@@ -11,8 +11,8 @@ from modulector.mappers.gene_mapper import GeneMapper
 from modulector.mappers.mature_mirna_mapper import MatureMirnaMapper
 from modulector.mappers.ref_seq_mapper import RefSeqMapper
 from modulector.models import MirnaSource, MirnaXGene, Mirna, OldRefSeqMapping, GeneSymbolMapping
-
 # TODO: add documentation to all the functions and remove fixed data.
+from modulector.processors import disease_processor
 
 logger = logging.getLogger(__name__)
 parent_dir = pathlib.Path(__file__).parent.absolute().parent
@@ -23,6 +23,7 @@ file_map["large"] = os.path.join(parent_dir, "files/miRDB_v6.0_prediction_result
 def process(source_id: int):
     mirbase_mapper = MatureMirnaMapper()
     mirbase_mapper.execute()
+    disease_processor.process()
     file_path = file_map["large"]
     logger.info("loading data")
     # loading files

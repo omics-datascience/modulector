@@ -1,9 +1,6 @@
 from django.db import models
 
 
-# from django.db.models import UniqueConstraint
-
-
 class DatasetSeparator(models.TextChoices):
     """Possible separators for datasets"""
     COMMA = ',', 'Comma'
@@ -66,7 +63,16 @@ class MirnaXGene(models.Model):
     pubMedUrl = models.CharField(max_length=300, null=True)
     mirna_source = models.ForeignKey(MirnaSource, on_delete=models.CASCADE)
 
-    # UniqueConstraint(fields=["mirna", "gene", "source"], name='idx_unique_mirnaxgen')  # FIXME: it's not applying
-
     class Meta:
         db_table = 'modulector_mirnaxgen'
+
+
+class MirnaDisease(models.Model):
+    category = models.CharField(max_length=200, blank=False)
+    mirna = models.CharField(max_length=50, blank=False)
+    disease = models.CharField(max_length=200, blank=False)
+    pmid = models.DecimalField(max_digits=10, decimal_places=0, null=False)
+    description = models.TextField(blank=False)
+
+    class Meta:
+        db_table = 'modulector_mirnadisease'

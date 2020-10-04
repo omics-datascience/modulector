@@ -1,17 +1,21 @@
+import re
+
 from django.core.cache import caches
 from rest_framework import status, generics
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna
+from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease
 from modulector.processors import miRDBProcessor
 from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
-    MirnaSourceListSerializer, MirbaseMatureMirnaSerializer
+    MirnaSourceListSerializer, MirbaseMatureMirnaSerializer, MirnaDiseaseSerializer
 # TODO: remove unused code
 # TODO: use Generics when possible
 # TODO: use '_' for unused params on the left of used params, remove the ones on the right
 from modulector.services import url_service
+
+regex = re.compile(r'-\d{1}[a-z]{1}')
 
 
 class MirnaXGenList(APIView):
@@ -24,7 +28,6 @@ class MirnaXGenList(APIView):
         if mirna is None and gene is None:
             return Response([], status=status.HTTP_200_OK)
         mirna_id = Mirna.objects.get(mirna_code=mirna).id
-        data = []
         if mirna is not None and gene is not None:
             key = str(mirna_id) + str(gene)
             result = cache.get(key)
@@ -36,7 +39,6 @@ class MirnaXGenList(APIView):
             key = str(mirna_id)
             result = cache.get(key)
             paginator = PageNumberPagination()
-            page = self.request.query_params.get('page')
             if result is None:
                 result = MirnaXGene.objects.filter(mirna=mirna_id)
                 cache.add(key, result)
@@ -102,3 +104,15 @@ class LinksList(APIView):
         mirna = self.request.query_params.get("mirna", None)
         links = url_service.build_urls(mirna)
         return Response(links, status=status.HTTP_200_OK)
+
+
+class MirnaDiseaseList(generics.ListAPIView):
+    serializer_class = MirnaDiseaseSerializer
+
+    def get_queryset(self):
+        mirna = self.request.query_params.get("mirna")
+        if mirna:
+            mirna = mirna.lower()
+            mirna = re.sub(regex, "", mirna)
+            return MirnaDisease.objects.filter(mirna__startswith=mirna)
+        return MirnaDisease.objects.all()
