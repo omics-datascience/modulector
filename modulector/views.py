@@ -7,13 +7,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease
-from modulector.processors import miRDBProcessor
 from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
     MirnaSourceListSerializer, MirbaseMatureMirnaSerializer, MirnaDiseaseSerializer
 # TODO: remove unused code
 # TODO: use Generics when possible
 # TODO: use '_' for unused params on the left of used params, remove the ones on the right
-from modulector.services import url_service
+from modulector.services import url_service, processor_service
 
 regex = re.compile(r'-\d{1}[a-z]{1}')
 
@@ -62,7 +61,7 @@ class MirnaSourcePostAndList(APIView):
 
 class ProcessPost(APIView):
     def post(self, request, *args, **kwargs):
-        miRDBProcessor.process(request.data["source_id"])
+        processor_service.execute((request.data["source_id"]))
         return Response("data processed", status=status.HTTP_200_OK)
 
 

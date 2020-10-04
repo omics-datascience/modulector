@@ -7,12 +7,9 @@ import pandas as pandas
 from django.db import connection, transaction
 from django.utils.timezone import make_aware
 
-from modulector.mappers.gene_mapper import GeneMapper
-from modulector.mappers.mature_mirna_mapper import MatureMirnaMapper
-from modulector.mappers.ref_seq_mapper import RefSeqMapper
 from modulector.models import MirnaSource, MirnaXGene, Mirna, OldRefSeqMapping, GeneSymbolMapping
+
 # TODO: add documentation to all the functions and remove fixed data.
-from modulector.processors import disease_processor
 
 logger = logging.getLogger(__name__)
 parent_dir = pathlib.Path(__file__).parent.absolute().parent
@@ -20,14 +17,14 @@ file_map = dict()
 file_map["large"] = os.path.join(parent_dir, "files/mirdb_data.txt")
 
 
-def process(source_id: int):
-    mirbase_mapper = MatureMirnaMapper()
-    mirbase_mapper.execute()
-    disease_processor.process()
+def process(mirna_source: MirnaSource):
+    """
+    This functions process the data from mirdb and loads the
+    mirna gene table
+    """
     file_path = file_map["large"]
     logger.info("loading data")
     # loading files
-    mirna_source = MirnaSource.objects.get(id=source_id)
     series_names = mirna_source.mirnacolumns.order_by('position').values_list('field_to_map', flat=True)
     series_names = list(series_names)
 
@@ -37,14 +34,12 @@ def process(source_id: int):
     logger.info("grouping data")
     filtered_data = data[data["MIRNA"].str.contains("hsa")]
     grouped: pandas.DataFrame = filtered_data.groupby('MIRNA').aggregate(lambda tdf: tdf.unique().tolist())
-    ref_seq_mapper = RefSeqMapper()
-    ref_seq_mapper.execute()
+
     ref_seq_list = list(OldRefSeqMapping.objects.all().values_list())
     ref_seq_map = dict()
     for index, old, new in ref_seq_list:
         ref_seq_map[old] = new
-    gene_mapper = GeneMapper()
-    gene_mapper.execute()
+
     symbol_list = list(GeneSymbolMapping.objects.all().values_list())
     symbol_map = dict()
     for index, refseq, symbol in symbol_list:
@@ -85,6 +80,10 @@ def process(source_id: int):
 
 
 def get_or_create_mirna(mirna_code):
+    """
+    This method receives a mirna code and created the mirna if necessary
+    Otherwise will return the object from the database
+    """
     mirna_in_db = Mirna.objects.filter(mirna_code=mirna_code)
     if not mirna_in_db.exists():
         mirna_obj = Mirna(mirna_code=mirna_code)
