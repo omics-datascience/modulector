@@ -9,19 +9,18 @@ parent_dir = pathlib.Path(__file__).parent.absolute().parent
 path = os.path.join(parent_dir, "files/ref_seq_to_symbols.txt")
 
 
-class GeneMapper:
-    def execute(self):
-        translations = load_translations()
-        with transaction.atomic():
-            insert_query_prefix = f'INSERT INTO modulector_genesymbolmapping (refseq, symbol) VALUES '
-            insert_template = "('{}','{}')"
-            queries: List[str] = []
-            for refseq in translations.keys():
-                queries.append(insert_template.format(refseq, translations.get(refseq)))
-            insert_query = insert_query_prefix + ','.join(queries)
-            with connection.cursor() as cursor:
-                cursor.execute("truncate table modulector_genesymbolmapping")
-                cursor.execute(insert_query)
+def execute():
+    translations = load_translations()
+    with transaction.atomic():
+        insert_query_prefix = f'INSERT INTO modulector_genesymbolmapping (refseq, symbol) VALUES '
+        insert_template = "('{}','{}')"
+        queries: List[str] = []
+        for refseq in translations.keys():
+            queries.append(insert_template.format(refseq, translations.get(refseq)))
+        insert_query = insert_query_prefix + ','.join(queries)
+        with connection.cursor() as cursor:
+            cursor.execute("truncate table modulector_genesymbolmapping")
+            cursor.execute(insert_query)
 
 
 def load_translations():
