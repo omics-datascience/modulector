@@ -6,9 +6,9 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease
+from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrugs
 from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
-    MirnaSourceListSerializer, MirbaseMatureMirnaSerializer, MirnaDiseaseSerializer
+    MirnaSourceListSerializer, MirbaseMatureMirnaSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer
 # TODO: remove unused code
 # TODO: use Generics when possible
 # TODO: use '_' for unused params on the left of used params, remove the ones on the right
@@ -115,3 +115,13 @@ class MirnaDiseaseList(generics.ListAPIView):
             mirna = re.sub(regex, "", mirna)
             return MirnaDisease.objects.filter(mirna__startswith=mirna)
         return MirnaDisease.objects.all()
+
+
+class MirnaDrugsList(generics.ListAPIView):
+    serializer_class = MirnaDrugsSerializer
+
+    def get_queryset(self):
+        mirna = self.request.query_params.get("mirna")
+        if mirna:
+            return MirnaDrugs.objects.filter(mature_mirna__endswith=mirna)
+        return MirnaDrugs.objects.all()
