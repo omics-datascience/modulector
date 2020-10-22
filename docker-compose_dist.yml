@@ -42,7 +42,6 @@ services:
       python3 manage.py makemigrations &&
       python3 manage.py migrate &&
       uvicorn --host 0.0.0.0 --port 8000 ModulectorBackend.asgi:application
-      docker exec -i modulector_db gzip -d  "${RESTORE_FILE}" || psql  modulector"
     volumes:
       - ./:/src
       - ./static:/static

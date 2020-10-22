@@ -67,3 +67,17 @@ To check the different services' status you can run:
 `docker-compose logs <service's name>`.
 
 Where  *\<service's name\>* could be `nginx`, `web` or `db`.
+
+
+## Recreate Database from a Dump
+
+In order to restore the database without having to process the information you can do 
+the following:
+
+First decompress the file:
+
+`gunzip db_dump_version.sql.gz`.
+
+Then restore the db: 
+
+`docker exec -i modulector_dev_db psql modulector < db_dump_version.sql `.
