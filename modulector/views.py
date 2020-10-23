@@ -1,6 +1,8 @@
 import re
 
 from django.core.cache import caches
+from django.http import HttpResponse
+from django.template import loader
 from rest_framework import status, generics
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -9,8 +11,6 @@ from rest_framework.views import APIView
 from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrugs
 from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
     MirnaSourceListSerializer, MirbaseMatureMirnaSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer
-# TODO: remove unused code
-# TODO: use Generics when possible
 # TODO: use '_' for unused params on the left of used params, remove the ones on the right
 from modulector.services import url_service, processor_service
 
@@ -52,8 +52,7 @@ class MirnaSourcePostAndList(APIView):
         serializer = MirnaSourceSerializer(data=request.data)
         if serializer.is_valid():
             source = serializer.save()
-            # TODO: remove all() as filter() is already a QuerySet
-            source.columns = MirnaColumns.objects.filter(mirna_source_id=source.id).all()
+            source.columns = MirnaColumns.objects.filter(mirna_source_id=source.id)
             serializer = MirnaSourceSerializer(source)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -65,18 +64,16 @@ class ProcessPost(APIView):
         return Response("data processed", status=status.HTTP_200_OK)
 
 
-class MirnaSourceList(APIView):
-    # TODO: implment with Generics.ListAPIView for simplicity
-    def get(self, request):
-        sources = MirnaSource.objects.all()
-        serializer = MirnaSourceListSerializer(sources, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+class MirnaSourceList(generics.ListAPIView):
+    serializer_class = MirnaSourceListSerializer
+
+    def get_queryset(self):
+        return MirnaSource.objects.all()
 
 
 class MirbaseMatureList(generics.ListAPIView):
     serializer_class = MirbaseMatureMirnaSerializer
 
-    # TODO: refactor
     def get_queryset(self):
         mirna = self.request.query_params.get("mirna", None)
         result = MirbaseIdMirna.objects.all()
@@ -88,13 +85,11 @@ class MirbaseMatureList(generics.ListAPIView):
 class MirnaList(generics.ListAPIView):
     serializer_class = MirnaSerializer
 
-    # TODO: refactor
     def get_queryset(self):
         mirna = self.request.query_params.get("mirna", None)
-        if mirna is None:
-            result = Mirna.objects.all()
-        else:
-            result = Mirna.objects.filter(mirna_code=mirna)
+        result = Mirna.objects.all()
+        if mirna:
+            result = result.filter(mirna_code=mirna)
         return result
 
 
@@ -110,11 +105,12 @@ class MirnaDiseaseList(generics.ListAPIView):
 
     def get_queryset(self):
         mirna = self.request.query_params.get("mirna")
+        result = MirnaDisease.objects.all()
         if mirna:
             mirna = mirna.lower()
             mirna = re.sub(regex, "", mirna)
-            return MirnaDisease.objects.filter(mirna__startswith=mirna)
-        return MirnaDisease.objects.all()
+            result = result.filter(mirna__startswith=mirna)
+        return result
 
 
 class MirnaDrugsList(generics.ListAPIView):
@@ -129,3 +125,9 @@ class MirnaDrugsList(generics.ListAPIView):
         if mirbase:
             query_set = query_set.filter(mirbase_id=mirbase)
         return query_set
+
+
+def index(request):
+    template = loader.get_template('index.html')
+    context = dict()
+    return HttpResponse(template.render(context, request))
