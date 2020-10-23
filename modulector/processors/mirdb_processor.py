@@ -10,7 +10,7 @@ from django.utils.timezone import make_aware
 
 from modulector.models import MirnaSource, MirnaXGene, Mirna, OldRefSeqMapping, GeneSymbolMapping
 
-# TODO: add documentation to all the functions and remove fixed data.
+# TODO: remove fixed data.
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler(sys.stdout))
