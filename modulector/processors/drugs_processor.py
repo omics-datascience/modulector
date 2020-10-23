@@ -3,6 +3,7 @@ import os
 import pathlib
 import sys
 
+import numpy as np
 import pandas as pd
 from django.db import transaction, connection
 
@@ -32,7 +33,7 @@ def process():
 
             mature_mirna = 'hsa-' + mature_mirna.lower()
             fda = (fda == 'approved')
-            if str(mirbase_id) == 'nan':
+            if np.isnan(mirbase_id):
                 mirbase_id = ''
 
             mirna_drug = MirnaDrugs(mature_mirna=mature_mirna, mirbase_id=mirbase_id, small_molecule=small_molecule,

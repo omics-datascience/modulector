@@ -1,8 +1,7 @@
 import re
 
 from django.core.cache import caches
-from django.http import HttpResponse
-from django.template import loader
+from django.shortcuts import render
 from rest_framework import status, generics
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -11,7 +10,6 @@ from rest_framework.views import APIView
 from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrugs
 from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
     MirnaSourceListSerializer, MirbaseMatureMirnaSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer
-# TODO: use '_' for unused params on the left of used params, remove the ones on the right
 from modulector.services import url_service, processor_service
 
 regex = re.compile(r'-\d{1}[a-z]{1}')
@@ -128,6 +126,4 @@ class MirnaDrugsList(generics.ListAPIView):
 
 
 def index(request):
-    template = loader.get_template('index.html')
-    context = dict()
-    return HttpResponse(template.render(context, request))
+    return render(request, 'index.html')
