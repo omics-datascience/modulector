@@ -76,3 +76,19 @@ class MirnaDisease(models.Model):
 
     class Meta:
         db_table = 'modulector_mirnadisease'
+
+
+class MirnaDrugs(models.Model):
+    mature_mirna = models.CharField(max_length=50, blank=False)
+    mirbase_id = models.CharField(max_length=20)
+    small_molecule = models.TextField()
+    fda_approved = models.BooleanField()
+    detection_method = models.CharField(max_length=100)
+    condition = models.TextField(blank=False)
+    pmid = models.DecimalField(max_digits=10, decimal_places=0, null=False)
+    reference = models.TextField(blank=False)
+    support = models.TextField(blank=False)
+    expression_pattern = models.CharField(max_length=30)
+
+    class Meta:
+        db_table = 'modulector_mirnadrugs'

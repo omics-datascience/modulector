@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease
+from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrugs
 
 
 class MirnaColumnsSerializer(serializers.ModelSerializer):
@@ -62,3 +62,10 @@ class MirnaDiseaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = MirnaDisease
         fields = ['category', 'mirna', 'disease', 'pmid', 'description']
+
+
+class MirnaDrugsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MirnaDrugs
+        fields = ['mature_mirna', 'mirbase_id', 'small_molecule', 'fda_approved', 'detection_method', 'condition',
+                  'pmid', 'reference', 'expression_pattern', 'support']
