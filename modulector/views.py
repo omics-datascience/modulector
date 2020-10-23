@@ -122,6 +122,10 @@ class MirnaDrugsList(generics.ListAPIView):
 
     def get_queryset(self):
         mirna = self.request.query_params.get("mirna")
+        mirbase = self.request.query_params.get("mirbase")
+        query_set = MirnaDrugs.objects.all()
         if mirna:
-            return MirnaDrugs.objects.filter(mature_mirna__endswith=mirna)
-        return MirnaDrugs.objects.all()
+            query_set = query_set.filter(mature_mirna__endswith=mirna)
+        if mirbase:
+            query_set = query_set.filter(mirbase_id=mirbase)
+        return query_set
