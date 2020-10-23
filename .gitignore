@@ -143,3 +143,4 @@ src/db.sqlite3
 src/api_service/experiments/venv
 docker-compose.yml
 /secretkey.txt
+/modulector/database_versions/

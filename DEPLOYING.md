@@ -69,15 +69,17 @@ To check the different services' status you can run:
 Where  *\<service's name\>* could be `nginx`, `web` or `db`.
 
 
-## Recreate Database from a Dump
+## Creating Dumps and Restoring from Dumps
 
-In order to restore the database without having to process the information you can do 
-the following:
+<b>In order to create a database dump you can execute the following command:</b>
 
-First decompress the file:
+`sudo docker exec -t modulector_dev_db pg_dump modulector | gzip > modulector.sql.gz`
 
-`gunzip db_dump_version.sql.gz`.
+<em>That command will create a compressed file with the database dump inside.</em>
 
-Then restore the db: 
+<b>Then restore the db:</b> 
 
-`docker exec -i modulector_dev_db psql modulector < db_dump_version.sql `.
+`zcat modulector.sql.gz | sudo docker exec -i modulector_dev_db psql  modulector`
+
+
+<em>That command will restore the database using a compressed dump as source.</em>
