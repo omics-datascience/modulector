@@ -20,11 +20,11 @@ from modulector import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('source', views.MirnaSourceList.as_view()),
-    path('source/create', views.MirnaSourcePostAndList.as_view()),
-    path('mirna', views.MirnaList.as_view()),
+    path('source/', views.MirnaSourceList.as_view()),
+    path('source/create/', views.MirnaSourcePostAndList.as_view()),
+    path('mirna/', views.MirnaList.as_view()),
     path('process/', views.ProcessPost.as_view()),
-    path('mirnaxgen/', views.MirnaXGenList.as_view()),
+    path('mirnaxgene/', views.MirnaXGenList.as_view()),
     path('maturemirna/', views.MirbaseMatureList.as_view()),
     path('links/', views.LinksList.as_view()),
     path('diseases/', views.MirnaDiseaseList.as_view()),
