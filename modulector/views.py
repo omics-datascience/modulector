@@ -9,7 +9,7 @@ from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, M
     MirnaSourceListSerializer, MirbaseMatureMirnaSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer
 from modulector.services import url_service, processor_service
 
-regex = re.compile(r'-\d{1}[a-z]{1}')
+regex = re.compile(r'-\d[a-z]')
 
 
 class MirnaXGenList(generics.ListAPIView):
@@ -30,7 +30,8 @@ class MirnaXGenList(generics.ListAPIView):
 
 
 class MirnaSourcePostAndList(APIView):
-    def post(self, request, *args, **kwargs):
+    @staticmethod
+    def post(request):
         serializer = MirnaSourceSerializer(data=request.data)
         if serializer.is_valid():
             source = serializer.save()
@@ -41,7 +42,8 @@ class MirnaSourcePostAndList(APIView):
 
 
 class ProcessPost(APIView):
-    def post(self, request, *args, **kwargs):
+    @staticmethod
+    def post(self, request):
         processor_service.execute((request.data["source_id"]))
         return Response("data processed", status=status.HTTP_200_OK)
 
@@ -76,7 +78,7 @@ class MirnaList(generics.ListAPIView):
 
 
 class LinksList(APIView):
-    def get(self, request):
+    def get(self):
         mirna = self.request.query_params.get("mirna", None)
         links = url_service.build_urls(mirna)
         return Response(links, status=status.HTTP_200_OK)
