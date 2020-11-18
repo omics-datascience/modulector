@@ -12,11 +12,11 @@ services:
         environment:
             # IMPORTANT: these three params must be the same than POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_DB
             # below in 'web' service respectively
-            POSTGRES_USER: root
-            POSTGRES_PASSWORD: admin
-            POSTGRES_DB: modulector
+            POSTGRES_USER: 'root'
+            POSTGRES_PASSWORD: 'admin'
+            POSTGRES_DB: 'modulector'
         volumes:
-            - postgres_data:/var/lib/postgresql/data/
+            - modulector_postgres_data:/var/lib/postgresql/data/
             - ./config/postgres/postgres.conf:/etc/postgresql/postgresql.conf
 
     # Web-based DB admin interface for MySQL management
@@ -28,4 +28,4 @@ services:
             - 8080:8080
 
 volumes:
-    postgres_data:
+    modulector_postgres_data:

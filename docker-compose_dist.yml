@@ -1,66 +1,64 @@
 version: '3'
 
 services:
-  # PostgreSQL
-  db:
-    image: postgres:12
-    container_name: modulector_db
-    restart: always
-    ports:
-      - 5432:5432
-    command: postgres -c 'config_file=/etc/postgresql/postgresql.conf'
-    environment:
-      # IMPORTANT: these three params must be the same than POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_DB
-      # below in 'web' service respectively
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: modulector
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-      - ./config/postgres/postgres.conf:/etc/postgresql/postgresql.conf
+    # PostgreSQL
+    db:
+        image: postgres:12
+        container_name: modulector_db
+        restart: always
+        command: postgres -c 'config_file=/etc/postgresql/postgresql.conf'
+        environment:
+            # IMPORTANT: these three params must be the same than POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_DB
+            # below in 'web' service respectively
+            POSTGRES_USER: ''
+            POSTGRES_PASSWORD: ''
+            POSTGRES_DB: 'modulector'
+        volumes:
+            - modulector_postgres_data:/var/lib/postgresql/data/
+            - ./config/postgres/postgres.conf:/etc/postgresql/postgresql.conf
 
-  # Django Proxi Server
-  nginx:
-    image: nginx:1.19
-    container_name: modulector_nginx_proxy
-    ports:
-      - 80:8000
-    volumes:
-      - ./:/src
-      - ./config/nginx/conf.d:/etc/nginx/conf.d
-      - ./static:/static
-    depends_on:
-      - web
+    # Django Proxi Server
+    nginx:
+        image: nginx:1.19
+        container_name: modulector_nginx_proxy
+        ports:
+            - 80:8000
+        volumes:
+            - ./:/src
+            - ./config/nginx/conf.d:/etc/nginx/conf.d
+            - ./static:/static
+        depends_on:
+            - web
 
-  # Django Backend Server
-  web:
-    image: omicsdatascience/modulector:1.0-beta
-    container_name: modulector_backend
-    # TODO: add frontend compilation when React code is ready
-    command: bash -c "python3 manage.py generate_secret_key --settings='ModulectorBackend.settings' &&
-      python3 manage.py collectstatic --no-input &&
-      python3 manage.py makemigrations &&
-      python3 manage.py migrate &&
-      uvicorn --host 0.0.0.0 --port 8000 ModulectorBackend.asgi:application
-    volumes:
-      - ./:/src
-      - ./static:/static
-    # Exposes the port to be accessed by Nginx
-    expose:
-      - "8000"
-    depends_on:
-      - db
-    environment:
-      # Django
-      DJANGO_SETTINGS_MODULE: 'ModulectorBackend.settings_prod'
+    # Django Backend Server
+    web:
+        image: omicsdatascience/modulector:1.0-beta
+        container_name: modulector_backend
+        # TODO: add frontend compilation when React code is ready
+        command: bash -c "python3 manage.py generate_secret_key --settings='ModulectorBackend.settings' &&
+            python3 manage.py collectstatic --no-input &&
+            python3 manage.py makemigrations &&
+            python3 manage.py migrate &&
+            uvicorn --host 0.0.0.0 --port 8000 ModulectorBackend.asgi:application
+        volumes:
+            - ./:/src
+            - ./static:/static
+        # Exposes the port to be accessed by Nginx
+        expose:
+            - "8000"
+        depends_on:
+            - db
+        environment:
+            # Django
+            DJANGO_SETTINGS_MODULE: 'ModulectorBackend.settings_prod'
 
-      # PostgreSQL DB connection parameters (MUST match the parameters defined in the "db" service above)
-      POSTGRES_USERNAME: ''
-      POSTGRES_PASSWORD: ''
-      POSTGRES_HOST: 'db'
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: 'modulector'
-      LOAD_DATA: 1
+            # PostgreSQL DB connection parameters (MUST match the parameters defined in the "db" service above)
+            POSTGRES_USERNAME: ''
+            POSTGRES_PASSWORD: ''
+            POSTGRES_HOST: 'db'
+            POSTGRES_PORT: 5432
+            POSTGRES_DB: 'modulector'
+            LOAD_DATA: 1
 
 volumes:
-  postgres_data:
+    modulector_postgres_data:
