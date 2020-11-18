@@ -1,13 +1,10 @@
 import re
-
-from django.core.cache import caches
 from django.shortcuts import render
 from rest_framework import status, generics
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrugs
+from modulector.pagination import StandardResultsSetPagination
 from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
     MirnaSourceListSerializer, MirbaseMatureMirnaSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer
 from modulector.services import url_service, processor_service
@@ -15,34 +12,21 @@ from modulector.services import url_service, processor_service
 regex = re.compile(r'-\d{1}[a-z]{1}')
 
 
-class MirnaXGenList(APIView):
-    display_page_controls = True
+class MirnaXGenList(generics.ListAPIView):
+    serializer_class = MirnaXGenSerializer
+    pagination_class = StandardResultsSetPagination
 
-    def get(self, request):
-        cache = caches['default']
-        gene = self.request.query_params.get("gene", None)
-        mirna = self.request.query_params.get("mirna", None)
+    def get_queryset(self):
+        gene = self.request.query_params.get("gene")
+        mirna = self.request.query_params.get("mirna")
         if mirna is None and gene is None:
-            return Response([], status=status.HTTP_200_OK)
-        mirna_id = Mirna.objects.get(mirna_code=mirna).id
-        if mirna is not None and gene is not None:
-            key = str(mirna_id) + str(gene)
-            result = cache.get(key)
-            if result is None:
-                result = MirnaXGene.objects.filter(mirna=mirna_id, gene=gene)
-                cache.add(key, result)
-            data = Response(MirnaXGenSerializer(result, many=True).data, status=status.HTTP_200_OK)
-        else:
-            key = str(mirna_id)
-            result = cache.get(key)
-            paginator = PageNumberPagination()
-            if result is None:
-                result = MirnaXGene.objects.filter(mirna=mirna_id)
-                cache.add(key, result)
-            result = paginator.paginate_queryset(result, self.request)
-            serializer = MirnaXGenSerializer(result, many=True)
-            data = paginator.get_paginated_response(serializer.data)
-        return data
+            return MirnaXGene.objects.none()
+
+        query = MirnaXGene.objects.filter(mirna__mirna_code=mirna)
+        if gene is not None:
+            query = query.filter(gene=gene)
+
+        return query
 
 
 class MirnaSourcePostAndList(APIView):
