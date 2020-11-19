@@ -32,7 +32,7 @@ def process():
             disease = disease.replace("\"", "")
             description = description.replace("\"", "")
             mirna_disease = MirnaDisease(category=category, mirna=mirna,
-                                         disease=disease, pmid=pmid, description=description)
+                                         disease=disease, pubmed_id=pmid, description=description)
             entities.append(mirna_disease)
         with connection.cursor() as cursor:
             cursor.execute("truncate table modulector_mirnadisease")

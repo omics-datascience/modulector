@@ -50,7 +50,7 @@ def load_test_data(cls):
         gene='GEN_1',
         score=80,
         pubmed_id=None,
-        pubMedUrl=None,
+        pubmed_url=None,
         mirna_source=source
     )
 
@@ -58,7 +58,7 @@ def load_test_data(cls):
         category='CAT',
         mirna='MIRNA',
         disease='DIS',
-        pmid='12312312',
+        pubmed_id='12312312',
         description='this is a description'
     )
 
@@ -69,7 +69,7 @@ def load_test_data(cls):
         fda_approved=True,
         detection_method='detect method',
         condition='condition this',
-        pmid=2312,
+        pubmed_id=2312,
         reference='reference ',
         support='suppport',
         expression_pattern='pattern'

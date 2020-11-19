@@ -1,5 +1,4 @@
 from rest_framework import serializers
-
 from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrugs
 
 
@@ -30,12 +29,12 @@ class MirnaSourceSerializer(serializers.ModelSerializer):
 
 
 class MirnaXGenSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(read_only=True, source='mirna_source.name')
+    source_name = serializers.CharField(read_only=True, source='mirna_source.name')
     mirna = serializers.CharField(read_only=True, source='mirna.mirna_code')
 
     class Meta:
         model = MirnaXGene
-        fields = ['mirna', 'gene', 'score', 'pubmed_id', 'pubMedUrl', 'name']
+        fields = ['id', 'mirna', 'gene', 'score', 'pubmed_id', 'pubmed_url', 'source_name']
 
 
 class MirnaSourceListSerializer(serializers.ModelSerializer):
@@ -61,11 +60,11 @@ class MirbaseMatureMirnaSerializer(serializers.ModelSerializer):
 class MirnaDiseaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = MirnaDisease
-        fields = ['category', 'mirna', 'disease', 'pmid', 'description']
+        fields = ['category', 'mirna', 'disease', 'pubmed_id', 'description']
 
 
 class MirnaDrugsSerializer(serializers.ModelSerializer):
     class Meta:
         model = MirnaDrugs
         fields = ['mature_mirna', 'mirbase_id', 'small_molecule', 'fda_approved', 'detection_method', 'condition',
-                  'pmid', 'reference', 'expression_pattern', 'support']
+                  'pubmed_id', 'reference', 'expression_pattern', 'support']

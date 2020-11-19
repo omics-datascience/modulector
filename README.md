@@ -92,7 +92,7 @@ a compilation of information of different databases
       "gen": "NM_000043",
       "score": "67.1134",
       "pubmed_id": null,
-      "pubMedUrl": null,
+      "pubmed_url": null,
       "name": "mirdb"
   },
 ]

@@ -60,7 +60,7 @@ class MirnaXGene(models.Model):
     gene = models.CharField(max_length=50)
     score = models.DecimalField(max_digits=20, decimal_places=4)
     pubmed_id = models.CharField(max_length=100, null=True)
-    pubMedUrl = models.CharField(max_length=300, null=True)
+    pubmed_url = models.CharField(max_length=300, null=True)
     mirna_source = models.ForeignKey(MirnaSource, on_delete=models.CASCADE)
 
     class Meta:
@@ -71,7 +71,7 @@ class MirnaDisease(models.Model):
     category = models.CharField(max_length=200, blank=False)
     mirna = models.CharField(max_length=50, blank=False)
     disease = models.CharField(max_length=200, blank=False)
-    pmid = models.DecimalField(max_digits=10, decimal_places=0, null=False)
+    pubmed_id = models.DecimalField(max_digits=10, decimal_places=0, null=False)
     description = models.TextField(blank=False)
 
     class Meta:
@@ -85,7 +85,7 @@ class MirnaDrugs(models.Model):
     fda_approved = models.BooleanField()
     detection_method = models.CharField(max_length=100)
     condition = models.TextField(blank=False)
-    pmid = models.DecimalField(max_digits=10, decimal_places=0, null=False)
+    pubmed_id = models.DecimalField(max_digits=10, decimal_places=0, null=False)
     reference = models.TextField(blank=False)
     support = models.TextField(blank=False)
     expression_pattern = models.CharField(max_length=30)

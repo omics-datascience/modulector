@@ -56,8 +56,6 @@ REST_FRAMEWORK = {
     # 'DEFAULT_PERMISSION_CLASSES': (
     #  'rest_framework.permissions.DjangoModelPermissions',
     # )
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 100
 }
 
 ROOT_URLCONF = 'ModulectorBackend.urls'
@@ -90,7 +88,7 @@ DATABASES = {
         'USER': os.getenv('POSTGRES_USERNAME', 'root'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'admin'),
         'HOST': os.getenv('POSTGRES_HOST', '127.0.0.1'),
-        'PORT': os.getenv('POSTGRES_PORT', 5432),
+        'PORT': os.getenv('POSTGRES_PORT', 5433),
         'NAME': os.getenv('POSTGRES_DB', 'modulector')
     }
 }

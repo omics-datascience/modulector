@@ -43,13 +43,14 @@ class MirnaSourcePostAndList(APIView):
 
 class ProcessPost(APIView):
     @staticmethod
-    def post(self, request):
+    def post(request):
         processor_service.execute((request.data["source_id"]))
         return Response("data processed", status=status.HTTP_200_OK)
 
 
 class MirnaSourceList(generics.ListAPIView):
     serializer_class = MirnaSourceListSerializer
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         return MirnaSource.objects.all()
@@ -57,6 +58,7 @@ class MirnaSourceList(generics.ListAPIView):
 
 class MirbaseMatureList(generics.ListAPIView):
     serializer_class = MirbaseMatureMirnaSerializer
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         mirna = self.request.query_params.get("mirna", None)
@@ -68,6 +70,7 @@ class MirbaseMatureList(generics.ListAPIView):
 
 class MirnaList(generics.ListAPIView):
     serializer_class = MirnaSerializer
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         mirna = self.request.query_params.get("mirna", None)
@@ -86,6 +89,7 @@ class LinksList(APIView):
 
 class MirnaDiseaseList(generics.ListAPIView):
     serializer_class = MirnaDiseaseSerializer
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         mirna = self.request.query_params.get("mirna")
@@ -99,6 +103,7 @@ class MirnaDiseaseList(generics.ListAPIView):
 
 class MirnaDrugsList(generics.ListAPIView):
     serializer_class = MirnaDrugsSerializer
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         mirna = self.request.query_params.get("mirna")
