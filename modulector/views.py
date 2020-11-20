@@ -1,6 +1,6 @@
 import re
 from django.shortcuts import render
-from rest_framework import status, generics
+from rest_framework import status, generics, filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrugs
@@ -15,6 +15,8 @@ regex = re.compile(r'-\d[a-z]')
 class MirnaXGenList(generics.ListAPIView):
     serializer_class = MirnaXGenSerializer
     pagination_class = StandardResultsSetPagination
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['gene', 'score', 'mirna_source.name']
 
     def get_queryset(self):
         gene = self.request.query_params.get("gene")
@@ -90,6 +92,8 @@ class LinksList(APIView):
 class MirnaDiseaseList(generics.ListAPIView):
     serializer_class = MirnaDiseaseSerializer
     pagination_class = StandardResultsSetPagination
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['disease']
 
     def get_queryset(self):
         mirna = self.request.query_params.get("mirna")
@@ -104,6 +108,9 @@ class MirnaDiseaseList(generics.ListAPIView):
 class MirnaDrugsList(generics.ListAPIView):
     serializer_class = MirnaDrugsSerializer
     pagination_class = StandardResultsSetPagination
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['condition', 'detection_method', 'small_molecule', 'expression_pattern', 'reference',
+                       'support']
 
     def get_queryset(self):
         mirna = self.request.query_params.get("mirna")

@@ -4,7 +4,7 @@ a compilation of information of different databases
 # Table of Contents
 * GET
     * [Mirnas](#mirnas)
-    * [Mirna and Gene](#mirna-x-gen)
+    * [Mirna and Gene](#mirna-x-gene)
     * [Mature Mirna](#mature-mirna)
     * [Links](#links)
     * [Diseases](#diseases)
@@ -57,7 +57,7 @@ a compilation of information of different databases
 ----
 ## Mirna x Gen
 ----
-    Returns the information related to the interaction of a gen and a mirna,
+    Returns the information related to the interaction of a gene and a mirna,
     including related publications and the score related to the interaction
 * **URL**
 
@@ -73,7 +73,7 @@ a compilation of information of different databases
 
      `mirna=[string]`
 
-      `gen=[string]`
+      `gene=[string]`
    
     **Non Required:**
  
@@ -89,7 +89,7 @@ a compilation of information of different databases
 [
   {
       "mirna": "hsa-let-7a-2-3p",
-      "gen": "NM_000043",
+      "gene": "NM_000043",
       "score": "67.1134",
       "pubmed_id": null,
       "pubmed_url": null,
@@ -349,7 +349,7 @@ a compilation of information of different databases
             {
                 "id": 36,
                 "position": 2,
-                "column_name": "gen",
+                "column_name": "gene",
                 "field_to_map": "GEN",
                 "mirna_source": 20
             },

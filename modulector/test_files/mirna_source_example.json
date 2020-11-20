@@ -16,7 +16,7 @@
     },
     {
       "position": 2,
-      "column_name": "gen",
+      "column_name": "gene",
       "field_to_map": "GEN"
     },
     {
