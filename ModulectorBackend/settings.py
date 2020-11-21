@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'modulector.apps.ModulectorConfig',
     'rest_framework',
+    'django_filters',
     'django_generate_secret_key'
 ]
 

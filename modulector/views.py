@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrugs
 from modulector.pagination import StandardResultsSetPagination
+from django_filters.rest_framework import DjangoFilterBackend
 from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
     MirnaSourceListSerializer, MirbaseMatureMirnaSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer
 from modulector.services import url_service, processor_service
@@ -15,20 +16,17 @@ regex = re.compile(r'-\d[a-z]')
 class MirnaXGenList(generics.ListAPIView):
     serializer_class = MirnaXGenSerializer
     pagination_class = StandardResultsSetPagination
-    filter_backends = [filters.OrderingFilter]
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter, DjangoFilterBackend]
     ordering_fields = ['gene', 'score', 'mirna_source.name']
+    search_fields = ['gene']
+    filterset_fields = ['gene']
 
     def get_queryset(self):
-        gene = self.request.query_params.get("gene")
         mirna = self.request.query_params.get("mirna")
-        if mirna is None and gene is None:
+        if mirna is None:
             return MirnaXGene.objects.none()
 
-        query = MirnaXGene.objects.filter(mirna__mirna_code=mirna)
-        if gene is not None:
-            query = query.filter(gene=gene)
-
-        return query
+        return MirnaXGene.objects.filter(mirna__mirna_code=mirna)
 
 
 class MirnaSourcePostAndList(APIView):
@@ -92,8 +90,9 @@ class LinksList(APIView):
 class MirnaDiseaseList(generics.ListAPIView):
     serializer_class = MirnaDiseaseSerializer
     pagination_class = StandardResultsSetPagination
-    filter_backends = [filters.OrderingFilter]
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
     ordering_fields = ['disease']
+    search_fields = ['disease']
 
     def get_queryset(self):
         mirna = self.request.query_params.get("mirna")
@@ -108,9 +107,11 @@ class MirnaDiseaseList(generics.ListAPIView):
 class MirnaDrugsList(generics.ListAPIView):
     serializer_class = MirnaDrugsSerializer
     pagination_class = StandardResultsSetPagination
-    filter_backends = [filters.OrderingFilter]
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter, DjangoFilterBackend]
     ordering_fields = ['condition', 'detection_method', 'small_molecule', 'expression_pattern', 'reference',
                        'support']
+    search_fields = ['condition', 'small_molecule', 'expression_pattern']
+    filterset_fields = ['fda_approved']
 
     def get_queryset(self):
         mirna = self.request.query_params.get("mirna")
