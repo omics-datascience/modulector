@@ -39,7 +39,7 @@ services:
             python3 manage.py collectstatic --no-input &&
             python3 manage.py makemigrations &&
             python3 manage.py migrate &&
-            uvicorn --host 0.0.0.0 --port 8000 ModulectorBackend.asgi:application
+            uvicorn --host 0.0.0.0 --port 8000 ModulectorBackend.asgi:application"
         volumes:
             - ./:/src
             - ./static:/static
