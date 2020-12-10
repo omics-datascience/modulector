@@ -75,9 +75,9 @@ Where  *\<service's name\>* could be `nginx`, `web` or `db`.
 
 In order to create a database dump you can execute the following command:
 
-`sudo docker exec -t [name of DB container] pg_dump [db name] | gzip > modulector.sql.gz`
+`sudo docker exec -t [name of DB container] pg_dump [db name] --data-only | gzip > modulector.sql.gz`
 
-That command will create a compressed file with the database dump inside
+That command will create a compressed file with the database dump inside. **Note** that `--data-only` flag is present as DB structure is managed by Django Migrations so they are not necessary. If you want to drop data before importing later you maybe want to add `--clean` flag as [official docs](https://www.postgresql.org/docs/12/app-pgdump.html) indicates.
 
 
 ### Import
