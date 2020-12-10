@@ -75,7 +75,7 @@ Where  *\<service's name\>* could be `nginx`, `web` or `db`.
 
 In order to create a database dump you can execute the following command:
 
-`sudo docker exec -t modulector_dev_db pg_dump modulector | gzip > modulector.sql.gz`
+`sudo docker exec -t [name of DB container] pg_dump [db name] | gzip > modulector.sql.gz`
 
 That command will create a compressed file with the database dump inside
 
@@ -85,6 +85,6 @@ That command will create a compressed file with the database dump inside
 1. Download `.sql.gz` from [Modulector releases pages](https://github.com/multiomics-datascience/modulector-backend/releases) or use your own export file
 1. Restore the db running:
 
-`zcat modulector.sql.gz | sudo docker exec -i modulector_dev_db psql  modulector`
+`zcat modulector.sql.gz | sudo docker exec -i [name of DB container] psql [db name]`
 
 That command will restore the database using a compressed dump as source
