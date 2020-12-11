@@ -24,7 +24,7 @@ SECRET_KEY = 'm)95!xjla3k1h)1#ya_rp^7#7^l_laaa6x$ik2_vx#gc0ll=e('
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -82,7 +82,6 @@ WSGI_APPLICATION = 'ModulectorBackend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-DB_CONNECTION_STRING = "mysql+mysqldb://root:admin@localhost:3306/modulector"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',

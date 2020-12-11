@@ -4,8 +4,6 @@ services:
     # PostgreSQL
     db:
         image: postgres:12
-        container_name: modulector_db
-        restart: always
         command: postgres -c 'config_file=/etc/postgresql/postgresql.conf'
         environment:
             # IMPORTANT: these three params must be the same than POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_DB
@@ -32,20 +30,16 @@ services:
 
     # Django Backend Server
     web:
-        image: omicsdatascience/modulector:1.0-beta
-        container_name: modulector_backend
+        image: omicsdatascience/modulector:1.1-beta
         # TODO: add frontend compilation when React code is ready
         command: bash -c "python3 manage.py generate_secret_key --settings='ModulectorBackend.settings' &&
             python3 manage.py collectstatic --no-input &&
             python3 manage.py makemigrations &&
             python3 manage.py migrate &&
-            uvicorn --host 0.0.0.0 --port 8000 ModulectorBackend.asgi:application"
+            daphne -b 0.0.0.0 -p 8000 ModulectorBackend.asgi:application"
         volumes:
             - ./:/src
             - ./static:/static
-        # Exposes the port to be accessed by Nginx
-        expose:
-            - "8000"
         depends_on:
             - db
         environment:
@@ -62,3 +56,5 @@ services:
 
 volumes:
     modulector_postgres_data:
+        external:
+            name: 'modulector-backend_modulector_postgres_data'

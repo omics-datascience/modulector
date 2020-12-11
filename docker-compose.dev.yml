@@ -29,3 +29,5 @@ services:
 
 volumes:
     modulector_postgres_data:
+        external:
+            name: 'modulector-backend_modulector_postgres_data'
