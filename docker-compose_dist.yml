@@ -18,7 +18,6 @@ services:
     # Django Proxi Server
     nginx:
         image: nginx:1.19
-        container_name: modulector_nginx_proxy
         ports:
             - 80:8000
         volumes:
