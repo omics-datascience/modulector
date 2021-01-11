@@ -8,6 +8,7 @@ import pandas as pandas
 from django.db import connection, transaction
 from django.utils.timezone import make_aware
 
+from modulector.mappers import pubmed_mapper
 from modulector.models import MirnaSource, MirnaXGene, Mirna, OldRefSeqMapping, GeneSymbolMapping
 
 # TODO: remove fixed data.
@@ -36,6 +37,8 @@ def process(mirna_source: MirnaSource):
                            delimiter=mirna_source.file_separator, header=None, names=series_names)
 
     logger.info("grouping data")
+    pubmed_dict = pubmed_mapper.execute()
+
     filtered_data = data[data["MIRNA"].str.contains("hsa")]
     grouped: pandas.DataFrame = filtered_data.groupby('MIRNA').aggregate(lambda tdf: tdf.unique().tolist())
 
@@ -52,7 +55,7 @@ def process(mirna_source: MirnaSource):
     logger.info("inserting data")
     # insertion templates
     table_name = MirnaXGene._meta.db_table  # Obtenemos de manera dinamica el nombre de la tabla
-    insert_query_prefix = f'INSERT INTO {table_name} (gene, score, mirna_source_id, mirna_id) VALUES '
+    insert_query_prefix = f'INSERT INTO {table_name} (gene, score, mirna_source_id, mirna_id, pubmed_id, pubmed_url) VALUES '
 
     with transaction.atomic():
         logger.info("inserting data")
@@ -64,12 +67,17 @@ def process(mirna_source: MirnaSource):
             insert_statements: List[str] = []
 
             # Generating tuples for insertion
-            insert_template = "('{}',{}," + str(mirna_source.id) + "," + str(mirna_id) + ")"
+            insert_template = "('{}',{}," + str(mirna_source.id) + "," + str(mirna_id) + ", {}, '{}')"
             for gene, score in zip(genes_and_scores['GEN'], genes_and_scores['SCORE']):
+                pubmed = 'null'
+                pubmed_url = 'null'
+                if mirna_code in pubmed_dict.keys():
+                    pubmed = pubmed_dict[mirna_code]
+                    pubmed_url = pubmed_mapper.build_url(pubmed)
                 if gene in ref_seq_map:
                     gene = ref_seq_map[gene]
                 if gene in symbol_map:
-                    insert_statements.append(insert_template.format(symbol_map[gene], score))
+                    insert_statements.append(insert_template.format(symbol_map[gene], score, pubmed, pubmed_url))
 
             # Grouping and inserting data
             insert_query = insert_query_prefix + ','.join(insert_statements)
@@ -77,7 +85,6 @@ def process(mirna_source: MirnaSource):
                 continue
             with connection.cursor() as cursor:
                 cursor.execute(insert_query)
-
         logger.info("insertion finished - synchronizing source")
         mirna_source.synchronization_date = make_aware(mirna_source.synchronization_date.now())
         mirna_source.save()
