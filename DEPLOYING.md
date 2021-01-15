@@ -75,9 +75,9 @@ Where  *\<service's name\>* could be `nginx`, `web` or `db`.
 
 In order to create a database dump you can execute the following command:
 
-`sudo docker exec -t [name of DB container] pg_dump [db name] --data-only | gzip > modulector.sql.gz`
+`docker exec -t [name of DB container] pg_dump [db name] --data-only | gzip > modulector.sql.gz`
 
-That command will create a compressed file with the database dump inside. **Note** that `--data-only` flag is present as DB structure is managed by Django Migrations so they are not necessary. If you want to drop data before importing later you maybe want to add `--clean` flag as [official docs](https://www.postgresql.org/docs/12/app-pgdump.html) indicates.
+That command will create a compressed file with the database dump inside. **Note** that `--data-only` flag is present as DB structure is managed by Django Migrations so they are not necessary.
 
 
 ### Import
@@ -85,6 +85,6 @@ That command will create a compressed file with the database dump inside. **Note
 1. Download `.sql.gz` from [Modulector releases pages](https://github.com/multiomics-datascience/modulector-backend/releases) or use your own export file
 1. Restore the db running:
 
-`zcat modulector.sql.gz | sudo docker exec -i [name of DB container] psql [db name]`
+`zcat modulector.sql.gz | docker exec -i [name of DB container] psql [db name]`
 
 That command will restore the database using a compressed dump as source
