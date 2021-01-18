@@ -1,3 +1,5 @@
+from typing import List
+
 from django.db import models
 
 
@@ -59,12 +61,21 @@ class MirnaXGene(models.Model):
     mirna = models.ForeignKey(Mirna, on_delete=models.CASCADE)
     gene = models.CharField(max_length=50)
     score = models.DecimalField(max_digits=20, decimal_places=4)
-    pubmed_id = models.CharField(max_length=100, null=True)
-    pubmed_url = models.CharField(max_length=300, null=True)
     mirna_source = models.ForeignKey(MirnaSource, on_delete=models.CASCADE)
+
+    @property
+    def pubmed(self) -> List:
+        return Pubmed.objects.filter(mirna_code=self.mirna.mirna_code, gene=self.gene)
 
     class Meta:
         db_table = 'modulector_mirnaxgen'
+
+
+class Pubmed(models.Model):
+    pubmed_id = models.CharField(max_length=100, null=True)
+    pubmed_url = models.CharField(max_length=300, null=True)
+    gene = models.CharField(max_length=50, null=True)
+    mirna_code = models.CharField(max_length=40, null=True)
 
 
 class MirnaDisease(models.Model):
