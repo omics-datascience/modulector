@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrugs
+
+from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrugs, \
+    Pubmed
 
 
 class MirnaColumnsSerializer(serializers.ModelSerializer):
@@ -23,18 +25,25 @@ class MirnaSourceSerializer(serializers.ModelSerializer):
         for column in columns:
             column['mirna_source_id'] = source.id
         self.columns = column_serializer.create(columns)
-        for column in self.columns:
+        for column in self.columnsCharField:
             source.mirnacolumns.add(column)
         return source
+
+
+class PubmedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Pubmed
+        fields = ['pubmed_id', 'pubmed_url']
 
 
 class MirnaXGenSerializer(serializers.ModelSerializer):
     source_name = serializers.CharField(read_only=True, source='mirna_source.name')
     mirna = serializers.CharField(read_only=True, source='mirna.mirna_code')
+    pubmed = PubmedSerializer(read_only=True, many=True)
 
     class Meta:
         model = MirnaXGene
-        fields = ['id', 'mirna', 'gene', 'score', 'pubmed_id', 'pubmed_url', 'source_name']
+        fields = ['id', 'mirna', 'gene', 'score', 'source_name', 'pubmed']
 
 
 class MirnaSourceListSerializer(serializers.ModelSerializer):

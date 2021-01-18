@@ -1,27 +1,27 @@
 {
-  "name": "mirdb",
-  "site_url": "http://mirdb.org/index.html",
+  "name": "I2D",
+  "site_url": "http://ophid.utoronto.ca/",
   "min_score": 70,
   "max_score": 100,
-  "score_interpretation": "score interpretation test",
-  "description": "test de description",
+  "score_interpretation": "score taken from database",
+  "description": "Import from the I2D database",
   "synchronization_date": "2020-02-11T00:00:00.000Z",
-  "file_type": "csv",
+  "file_type": "txt",
   "file_separator": "\t",
   "columns": [
     {
+      "position": 0,
+      "column_name": "GENE",
+      "field_to_map": "GENE"
+    },
+    {
       "position": 1,
-      "column_name": "mirna_id",
+      "column_name": "MIRNA",
       "field_to_map": "MIRNA"
     },
     {
-      "position": 2,
-      "column_name": "gene",
-      "field_to_map": "GEN"
-    },
-    {
       "position": 3,
-      "column_name": "score",
+      "column_name": "SCORE",
       "field_to_map": "SCORE"
     }
   ]
