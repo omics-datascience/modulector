@@ -78,13 +78,19 @@ class MirnaList(generics.ListAPIView):
         mirna = self.request.query_params.get("mirna", None)
         result = Mirna.objects.all()
         if mirna:
-            result = result.filter(mirna_code=mirna)
+            if mirna.startswith('MI'):
+                mirbase_mirna_record = MirbaseIdMirna.objects.filter(mirbase_id=mirna)
+                if mirbase_mirna_record:
+                    mirna = [record[2] for record in mirbase_mirna_record.values_list()]
+                result = result.filter(mirna_code__in=mirna)
+            else:
+                result = result.filter(mirna_code=mirna)
         return result
 
 
 class LinksList(APIView):
-    def get(self):
-        mirna = self.request.query_params.get("mirna", None)
+    def get(self, request):
+        mirna = request.query_params.get("mirna", None)
         links = url_service.build_urls(mirna)
         return Response(links, status=status.HTTP_200_OK)
 

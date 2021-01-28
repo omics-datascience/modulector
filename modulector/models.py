@@ -27,8 +27,8 @@ class Mirna(models.Model):
     mirna_sequence = models.CharField(max_length=40, null=True)
 
     @property
-    def pubmed(self) -> List:
-        return Pubmed.objects.filter(mirna_code=self.mirna_code)
+    def mirbase_id(self) -> List:
+        return MirbaseIdMirna.objects.filter(mature_mirna__contains=self.mirna_code)[0]
 
 
 class OldRefSeqMapping(models.Model):
