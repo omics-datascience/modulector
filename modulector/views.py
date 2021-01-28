@@ -27,8 +27,14 @@ class MirnaXGenList(generics.ListAPIView):
         mirna = self.request.query_params.get("mirna")
         if mirna is None:
             return MirnaXGene.objects.none()
-
-        return MirnaXGene.objects.filter(mirna__mirna_code=mirna)
+        else:
+            if mirna.startswith('MI'):
+                mirbase_mirna_record = MirbaseIdMirna.objects.filter(mirbase_id=mirna)
+                if mirbase_mirna_record:
+                    mirna = [record[2] for record in mirbase_mirna_record.values_list()]
+                return MirnaXGene.objects.filter(mirna__mirna_code__in=mirna)
+            else:
+                return MirnaXGene.objects.filter(mirna__mirna_code=mirna)
 
 
 class MirnaSourcePostAndList(APIView):
