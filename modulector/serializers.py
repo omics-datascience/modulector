@@ -39,11 +39,12 @@ class PubmedSerializer(serializers.ModelSerializer):
 class MirnaXGenSerializer(serializers.ModelSerializer):
     source_name = serializers.CharField(read_only=True, source='mirna_source.name')
     mirna = serializers.CharField(read_only=True, source='mirna.mirna_code')
+    sequence = serializers.CharField(read_only=True, source='mirna.mirna_sequence')
     pubmed = PubmedSerializer(read_only=True, many=True)
 
     class Meta:
         model = MirnaXGene
-        fields = ['id', 'mirna', 'gene', 'score', 'source_name', 'pubmed']
+        fields = ['id', 'mirna', 'sequence', 'gene', 'score', 'source_name', 'pubmed']
 
 
 class MirnaSourceListSerializer(serializers.ModelSerializer):
@@ -55,9 +56,11 @@ class MirnaSourceListSerializer(serializers.ModelSerializer):
 
 
 class MirnaSerializer(serializers.ModelSerializer):
+    pubmed = PubmedSerializer(read_only=True, many=True)
+
     class Meta:
         model = Mirna
-        fields = ['mirna_code']
+        fields = ['mirna_code', 'mirna_sequence', 'pubmed']
 
 
 class MirbaseMatureMirnaSerializer(serializers.ModelSerializer):
@@ -67,13 +70,19 @@ class MirbaseMatureMirnaSerializer(serializers.ModelSerializer):
 
 
 class MirnaDiseaseSerializer(serializers.ModelSerializer):
+    matching_mirnas = MirnaSerializer(read_only=True, many=True, source='mirna_object', allow_null=True)
+
     class Meta:
         model = MirnaDisease
-        fields = ['id', 'category', 'mirna', 'disease', 'pubmed_id', 'description']
+        fields = ['id', 'category', 'mirna', 'matching_mirnas', 'disease', 'pubmed_id', 'description']
 
 
 class MirnaDrugsSerializer(serializers.ModelSerializer):
+    matching_mirnas = MirnaSerializer(read_only=True, many=True, source='mirna_object', allow_null=True)
+
     class Meta:
         model = MirnaDrugs
-        fields = ['id', 'mature_mirna', 'mirbase_id', 'small_molecule', 'fda_approved', 'detection_method', 'condition',
+        fields = ['id', 'mature_mirna', 'matching_mirnas',
+                  'mirbase_id', 'small_molecule', 'fda_approved',
+                  'detection_method', 'condition',
                   'pubmed_id', 'reference', 'expression_pattern', 'support']

@@ -1,11 +1,13 @@
 import re
+
 from django.shortcuts import render
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, generics, filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
 from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrugs
 from modulector.pagination import StandardResultsSetPagination
-from django_filters.rest_framework import DjangoFilterBackend
 from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
     MirnaSourceListSerializer, MirbaseMatureMirnaSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer
 from modulector.services import url_service, processor_service
@@ -99,8 +101,9 @@ class MirnaDiseaseList(generics.ListAPIView):
         result = MirnaDisease.objects.all()
         if mirna:
             mirna = mirna.lower()
-            mirna = re.sub(regex, "", mirna)
-            result = result.filter(mirna__startswith=mirna)
+            if mirna.count('-') == 3:
+                mirna = re.sub(regex, "", mirna)
+            result = result.filter(mirna__contains=mirna)
         return result
 
 
@@ -118,7 +121,7 @@ class MirnaDrugsList(generics.ListAPIView):
         mirbase = self.request.query_params.get("mirbase")
         query_set = MirnaDrugs.objects.all()
         if mirna:
-            query_set = query_set.filter(mature_mirna__endswith=mirna)
+            query_set = query_set.filter(mature_mirna__contains=mirna)
         if mirbase:
             query_set = query_set.filter(mirbase_id=mirbase)
         return query_set
