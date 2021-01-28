@@ -24,6 +24,11 @@ class UrlTemplate(models.Model):
 
 class Mirna(models.Model):
     mirna_code = models.CharField(max_length=40, unique=True)
+    mirna_sequence = models.CharField(max_length=40, null=True)
+
+    @property
+    def mirbase_id(self) -> List:
+        return MirbaseIdMirna.objects.filter(mature_mirna__contains=self.mirna_code)[0]
 
 
 class OldRefSeqMapping(models.Model):
@@ -85,6 +90,10 @@ class MirnaDisease(models.Model):
     pubmed_id = models.DecimalField(max_digits=10, decimal_places=0, null=False)
     description = models.TextField(blank=False)
 
+    @property
+    def mirna_object(self) -> List:
+        return Mirna.objects.filter(mirna_code__contains=self.mirna)
+
     class Meta:
         db_table = 'modulector_mirnadisease'
 
@@ -100,6 +109,10 @@ class MirnaDrugs(models.Model):
     reference = models.TextField(blank=False)
     support = models.TextField(blank=False)
     expression_pattern = models.CharField(max_length=30)
+
+    @property
+    def mirna_object(self) -> List:
+        return Mirna.objects.filter(mirna_code__contains=self.mature_mirna)
 
     class Meta:
         db_table = 'modulector_mirnadrugs'
