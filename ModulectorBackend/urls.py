@@ -26,7 +26,6 @@ urlpatterns = [
     path('process/', views.ProcessPost.as_view()),
     path('mirnaxgene/', views.MirnaXGenList.as_view()),
     path('maturemirna/', views.MirbaseMatureList.as_view()),
-    path('links/', views.LinksList.as_view()),
     path('diseases/', views.MirnaDiseaseList.as_view()),
     path('drugs/', views.MirnaDrugsList.as_view()),
     path('', views.index)

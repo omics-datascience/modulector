@@ -15,6 +15,12 @@ from modulector.services import url_service, processor_service
 regex = re.compile(r'-\d[a-z]')
 
 
+def get_mirna_from_mirbase(mirbase):
+    mirbase_mirna_record = MirbaseIdMirna.objects.filter(mirbase_accession_id=mirbase)
+    if mirbase_mirna_record:
+        mirna = [record[2] for record in mirbase_mirna_record.values_list()]
+        return mirna
+
 class MirnaXGenList(generics.ListAPIView):
     serializer_class = MirnaXGenSerializer
     pagination_class = StandardResultsSetPagination
@@ -29,9 +35,7 @@ class MirnaXGenList(generics.ListAPIView):
             return MirnaXGene.objects.none()
         else:
             if mirna.startswith('MI'):
-                mirbase_mirna_record = MirbaseIdMirna.objects.filter(mirbase_id=mirna)
-                if mirbase_mirna_record:
-                    mirna = [record[2] for record in mirbase_mirna_record.values_list()]
+                mirna = get_mirna_from_mirbase(mirna)
                 return MirnaXGene.objects.filter(mirna__mirna_code__in=mirna)
             else:
                 return MirnaXGene.objects.filter(mirna__mirna_code=mirna)
@@ -85,20 +89,13 @@ class MirnaList(generics.ListAPIView):
         result = Mirna.objects.all()
         if mirna:
             if mirna.startswith('MI'):
-                mirbase_mirna_record = MirbaseIdMirna.objects.filter(mirbase_id=mirna)
+                mirbase_mirna_record = MirbaseIdMirna.objects.filter(mirbase_accession_id=mirna)
                 if mirbase_mirna_record:
                     mirna = [record[2] for record in mirbase_mirna_record.values_list()]
                 result = result.filter(mirna_code__in=mirna)
             else:
                 result = result.filter(mirna_code=mirna)
         return result
-
-
-class LinksList(APIView):
-    def get(self, request):
-        mirna = request.query_params.get("mirna", None)
-        links = url_service.build_urls(mirna)
-        return Response(links, status=status.HTTP_200_OK)
 
 
 class MirnaDiseaseList(generics.ListAPIView):
@@ -112,10 +109,14 @@ class MirnaDiseaseList(generics.ListAPIView):
         mirna = self.request.query_params.get("mirna")
         result = MirnaDisease.objects.all()
         if mirna:
-            mirna = mirna.lower()
-            if mirna.count('-') == 3:
-                mirna = re.sub(regex, "", mirna)
-            result = result.filter(mirna__contains=mirna)
+            if mirna.startswith('MI'):
+                mirna = get_mirna_from_mirbase(mirna)
+                result = result.filter(mirna__in=mirna)
+            else:
+                mirna = mirna.lower()
+                if mirna.count('-') == 3:
+                    mirna = re.sub(regex, "", mirna)
+                result = result.filter(mirna__contains=mirna)
         return result
 
 
@@ -130,12 +131,13 @@ class MirnaDrugsList(generics.ListAPIView):
 
     def get_queryset(self):
         mirna = self.request.query_params.get("mirna")
-        mirbase = self.request.query_params.get("mirbase")
         query_set = MirnaDrugs.objects.all()
         if mirna:
+            if mirna.startswith('MI'):
+                mirna = get_mirna_from_mirbase(mirna)
+                query_set = query_set.filter(mature_mirna__in=mirna)
+
             query_set = query_set.filter(mature_mirna__contains=mirna)
-        if mirbase:
-            query_set = query_set.filter(mirbase_id=mirbase)
         return query_set
 
 
