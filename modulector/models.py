@@ -13,7 +13,7 @@ class DatasetSeparator(models.TextChoices):
 
 
 class MirbaseIdMirna(models.Model):
-    mirbase_id = models.CharField(max_length=20)
+    mirbase_accession_id = models.CharField(max_length=20)
     mature_mirna = models.CharField(max_length=30)
 
 
@@ -27,8 +27,9 @@ class Mirna(models.Model):
     mirna_sequence = models.CharField(max_length=40, null=True)
 
     @property
-    def mirbase_id(self) -> List:
+    def mirbase_accession_id(self) -> List:
         return MirbaseIdMirna.objects.filter(mature_mirna__contains=self.mirna_code)[0]
+
 
 
 class OldRefSeqMapping(models.Model):
@@ -100,7 +101,7 @@ class MirnaDisease(models.Model):
 
 class MirnaDrugs(models.Model):
     mature_mirna = models.CharField(max_length=50, blank=False)
-    mirbase_id = models.CharField(max_length=20)
+    mirbase_accession_id = models.CharField(max_length=20)
     small_molecule = models.TextField()
     fda_approved = models.BooleanField()
     detection_method = models.CharField(max_length=100)

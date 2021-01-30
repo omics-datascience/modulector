@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrugs, \
     Pubmed
+from modulector.services import url_service
 
 
 class MirnaColumnsSerializer(serializers.ModelSerializer):
@@ -40,15 +41,15 @@ class MirnaXGenSerializer(serializers.ModelSerializer):
     source_name = serializers.CharField(read_only=True, source='mirna_source.name')
     mirna = serializers.CharField(read_only=True, source='mirna.mirna_code')
     sequence = serializers.CharField(read_only=True, source='mirna.mirna_sequence')
-    mirbase_id = serializers.SerializerMethodField()
+    mirbase_accession_id = serializers.SerializerMethodField()
     pubmed = PubmedSerializer(read_only=True, many=True)
 
     class Meta:
         model = MirnaXGene
-        fields = ['id', 'mirna', 'sequence', 'mirbase_id', 'gene', 'score', 'source_name', 'pubmed']
+        fields = ['id', 'mirna', 'sequence', 'mirbase_accession_id', 'gene', 'score', 'source_name', 'pubmed']
 
-    def get_mirbase_id(self, mirnaxgene):
-        return mirnaxgene.mirna.mirbase_id.mirbase_id
+    def get_mirbase_accession_id(self, mirnaxgene):
+        return mirnaxgene.mirna.mirbase_accession_id.mirbase_accession_id
 
 
 class MirnaSourceListSerializer(serializers.ModelSerializer):
@@ -62,15 +63,19 @@ class MirnaSourceListSerializer(serializers.ModelSerializer):
 class MirbaseMatureMirnaSerializer(serializers.ModelSerializer):
     class Meta:
         model = MirbaseIdMirna
-        fields = ['mirbase_id', 'mature_mirna']
+        fields = ['mirbase_accession_id', 'mature_mirna']
 
 
 class MirnaSerializer(serializers.ModelSerializer):
-    mirbase = serializers.CharField(read_only=True, source='mirbase_id.mirbase_id')
+    mirbase_accession_id = serializers.CharField(read_only=True, source='mirbase_accession_id.mirbase_accession_id')
+    links = serializers.SerializerMethodField()
 
     class Meta:
         model = Mirna
-        fields = ['mirna_code', 'mirna_sequence', 'mirbase']
+        fields = ['mirna_code', 'mirna_sequence', 'mirbase_accession_id', 'links']
+
+    def get_links(self, mirna):
+        return url_service.build_urls(mirna_id=mirna.mirna_code)
 
 
 class MirnaDiseaseSerializer(serializers.ModelSerializer):
@@ -87,6 +92,6 @@ class MirnaDrugsSerializer(serializers.ModelSerializer):
     class Meta:
         model = MirnaDrugs
         fields = ['id', 'mature_mirna', 'matching_mirnas',
-                  'mirbase_id', 'small_molecule', 'fda_approved',
+                  'mirbase_accession_id', 'small_molecule', 'fda_approved',
                   'detection_method', 'condition',
                   'pubmed_id', 'reference', 'expression_pattern', 'support']

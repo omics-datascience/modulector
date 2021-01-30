@@ -124,7 +124,7 @@ a compilation of information of different databases
   *  **Content:** 
 ```JSON 
 {
-  "mirbase_id": "MI0000060",
+  "mirbase_accession_id": "MI0000060",
   "mature_mirna": "hsa-let-7a-1"
 }
 ```
@@ -243,7 +243,7 @@ a compilation of information of different databases
    
     **Non Required:**
     `mirna=[string]`
-    `mirbase=[string]`
+    `mirbase_accession_id=[string]`
 
 
 * **Success Response:**
@@ -255,7 +255,7 @@ a compilation of information of different databases
 [
   {
       "mature_mirna": "hsa-mir-15a",
-      "mirbase_id": "MIMAT0000068",
+      "mirbase_accession_id": "MIMAT0000068",
       "small_molecule": "Calcitriol",
       "fda_approved": true,
       "detection_method": "Quantitative real-time PCR",
@@ -267,7 +267,7 @@ a compilation of information of different databases
   },
   {
       "mature_mirna": "hsa-mir-15a",
-      "mirbase_id": "MIMAT0000068",
+      "mirbase_accession_id": "MIMAT0000068",
       "small_molecule": "Benzo(a)pyrene",
       "fda_approved": false,
       "detection_method": "Microarray",
@@ -279,12 +279,12 @@ a compilation of information of different databases
   }
 ]
 ```
-*  **Content filtered by mirbase:**
+*  **Content filtered by mirbase_accession_id:**
 ```JSON 
 [
   {
       "mature_mirna": "hsa-mir-15a",
-      "mirbase_id": "MIMAT0000068",
+      "mirbase_accession_id": "MIMAT0000068",
       "small_molecule": "Calcitriol",
       "fda_approved": true,
       "detection_method": "Quantitative real-time PCR",
@@ -296,7 +296,7 @@ a compilation of information of different databases
   },
   {
       "mature_mirna": "hsa-mir-15a",
-      "mirbase_id": "MIMAT0000068",
+      "mirbase_accession_id": "MIMAT0000068",
       "small_molecule": "Benzo(a)pyrene",
       "fda_approved": false,
       "detection_method": "Microarray",

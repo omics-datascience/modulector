@@ -25,15 +25,15 @@ def process():
     with transaction.atomic():
         logger.info("inserting data")
         for index, row in data.iterrows():
-            mature_mirna, mirbase_id, small_molecule, fda, detection_method, condition, pmid, \
+            mature_mirna, mirbase_accession_id, small_molecule, fda, detection_method, condition, pmid, \
             reference, suppport, expression_pattern = row
 
             mature_mirna = 'hsa-' + mature_mirna.lower()
             fda = (fda == 'approved')
-            if pd.isna(mirbase_id):
-                mirbase_id = ''
+            if pd.isna(mirbase_accession_id):
+                mirbase_accession_id = ''
 
-            mirna_drug = MirnaDrugs(mature_mirna=mature_mirna, mirbase_id=mirbase_id, small_molecule=small_molecule,
+            mirna_drug = MirnaDrugs(mature_mirna=mature_mirna, mirbase_accession_id=mirbase_accession_id, small_molecule=small_molecule,
                                     fda_approved=fda, detection_method=detection_method, condition=condition,
                                     pubmed_id=pmid,
                                     reference=reference, support=suppport, expression_pattern=expression_pattern)

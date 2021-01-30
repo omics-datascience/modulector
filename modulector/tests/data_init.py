@@ -8,7 +8,7 @@ from modulector.models import MirbaseIdMirna, UrlTemplate, Mirna, OldRefSeqMappi
 
 def load_test_data(cls):
     MirbaseIdMirna.objects.create(
-        mirbase_id='MIRBASETEST',
+        mirbase_accession_id='MIRBASETEST',
         mature_mirna='hsa-test-1'
     )
     UrlTemplate.objects.create(
@@ -64,7 +64,7 @@ def load_test_data(cls):
 
     MirnaDrugs.objects.create(
         mature_mirna='ASSSDWA',
-        mirbase_id='NMAEASDE',
+        mirbase_accession_id='NMAEASDE',
         small_molecule='SOME TEST',
         fda_approved=True,
         detection_method='detect method',
