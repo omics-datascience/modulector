@@ -76,12 +76,12 @@ class MirnaSerializer(serializers.ModelSerializer):
 class MirnaDiseaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = MirnaDisease
-        fields = ['id', 'category', 'mirna', 'disease', 'pubmed_id', 'description']
+        fields = ['id', 'category', 'disease', 'pubmed_id', 'description']
 
 
 class MirnaDrugsSerializer(serializers.ModelSerializer):
     class Meta:
         model = MirnaDrugs
-        fields = ['id', 'mature_mirna', 'small_molecule', 'fda_approved',
+        fields = ['id', 'small_molecule', 'fda_approved',
                   'detection_method', 'condition',
                   'pubmed_id', 'reference', 'expression_pattern', 'support']
