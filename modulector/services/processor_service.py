@@ -1,10 +1,9 @@
 from modulector.exceptions.exceptions import SourceNotPresentException
 from modulector.models import MirnaSource
-from modulector.processors import mirdb_processor, i2d_processor
+from modulector.processors import i2d_processor
 from modulector.services import data_loading_service
 
 processors = {
-    "mirdb": mirdb_processor,
     "I2D": i2d_processor
 }
 
