@@ -10,7 +10,7 @@ from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, Mirb
 from modulector.pagination import StandardResultsSetPagination
 from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
     MirnaSourceListSerializer, MirbaseMatureMirnaSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer
-from modulector.services import url_service, processor_service
+from modulector.services import processor_service
 
 regex = re.compile(r'-\d[a-z]')
 
@@ -20,6 +20,7 @@ def get_mirna_from_mirbase(mirbase):
     if mirbase_mirna_record:
         mirna = [record[2] for record in mirbase_mirna_record.values_list()]
         return mirna
+
 
 class MirnaXGenList(generics.ListAPIView):
     serializer_class = MirnaXGenSerializer
@@ -56,7 +57,8 @@ class MirnaSourcePostAndList(APIView):
 class ProcessPost(APIView):
     @staticmethod
     def post(request):
-        processor_service.execute((request.data["source_id"]))
+        processor_service.exe
+        cute((request.data["source_id"]))
         return Response("data processed", status=status.HTTP_200_OK)
 
 

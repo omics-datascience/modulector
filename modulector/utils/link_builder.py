@@ -27,3 +27,6 @@ def build_link_targetminer(mirna_id, template):
 def get_templates():
     return UrlTemplate.objects.all().values_list()
 
+
+def build_pubmed_url(pubmed_id):
+    return "https://pubmed.ncbi.nlm.nih.gov/" + str(pubmed_id) + "/"

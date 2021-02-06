@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
-from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrugs, \
-    Pubmed
+from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrugs
 from modulector.services import url_service
+from modulector.utils import link_builder
 
 
 class MirnaColumnsSerializer(serializers.ModelSerializer):
@@ -31,20 +31,17 @@ class MirnaSourceSerializer(serializers.ModelSerializer):
         return source
 
 
-class PubmedSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Pubmed
-        fields = ['pubmed_id', 'pubmed_url']
-
-
 class MirnaXGenSerializer(serializers.ModelSerializer):
     source_name = serializers.CharField(read_only=True, source='mirna_source.name')
     mirna = serializers.CharField(read_only=True, source='mirna.mirna_code')
-    pubmed = PubmedSerializer(read_only=True, many=True)
+    pubmeds = serializers.SerializerMethodField()
 
     class Meta:
         model = MirnaXGene
-        fields = ['id', 'mirna', 'gene', 'score', 'source_name', 'pubmed']
+        fields = ['id', 'mirna', 'gene', 'score', 'source_name', 'pubmeds']
+
+    def get_pubmeds(self, mirnaxgene):
+        return [pubmed[2] for pubmed in mirnaxgene.pubmed.values_list()]
 
 
 class MirnaSourceListSerializer(serializers.ModelSerializer):
@@ -74,14 +71,24 @@ class MirnaSerializer(serializers.ModelSerializer):
 
 
 class MirnaDiseaseSerializer(serializers.ModelSerializer):
+    pubmed = serializers.SerializerMethodField()
+
     class Meta:
         model = MirnaDisease
-        fields = ['id', 'category', 'disease', 'pubmed_id', 'description']
+        fields = ['id', 'category', 'disease', 'pubmed', 'description']
+
+    def get_pubmed(self, disease):
+        return link_builder.build_pubmed_url(disease.pubmed_id)
 
 
 class MirnaDrugsSerializer(serializers.ModelSerializer):
+    pubmed = serializers.SerializerMethodField()
+
     class Meta:
         model = MirnaDrugs
         fields = ['id', 'small_molecule', 'fda_approved',
                   'detection_method', 'condition',
-                  'pubmed_id', 'reference', 'expression_pattern', 'support']
+                  'pubmed', 'reference', 'expression_pattern', 'support']
+
+    def get_pubmed(self, drug):
+        return link_builder.build_pubmed_url(drug.pubmed_id)
