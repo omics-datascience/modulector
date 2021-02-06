@@ -40,16 +40,11 @@ class PubmedSerializer(serializers.ModelSerializer):
 class MirnaXGenSerializer(serializers.ModelSerializer):
     source_name = serializers.CharField(read_only=True, source='mirna_source.name')
     mirna = serializers.CharField(read_only=True, source='mirna.mirna_code')
-    sequence = serializers.CharField(read_only=True, source='mirna.mirna_sequence')
-    mirbase_accession_id = serializers.SerializerMethodField()
     pubmed = PubmedSerializer(read_only=True, many=True)
 
     class Meta:
         model = MirnaXGene
-        fields = ['id', 'mirna', 'sequence', 'mirbase_accession_id', 'gene', 'score', 'source_name', 'pubmed']
-
-    def get_mirbase_accession_id(self, mirnaxgene):
-        return mirnaxgene.mirna.mirbase_accession_id.mirbase_accession_id
+        fields = ['id', 'mirna', 'gene', 'score', 'source_name', 'pubmed']
 
 
 class MirnaSourceListSerializer(serializers.ModelSerializer):
@@ -79,19 +74,14 @@ class MirnaSerializer(serializers.ModelSerializer):
 
 
 class MirnaDiseaseSerializer(serializers.ModelSerializer):
-    matching_mirnas = MirnaSerializer(read_only=True, many=True, source='mirna_object', allow_null=True)
-
     class Meta:
         model = MirnaDisease
-        fields = ['id', 'category', 'mirna', 'matching_mirnas', 'disease', 'pubmed_id', 'description']
+        fields = ['id', 'category', 'mirna', 'disease', 'pubmed_id', 'description']
 
 
 class MirnaDrugsSerializer(serializers.ModelSerializer):
-    matching_mirnas = MirnaSerializer(read_only=True, many=True, source='mirna_object', allow_null=True)
-
     class Meta:
         model = MirnaDrugs
-        fields = ['id', 'mature_mirna', 'matching_mirnas',
-                  'mirbase_accession_id', 'small_molecule', 'fda_approved',
+        fields = ['id', 'mature_mirna', 'small_molecule', 'fda_approved',
                   'detection_method', 'condition',
                   'pubmed_id', 'reference', 'expression_pattern', 'support']
