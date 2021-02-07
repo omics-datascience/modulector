@@ -61,13 +61,17 @@ class MirbaseMatureMirnaSerializer(serializers.ModelSerializer):
 class MirnaSerializer(serializers.ModelSerializer):
     mirbase_accession_id = serializers.CharField(read_only=True, source='mirbase_accession_id.mirbase_accession_id')
     links = serializers.SerializerMethodField()
+    aliases = serializers.SerializerMethodField()
 
     class Meta:
         model = Mirna
-        fields = ['mirna_code', 'mirna_sequence', 'mirbase_accession_id', 'links']
+        fields = ['aliases', 'mirna_sequence', 'mirbase_accession_id', 'links']
 
     def get_links(self, mirna):
         return url_service.build_urls(mirna_id=mirna.mirna_code)
+
+    def get_aliases(self, mirna):
+        return get_mirna_aliases(mirna.mirna_code)
 
 
 class MirnaDiseaseSerializer(serializers.ModelSerializer):
@@ -92,3 +96,32 @@ class MirnaDrugsSerializer(serializers.ModelSerializer):
 
     def get_pubmed(self, drug):
         return link_builder.build_pubmed_url(drug.pubmed_id)
+
+
+def get_mirna_aliases(code):
+    # code can be mirna or mimat
+    aliases = [code]
+    if code.startswith('MI'):
+        mirnas = get_mirna_from_accession(code)
+        aliases.extend(mirnas)
+    else:
+        accession_id = get_accession_from_mirna(code)
+        mirnas = get_mirna_from_accession(accession_id)
+        aliases.append(accession_id)
+        for mirna in mirnas:
+            if mirna not in aliases:
+                aliases.append(mirna)
+    return aliases
+
+
+def get_mirna_from_accession(accession_id):
+    record = MirbaseIdMirna.objects.filter(mirbase_accession_id=accession_id)
+    if record:
+        mirnas = [record[2] for record in record.values_list()]
+        return mirnas
+
+
+def get_accession_from_mirna(mirna_code):
+    record = MirbaseIdMirna.objects.filter(mature_mirna=mirna_code)
+    if record:
+        return record.get().mirbase_accession_id
