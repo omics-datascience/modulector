@@ -35,13 +35,17 @@ class MirnaXGenSerializer(serializers.ModelSerializer):
     source_name = serializers.CharField(read_only=True, source='mirna_source.name')
     mirna = serializers.CharField(read_only=True, source='mirna.mirna_code')
     pubmeds = serializers.SerializerMethodField()
+    sources = serializers.SerializerMethodField()
 
     class Meta:
         model = MirnaXGene
-        fields = ['id', 'mirna', 'gene', 'score', 'source_name', 'pubmeds']
+        fields = ['id', 'mirna', 'gene', 'score', 'source_name', 'pubmeds', 'sources', 'score_class']
 
     def get_pubmeds(self, mirnaxgene):
         return [pubmed[2] for pubmed in mirnaxgene.pubmed.values_list()]
+
+    def get_sources(self, mirnaxgene):
+        return mirnaxgene.sources.split(';')
 
 
 class MirnaSourceListSerializer(serializers.ModelSerializer):
@@ -68,7 +72,7 @@ class MirnaSerializer(serializers.ModelSerializer):
         fields = ['aliases', 'mirna_sequence', 'mirbase_accession_id', 'links']
 
     def get_links(self, mirna):
-        return url_service.build_urls(mirna_id=mirna.mirna_code)
+        return url_service.build_urls(mirna_id=mirna.mirbase_accession_id.mirbase_accession_id)
 
     def get_aliases(self, mirna):
         return get_mirna_aliases(mirna.mirna_code)

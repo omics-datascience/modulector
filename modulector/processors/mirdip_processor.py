@@ -34,8 +34,8 @@ def process(mirna_source: MirnaSource):
     series_names = list(series_names)
     # insertion templates main
     table_name = MirnaXGene._meta.db_table
-    insert_query_prefix = f'INSERT INTO {table_name} (gene, score, mirna_source_id, mirna_id, sources) VALUES '
-    insert_template = "('{}', {}, {}, {}, '{}')"
+    insert_query_prefix = f'INSERT INTO {table_name} (gene, score, mirna_source_id, mirna_id, sources,score_class) VALUES '
+    insert_template = "('{}', {}, {}, {}, '{}', '{}')"
 
     # insertion templates pubmeds
     table_name_pubmed = Pubmed._meta.db_table
@@ -62,10 +62,11 @@ def process(mirna_source: MirnaSource):
                 mirna_obj = get_or_create_mirna(mirna_code)
                 mirna_id: int = mirna_obj.pk
                 # Generating tuples for insertion
-                for gene, score, source_name in zip(genes_and_scores['GENE'], genes_and_scores['SCORE'],
-                                                    genes_and_scores['SOURCE_NAME']):
+                for gene, score, source_name, score_class in zip(genes_and_scores['GENE'], genes_and_scores['SCORE'],
+                                                                 genes_and_scores['SOURCE_NAME'],
+                                                                 genes_and_scores['CONFIDENCE_CLASS']):
                     insert_statements.append(
-                        insert_template.format(gene, score, mirna_source.id, mirna_id, source_name))
+                        insert_template.format(gene, score, mirna_source.id, mirna_id, source_name, score_class))
                 # Grouping and inserting data
                 insert_query = insert_query_prefix + ','.join(insert_statements)
                 logger.info("saving grouped info row")
