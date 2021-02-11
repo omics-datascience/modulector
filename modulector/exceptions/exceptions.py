@@ -1,3 +1,3 @@
 class SourceNotPresentException(Exception):
-    def __init__(self, source_id):
-        self.message = 'The source id {} is not configured'.format(source_id)
+    def __init__(self, source):
+        self.message = 'The source {} is not configured'.format(source)
