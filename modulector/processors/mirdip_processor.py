@@ -26,7 +26,7 @@ def process(mirna_source: MirnaSource):
     mirna gene table
     """
     # Do to the size of this file, you should download it from the release files section. It is not in the repo.
-    file_path = os.path.join(parent_dir, "files/test.txt")
+    file_path = os.path.join(parent_dir, "files/mirdip.txt")
     logger.info("loading data for i2d")
     # loading files
     series_names = mirna_source.mirnacolumns.order_by('position').values_list('field_to_map', flat=True)
