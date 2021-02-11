@@ -21,4 +21,4 @@ def load_data():
         disease_processor.process()
         ref_seq_mapper.execute()
         gene_mapper.execute()
-        sequence_processor()
+        sequence_processor.process()
