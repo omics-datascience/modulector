@@ -17,7 +17,8 @@ class PubmedDTO:
 
 
 def execute():
-    return pandas.read_excel(io=pub_med_file, usecols=[1, 3, 8], names=['MIRNA', 'GENE', 'PUBMED'])
+    return pandas.read_excel(io=pub_med_file, engine='openpyxl',
+                             usecols=[1, 3, 8], names=['MIRNA', 'GENE', 'PUBMED'])
 
 
 def build_url(pubmed_id):
