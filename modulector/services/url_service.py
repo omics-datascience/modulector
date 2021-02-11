@@ -3,9 +3,7 @@ from collections import namedtuple
 from modulector.utils import link_builder
 
 function_dict = {
-    'mirbase': link_builder.build_link_mirdb,
-    'rnacentral': link_builder.build_link_rnacentral,
-    'targetminer': link_builder.build_link_targetminer
+    'mirbase': link_builder.build_link_mirdb
 }
 
 
