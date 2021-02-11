@@ -26,7 +26,7 @@ def process(mirna_source: MirnaSource):
     mirna gene table
     """
     # Do to the size of this file, you should download it from the release files section. It is not in the repo.
-    file_path = os.path.join(parent_dir, "files/i2d_database.txt")
+    file_path = os.path.join(parent_dir, "files/test.txt")
     logger.info("loading data for i2d")
     # loading files
     series_names = mirna_source.mirnacolumns.order_by('position').values_list('field_to_map', flat=True)
@@ -34,8 +34,8 @@ def process(mirna_source: MirnaSource):
     series_names = list(series_names)
     # insertion templates main
     table_name = MirnaXGene._meta.db_table
-    insert_query_prefix = f'INSERT INTO {table_name} (gene, score, mirna_source_id, mirna_id) VALUES '
-    insert_template = "('{}', {}, {}, {})"
+    insert_query_prefix = f'INSERT INTO {table_name} (gene, score, mirna_source_id, mirna_id, sources) VALUES '
+    insert_template = "('{}', {}, {}, {}, '{}')"
 
     # insertion templates pubmeds
     table_name_pubmed = Pubmed._meta.db_table
@@ -45,36 +45,37 @@ def process(mirna_source: MirnaSource):
     data_chunks = pandas.read_csv(filepath_or_buffer=file_path,
                                   delimiter=mirna_source.file_separator, header=None,
                                   names=series_names, usecols=columns_to_use, chunksize=10000000)
-    # with transaction.atomic():
-    #    with connection.cursor() as cursor:
-    #        delete_query = f'delete from {table_name} where mirna_source_id = {mirna_source.id}'
-    #        cursor.execute(delete_query)
-    #        delete_query = f'truncate table {table_name_pubmed} '
-    #        cursor.execute(delete_query)
-    # for chunk in data_chunks:
-    #    logger.info("grouping data")
-    #    filtered_data = chunk[chunk["MIRNA"].str.contains("hsa")]
-    #    grouped: pandas.DataFrame = filtered_data.groupby('MIRNA').aggregate(lambda tdf: tdf.unique().tolist())
-    #    with transaction.atomic():
-    #        logger.info("inserting chunk")
-    #        for mirna_code, genes_and_scores in grouped.iterrows():
-    #            insert_statements: List[str] = []
-    #            mirna_obj = get_or_create_mirna(mirna_code)
-    #            mirna_id: int = mirna_obj.pk
-    #
-    #            # Generating tuples for insertion
-    #            for gene, score in zip(genes_and_scores['GENE'], genes_and_scores['SCORE']):
-    #                insert_statements.append(insert_template.format(gene, score, mirna_source.id, mirna_id))
-    #            # Grouping and inserting data
-    #            insert_query = insert_query_prefix + ','.join(insert_statements)
-    #
-    #            logger.info("saving grouped info row")
-    #            if insert_query_prefix == insert_query:
-    #                continue
-    #            with connection.cursor() as cursor:
-    #                cursor.execute(insert_query)
-    #
+    with transaction.atomic():
+        with connection.cursor() as cursor:
+            delete_query = f'delete from {table_name} where mirna_source_id = {mirna_source.id}'
+            cursor.execute(delete_query)
+            delete_query = f'truncate table {table_name_pubmed} '
+            cursor.execute(delete_query)
+    for chunk in data_chunks:
+        logger.info("grouping data")
+        filtered_data = chunk[chunk["MIRNA"].str.contains("hsa")]
+        grouped: pandas.DataFrame = filtered_data.groupby('MIRNA').aggregate(lambda tdf: tdf.unique().tolist())
+        with transaction.atomic():
+            logger.info("inserting chunk")
+            for mirna_code, genes_and_scores in grouped.iterrows():
+                insert_statements: List[str] = []
+                mirna_obj = get_or_create_mirna(mirna_code)
+                mirna_id: int = mirna_obj.pk
+                # Generating tuples for insertion
+                for gene, score, source_name in zip(genes_and_scores['GENE'], genes_and_scores['SCORE'],
+                                                    genes_and_scores['SOURCE_NAME']):
+                    insert_statements.append(
+                        insert_template.format(gene, score, mirna_source.id, mirna_id, source_name))
+                # Grouping and inserting data
+                insert_query = insert_query_prefix + ','.join(insert_statements)
+                logger.info("saving grouped info row")
+                if insert_query_prefix == insert_query:
+                    continue
+                with connection.cursor() as cursor:
+                    cursor.execute(insert_query)
+
     logger.info("finding pubmeds")
+
     pubmed_data = pubmed_mapper.execute()
     pubmed_list = pubmed_mapper.build_pubmed_list(pubmed_data)
 
