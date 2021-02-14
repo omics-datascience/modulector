@@ -19,7 +19,7 @@ regex = re.compile(r'-\d[a-z]')
 
 class MirnaXGenList(generics.ListAPIView):
     serializer_class = MirnaXGenSerializer
-    pagination_class = StandardResultsSetPagination
+    pagination_class = None
     filter_backends = [filters.OrderingFilter, filters.SearchFilter, DjangoFilterBackend]
     ordering_fields = ['gene', 'score', 'mirna_source.name']
     search_fields = ['gene']

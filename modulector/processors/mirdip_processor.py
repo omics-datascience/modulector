@@ -2,6 +2,7 @@ import logging
 import os
 import pathlib
 import sys
+import time
 from typing import List
 
 import pandas as pandas
@@ -18,6 +19,8 @@ logger.addHandler(logging.StreamHandler(sys.stdout))
 logger.setLevel(logging.INFO)
 
 parent_dir = pathlib.Path(__file__).parent.absolute().parent
+
+mirna_dict = dict()
 
 
 def process(mirna_source: MirnaSource):
@@ -42,38 +45,42 @@ def process(mirna_source: MirnaSource):
     insert_query_pubmed_prefix = f'INSERT INTO {table_name_pubmed} (pubmed_id, pubmed_url, gene, mirna_code) VALUES '
     insert_template_pubmed = "({},'{}','{}','{}')"
 
-    data_chunks = pandas.read_csv(filepath_or_buffer=file_path,
-                                  delimiter=mirna_source.file_separator, header=None,
-                                  names=series_names, usecols=columns_to_use, chunksize=10000000)
+    # delete table
     with transaction.atomic():
         with connection.cursor() as cursor:
             delete_query = f'delete from {table_name} where mirna_source_id = {mirna_source.id}'
             cursor.execute(delete_query)
             delete_query = f'truncate table {table_name_pubmed} '
             cursor.execute(delete_query)
-    for chunk in data_chunks:
-        logger.info("grouping data")
-        filtered_data = chunk[chunk["MIRNA"].str.contains("hsa")]
-        grouped: pandas.DataFrame = filtered_data.groupby('MIRNA').aggregate(lambda tdf: tdf.unique().tolist())
-        with transaction.atomic():
-            logger.info("inserting chunk")
-            for mirna_code, genes_and_scores in grouped.iterrows():
+
+    with pandas.read_csv(filepath_or_buffer=file_path,
+                         delimiter=mirna_source.file_separator,
+                         names=series_names, usecols=columns_to_use, chunksize=500000) as reader:
+
+        for chunk in reader:
+            start = time.time()
+            logger.info("grouping data of chunk")
+            filtered_data = chunk[chunk["MIRNA"].str.contains("hsa")]
+            with transaction.atomic():
+                logger.info("inserting chunk")
                 insert_statements: List[str] = []
-                mirna_obj = get_or_create_mirna(mirna_code)
-                mirna_id: int = mirna_obj.pk
-                # Generating tuples for insertion
-                for gene, score, source_name, score_class in zip(genes_and_scores['GENE'], genes_and_scores['SCORE'],
-                                                                 genes_and_scores['SOURCE_NAME'],
-                                                                 genes_and_scores['CONFIDENCE_CLASS']):
+                for row in filtered_data.iterrows():
+                    gene, mirna_code, score, source_name, score_class = row[1]
+                    mirna_obj = get_or_create_mirna(mirna_code)
+                    mirna_id: int = mirna_obj.pk
+                    # Generating tuples for insertion
                     insert_statements.append(
                         insert_template.format(gene, score, mirna_source.id, mirna_id, source_name, score_class))
-                # Grouping and inserting data
+                    # inserting data
                 insert_query = insert_query_prefix + ','.join(insert_statements)
-                logger.info("saving grouped info row")
+                insert_statements.clear()
                 if insert_query_prefix == insert_query:
                     continue
                 with connection.cursor() as cursor:
                     cursor.execute(insert_query)
+            print('chunk processing took: ')
+            end = time.time()
+            print("%0.2f" % ((end - start) / 60))
 
     logger.info("finding pubmeds")
 
@@ -102,10 +109,13 @@ def get_or_create_mirna(mirna_code):
     This method receives a mirna code and created the mirna if necessary
     Otherwise will return the object from the database
     """
+    if mirna_code in mirna_dict:
+        return mirna_dict.get(mirna_code)
     mirna_in_db = Mirna.objects.filter(mirna_code=mirna_code)
     if not mirna_in_db.exists():
         mirna_obj = Mirna(mirna_code=mirna_code)
         mirna_obj.save()
     else:
         mirna_obj = mirna_in_db.get()
+    mirna_dict[mirna_code] = mirna_obj
     return mirna_obj

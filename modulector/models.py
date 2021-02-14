@@ -67,7 +67,7 @@ class MirnaXGene(models.Model):
     gene = models.CharField(max_length=50)
     score = models.DecimalField(max_digits=20, decimal_places=4)
     mirna_source = models.ForeignKey(MirnaSource, on_delete=models.CASCADE)
-    sources = models.CharField(max_length=60, null=True)
+    sources = models.CharField(max_length=500, null=True)
     score_class = models.CharField(max_length=3, null=True)
 
     @property

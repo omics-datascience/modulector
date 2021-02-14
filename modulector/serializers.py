@@ -45,7 +45,7 @@ class MirnaXGenSerializer(serializers.ModelSerializer):
         return [pubmed[2] for pubmed in mirnaxgene.pubmed.values_list()]
 
     def get_sources(self, mirnaxgene):
-        return mirnaxgene.sources.split(';')
+        return mirnaxgene.sources.split('|')
 
 
 class MirnaSourceListSerializer(serializers.ModelSerializer):
