@@ -14,7 +14,6 @@ def load_data():
     # this variable show be set when you before running the code
     should_load_data = os.environ['LOAD_DATA']
     if should_load_data == '1':
-        sequence_processor.process()
         logger.info("preloading required data")
         drugs_processor.process()
         mature_mirna_mapper.execute()
