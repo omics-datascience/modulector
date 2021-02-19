@@ -4,6 +4,7 @@ from django.http import Http404
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, generics, filters
+from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -17,18 +18,38 @@ from modulector.services import processor_service
 regex = re.compile(r'-\d[a-z]')
 
 
-class MirnaXGenList(generics.ListAPIView):
+class MirnaXGen(generics.ListAPIView):
     serializer_class = MirnaXGenSerializer
     pagination_class = None
     filter_backends = [filters.OrderingFilter, filters.SearchFilter, DjangoFilterBackend]
     ordering_fields = ['gene', 'score', 'mirna_source.name']
     search_fields = ['gene']
     filterset_fields = ['gene']
+    handler400 = 'rest_framework.exceptions.bad_request'
+
+    def get_queryset(self):
+        mirna = self.request.query_params.get("mirna")
+        gene = self.request.query_params.get("gene")
+        if not mirna or not gene:
+            raise ParseError(detail="mirna and gene are obligatory")
+        else:
+            mirna = get_mirna_aliases(mirna)
+            return MirnaXGene.objects.filter(mirna__mirna_code__in=mirna, gene=gene)
+
+
+class MirnaInteractions(generics.ListAPIView):
+    serializer_class = MirnaXGenSerializer
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter, DjangoFilterBackend]
+    ordering_fields = ['gene', 'score', 'mirna_source.name']
+    search_fields = ['gene']
+    filterset_fields = ['gene']
+    handler400 = 'rest_framework.exceptions.bad_request'
 
     def get_queryset(self):
         mirna = self.request.query_params.get("mirna")
         if not mirna:
-            return MirnaXGene.objects.none()
+            raise ParseError(detail="mirna is obligatory")
         else:
             mirna = get_mirna_aliases(mirna)
             return MirnaXGene.objects.filter(mirna__mirna_code__in=mirna)
