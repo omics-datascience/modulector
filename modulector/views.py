@@ -42,8 +42,6 @@ class MirnaInteractions(generics.ListAPIView):
     pagination_class = StandardResultsSetPagination
     filter_backends = [filters.OrderingFilter, filters.SearchFilter, DjangoFilterBackend]
     ordering_fields = ['gene', 'score', 'mirna_source.name']
-    search_fields = ['gene']
-    filterset_fields = ['gene']
     handler400 = 'rest_framework.exceptions.bad_request'
 
     def get_queryset(self):
