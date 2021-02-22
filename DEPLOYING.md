@@ -82,6 +82,9 @@ That command will create a compressed file with the database dump inside. **Note
 
 ### Import
 
+1. **Optional but recommended**: due to major changes, it's probably that an import thrown several errors when importing. To prevent that you could do the following steps before doing the importation:
+   1. Drop all the tables from the DB
+   1. Run the Django migrations to create the empty tables with the correct structure: `docker exec -i [name of django container] python3 manage.py migrate`
 1. Download `.sql.gz` from [Modulector releases pages](https://github.com/multiomics-datascience/modulector-backend/releases) or use your own export file
 1. Restore the db running:
 

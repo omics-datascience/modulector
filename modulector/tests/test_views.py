@@ -6,7 +6,7 @@ client = Client()
 
 
 class ViewTests(TestCase):
-
+    # FIXME: the structure is old, some tests fail
     @classmethod
     def setUpTestData(cls):
         load_test_data(cls)
@@ -28,7 +28,7 @@ class ViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def testMirnaXGenView(self):
-        response = client.get('/mirnaxgene/', {'mirna': 'ASDAS_SDA@_SDASD'})
+        response = client.get('/mirna-target-interactions/', {'mirna': 'ASDAS_SDA@_SDASD'})
         self.assertEqual(response.data['count'], 1)
         self.assertIsNotNone(response.data['results'][0]['gene'])
         self.assertEqual(response.status_code, 200)

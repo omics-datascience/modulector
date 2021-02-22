@@ -1,5 +1,5 @@
+from typing import List
 from rest_framework import serializers
-
 from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrugs
 from modulector.services import url_service
 from modulector.utils import link_builder
@@ -34,6 +34,7 @@ class MirnaSourceSerializer(serializers.ModelSerializer):
 class MirnaXGenSerializer(serializers.ModelSerializer):
     source_name = serializers.CharField(read_only=True, source='mirna_source.name')
     mirna = serializers.CharField(read_only=True, source='mirna.mirna_code')
+    score = serializers.FloatField(read_only=True)
     pubmeds = serializers.SerializerMethodField()
     sources = serializers.SerializerMethodField()
 
@@ -118,11 +119,13 @@ def get_mirna_aliases(code):
     return aliases
 
 
-def get_mirna_from_accession(accession_id):
+def get_mirna_from_accession(accession_id) -> List[str]:
+    # TODO: add directly values_list('nameOfField') and will return a list
     record = MirbaseIdMirna.objects.filter(mirbase_accession_id=accession_id)
     if record:
         mirnas = [record[2] for record in record.values_list()]
         return mirnas
+    return []
 
 
 def get_accession_from_mirna(mirna_code):

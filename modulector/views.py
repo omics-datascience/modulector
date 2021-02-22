@@ -1,13 +1,12 @@
 import re
-
 from django.http import Http404
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, generics, filters
+from rest_framework import status, generics, filters, viewsets
 from rest_framework.exceptions import ParseError
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrugs
 from modulector.pagination import StandardResultsSetPagination
 from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
@@ -18,26 +17,25 @@ from modulector.services import processor_service
 regex = re.compile(r'-\d[a-z]')
 
 
-class MirnaXGen(generics.ListAPIView):
+class MirnaXGen(viewsets.ReadOnlyModelViewSet):
+    """Returns a single instance with data about an interaction between a miRNA and a gene"""
     serializer_class = MirnaXGenSerializer
-    pagination_class = None
-    filter_backends = [filters.OrderingFilter, filters.SearchFilter, DjangoFilterBackend]
-    ordering_fields = ['gene', 'score', 'mirna_source.name']
-    search_fields = ['gene']
-    filterset_fields = ['gene']
     handler400 = 'rest_framework.exceptions.bad_request'
 
-    def get_queryset(self):
+    def list(self, request, *args, **kwargs):
         mirna = self.request.query_params.get("mirna")
         gene = self.request.query_params.get("gene")
         if not mirna or not gene:
             raise ParseError(detail="mirna and gene are obligatory")
-        else:
-            mirna = get_mirna_aliases(mirna)
-            return MirnaXGene.objects.filter(mirna__mirna_code__in=mirna, gene=gene)
+
+        mirna = get_mirna_aliases(mirna)
+        instance = get_object_or_404(MirnaXGene, mirna__mirna_code__in=mirna, gene=gene)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 
 class MirnaInteractions(generics.ListAPIView):
+    """Returns a paginated response with all the interactions of a specific miRNA"""
     serializer_class = MirnaXGenSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = [filters.OrderingFilter, filters.SearchFilter, DjangoFilterBackend]
@@ -92,16 +90,25 @@ class MirbaseMatureList(generics.ListAPIView):
         return result
 
 
-class MirnaList(generics.ListAPIView):
+class MirnaList(viewsets.ReadOnlyModelViewSet):
+    """Returns a single instance of miRNA with general data"""
     serializer_class = MirnaSerializer
     pagination_class = None
 
+    def list(self, request, *args, **kwargs):
+        mirna = self.request.query_params.get("mirna")
+        if not mirna:
+            raise Http404
+        aliases = get_mirna_aliases(mirna)
+        instance = get_object_or_404(Mirna, mirna_code__in=aliases)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
     def get_queryset(self):
-        mirna = self.request.query_params.get("mirna", None)
+        mirna = self.request.query_params.get("mirna")
         if mirna:
             aliases = get_mirna_aliases(mirna)
-            result = Mirna.objects.filter(mirna_code__in=aliases)
-            return result
+            return get_object_or_404(Mirna, mirna_code__in=aliases)
         else:
             raise Http404
 
