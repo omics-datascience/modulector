@@ -38,8 +38,9 @@ class MirnaInteractions(generics.ListAPIView):
     """Returns a paginated response with all the interactions of a specific miRNA"""
     serializer_class = MirnaXGenSerializer
     pagination_class = StandardResultsSetPagination
-    filter_backends = [filters.OrderingFilter, filters.SearchFilter, DjangoFilterBackend]
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
     ordering_fields = ['gene', 'score', 'mirna_source.name']
+    search_fields = ['gene']
     handler400 = 'rest_framework.exceptions.bad_request'
 
     def get_queryset(self):
