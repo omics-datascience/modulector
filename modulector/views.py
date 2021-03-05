@@ -130,6 +130,7 @@ class MirnaDiseaseList(generics.ListAPIView):
                 result = result.filter(mirna__in=mirna)
             else:
                 mirna = mirna.lower()
+                # TODO: add documentation
                 if mirna.count('-') == 3:
                     mirna = re.sub(regex, "", mirna)
                 result = result.filter(mirna__contains=mirna)

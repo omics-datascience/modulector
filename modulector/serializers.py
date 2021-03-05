@@ -121,6 +121,7 @@ def get_mirna_aliases(code):
 
 def get_mirna_from_accession(accession_id) -> List[str]:
     # TODO: add directly values_list('nameOfField') and will return a list
+    # TODO: add documentation
     record = MirbaseIdMirna.objects.filter(mirbase_accession_id=accession_id)
     if record:
         mirnas = [record[2] for record in record.values_list()]
