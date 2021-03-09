@@ -76,7 +76,8 @@ class ProcessPost(APIView):
 class MirnaAliasesList(generics.ListAPIView):
     serializer_class = MirnaAliasesSerializer
     pagination_class = StandardResultsSetPagination
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
+    ordering = ['mature_mirna']
     filterset_fields = ['mature_mirna', 'mirbase_accession_id']
 
     def get_queryset(self):
