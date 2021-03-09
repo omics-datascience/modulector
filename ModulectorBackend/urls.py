@@ -15,12 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-
 from modulector import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('source/', views.MirnaSourceList.as_view()),
     path('source/create/', views.MirnaSourcePostAndList.as_view()),
     path('mirna/', views.MirnaList.as_view({'get': 'list'})),
     path('process/', views.ProcessPost.as_view()),

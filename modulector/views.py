@@ -10,8 +10,8 @@ from rest_framework.views import APIView
 from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrugs
 from modulector.pagination import StandardResultsSetPagination
 from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
-    MirnaSourceListSerializer, MirbaseMatureMirnaSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer, \
-    get_mirna_from_accession, get_mirna_aliases
+    MirbaseMatureMirnaSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer, get_mirna_from_accession, \
+    get_mirna_aliases
 from modulector.services import processor_service
 
 regex = re.compile(r'-\d[a-z]')
@@ -70,14 +70,6 @@ class ProcessPost(APIView):
     def post(request):
         processor_service.execute((request.data["source_id"]))
         return Response("data processed", status=status.HTTP_200_OK)
-
-
-class MirnaSourceList(generics.ListAPIView):
-    serializer_class = MirnaSourceListSerializer
-    pagination_class = StandardResultsSetPagination
-
-    def get_queryset(self):
-        return MirnaSource.objects.all()
 
 
 class MirbaseMatureList(generics.ListAPIView):

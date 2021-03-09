@@ -49,14 +49,6 @@ class MirnaXGenSerializer(serializers.ModelSerializer):
         return mirnaxgene.sources.split('|')
 
 
-class MirnaSourceListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MirnaSource
-        fields = ['id', 'name', 'site_url', 'min_score', 'max_score', 'score_interpretation', 'description',
-                  'synchronization_date', 'file_separator', 'mirnacolumns']
-        depth = 1
-
-
 class MirbaseMatureMirnaSerializer(serializers.ModelSerializer):
     class Meta:
         model = MirbaseIdMirna
