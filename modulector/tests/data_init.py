@@ -47,8 +47,6 @@ def load_test_data(cls):
         mirna=mirna,
         gene='GEN_1',
         score=80,
-        pubmed_id=None,
-        pubmed_url=None,
         mirna_source=source
     )
 
