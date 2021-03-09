@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from django.db import models
 from django.db.models import QuerySet
 
@@ -27,8 +27,11 @@ class Mirna(models.Model):
     mirna_sequence = models.CharField(max_length=40, null=True)
 
     @property
-    def mirbase_accession_id(self) -> List:
-        return MirbaseIdMirna.objects.filter(mature_mirna__contains=self.mirna_code)[0]
+    def mirbase_accession_id(self) -> Optional[MirbaseIdMirna]:
+        try:
+            return MirbaseIdMirna.objects.get(mature_mirna__contains=self.mirna_code)
+        except MirbaseIdMirna.DoesNotExist:
+            return None
 
 
 class OldRefSeqMapping(models.Model):

@@ -18,8 +18,14 @@ class ViewTests(TestCase):
 
     def testMirnaView(self):
         """Tests mirna enpoint"""
-        response = client.get('/mirna/')
-        self.assertEqual(response.status_code, 404)
+        response = client.get('/mirna/', {'mirna': 'ASDAS_SDA@_SDASD'})
+        self.assertEqual(response.status_code, 200)
+
+        # Checks all fields
+        data = response.data
+        self.assertTrue('aliases' in data)
+        self.assertTrue('mirna_sequence' in data)
+        self.assertTrue('links' in data)
 
     def testMirnaViewNotFound(self):
         """Tests 404 error due to not specify the 'mirna' parameter"""

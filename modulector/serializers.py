@@ -86,7 +86,10 @@ class MirnaSerializer(serializers.ModelSerializer):
         :param mirna: miRNA object
         :return: List of sources links
         """
-        return url_service.build_urls(mirna_id=mirna.mirbase_accession_id.mirbase_accession_id)
+        mirbase_id_obj = mirna.mirbase_accession_id
+        if mirbase_id_obj is not None:
+            return url_service.build_urls(mirna_id=mirbase_id_obj.mirbase_accession_id)
+        return []
 
     @staticmethod
     def get_aliases(mirna: Mirna) -> List[str]:
