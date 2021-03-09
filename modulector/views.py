@@ -1,4 +1,5 @@
 import re
+from django.conf import settings
 from django.http import Http404
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
@@ -7,7 +8,7 @@ from rest_framework.exceptions import ParseError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrugs
+from modulector.models import MirnaXGene, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrugs
 from modulector.pagination import StandardResultsSetPagination
 from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
     MirnaAliasesSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer, get_mirna_from_accession, \
@@ -152,4 +153,4 @@ class MirnaDrugsList(generics.ListAPIView):
 
 
 def index(request):
-    return render(request, 'index.html')
+    return render(request, 'index.html', {'version': settings.VERSION})
