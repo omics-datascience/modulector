@@ -1,3 +1,4 @@
+from typing import Optional
 from .settings import *
 import os
 
@@ -15,7 +16,14 @@ else:
 DEBUG = False
 
 # 'web' is the name of the docker-compose service which serves Django
-ALLOWED_HOSTS = ['web']
+custom_allowed_hosts: Optional[str] = os.getenv('CUSTOM_ALLOWED_HOSTS')
+if custom_allowed_hosts is None:
+    ALLOWED_HOSTS = ['web']
+else:
+    # Gets all the hosts declared by the user (separated by commas)
+    allowed_host_list = custom_allowed_hosts.split(',')
+    allowed_host_list_stripped = [x.strip() for x in allowed_host_list]
+    ALLOWED_HOSTS = allowed_host_list_stripped
 
 # Security settings
 # SESSION_COOKIE_SECURE = True  # TODO: set when configured a SSL Cert.

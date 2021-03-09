@@ -19,6 +19,7 @@ Below are the steps to perform a production deploy.
         - `SECRET_KEY`: Django's secret key. If not specified, one is generated with [generate-secret-key application](https://github.com/MickaelBergem/django-generate-secret-key) automatically.
         - `MEDIA_ROOT`: absolute path where will be stored the uploaded files. By default `<project root>/uploads`.
         - `MEDIA_URL`: URL of the `MEDIA_ROOT` folder. By default `<url>/media/`.
+        - `CUSTOM_ALLOWED_HOSTS`: list of allowed hosts (separated by commas) to access to Modulector (ex. `192.168.11.1,10.10.10.2,localhost`). If it is not defined, `web` (which is the alias of the Modulector host running in Docker) is used.
     - PostgreSQL:
         - `POSTGRES_USERNAME`: DB username. **Must be equal to** `POSTGRES_USER` in `db` service.
         - `POSTGRES_PASSWORD`: DB user's password. **Must be equal to** `POSTGRES_PASSWORD` in `db` service.
