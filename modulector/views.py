@@ -40,6 +40,7 @@ class MirnaInteractions(generics.ListAPIView):
     pagination_class = StandardResultsSetPagination
     filter_backends = [filters.OrderingFilter, filters.SearchFilter]
     ordering_fields = ['gene', 'score', 'mirna_source.name']
+    ordering = ['id']
     search_fields = ['gene']
     handler400 = 'rest_framework.exceptions.bad_request'
 
@@ -119,6 +120,7 @@ class MirnaDiseaseList(generics.ListAPIView):
     pagination_class = StandardResultsSetPagination
     filter_backends = [filters.OrderingFilter, filters.SearchFilter]
     ordering_fields = ['disease']
+    ordering = ['id']
     search_fields = ['disease']
 
     def get_queryset(self):
@@ -143,6 +145,7 @@ class MirnaDrugsList(generics.ListAPIView):
     filter_backends = [filters.OrderingFilter, filters.SearchFilter, DjangoFilterBackend]
     ordering_fields = ['condition', 'detection_method', 'small_molecule', 'expression_pattern', 'reference',
                        'support']
+    ordering = ['id']
     search_fields = ['condition', 'small_molecule', 'expression_pattern']
     filterset_fields = ['fda_approved']
 
