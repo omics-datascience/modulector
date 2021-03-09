@@ -2,11 +2,9 @@ import logging
 import os
 import pathlib
 import sys
-
 import pandas as pd
 from django.db import transaction, connection
-
-from modulector.models import MirnaDrugs
+from modulector.models import MirnaDrug
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler(sys.stdout))
@@ -33,12 +31,12 @@ def process():
             if pd.isna(mirbase_accession_id):
                 mirbase_accession_id = ''
 
-            mirna_drug = MirnaDrugs(mature_mirna=mature_mirna, mirbase_accession_id=mirbase_accession_id, small_molecule=small_molecule,
-                                    fda_approved=fda, detection_method=detection_method, condition=condition,
-                                    pubmed_id=pmid,
-                                    reference=reference, support=suppport, expression_pattern=expression_pattern)
+            mirna_drug = MirnaDrug(mature_mirna=mature_mirna, mirbase_accession_id=mirbase_accession_id, small_molecule=small_molecule,
+                                   fda_approved=fda, detection_method=detection_method, condition=condition,
+                                   pubmed_id=pmid,
+                                   reference=reference, support=suppport, expression_pattern=expression_pattern)
             entities.append(mirna_drug)
         with connection.cursor() as cursor:
             cursor.execute("truncate table modulector_mirnadrugs")
-        MirnaDrugs.objects.bulk_create(entities)
+        MirnaDrug.objects.bulk_create(entities)
         logger.info("data inserted")

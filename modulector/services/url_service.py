@@ -1,5 +1,5 @@
 from collections import namedtuple
-
+from typing import List, Dict
 from modulector.utils import link_builder
 
 function_dict = {
@@ -7,7 +7,12 @@ function_dict = {
 }
 
 
-def build_urls(mirna_id):
+def build_urls(mirna_id: str) -> List[Dict]:
+    """
+    Generates a list of sources links for a specific miRNA
+    :param mirna_id: miRNA id
+    :return: List of sources links
+    """
     UrlItem = namedtuple("UrlItem", "source, url")
     urls = []
     url_templates = link_builder.get_templates()

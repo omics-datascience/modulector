@@ -1,6 +1,6 @@
 from typing import List
-
 from django.db import models
+from django.db.models import QuerySet
 
 
 class DatasetSeparator(models.TextChoices):
@@ -71,7 +71,7 @@ class MirnaXGene(models.Model):
     score_class = models.CharField(max_length=3, null=True)
 
     @property
-    def pubmed(self) -> List:
+    def pubmed(self) -> QuerySet:
         return Pubmed.objects.filter(mirna_code=self.mirna.mirna_code, gene=self.gene)
 
     class Meta:
@@ -96,7 +96,7 @@ class MirnaDisease(models.Model):
         db_table = 'modulector_mirnadisease'
 
 
-class MirnaDrugs(models.Model):
+class MirnaDrug(models.Model):
     mature_mirna = models.CharField(max_length=50, blank=False)
     mirbase_accession_id = models.CharField(max_length=20)
     small_molecule = models.TextField()

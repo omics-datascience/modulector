@@ -1,9 +1,7 @@
 from datetime import datetime
-
 from django.utils import timezone
-
 from modulector.models import MirbaseIdMirna, UrlTemplate, Mirna, OldRefSeqMapping, GeneSymbolMapping, MirnaSource, \
-    MirnaColumns, MirnaXGene, MirnaDisease, MirnaDrugs
+    MirnaColumns, MirnaXGene, MirnaDisease, MirnaDrug
 
 
 def load_test_data(cls):
@@ -62,7 +60,7 @@ def load_test_data(cls):
         description='this is a description'
     )
 
-    MirnaDrugs.objects.create(
+    MirnaDrug.objects.create(
         mature_mirna='ASSSDWA',
         mirbase_accession_id='NMAEASDE',
         small_molecule='SOME TEST',
