@@ -49,7 +49,7 @@ class MirnaXGenSerializer(serializers.ModelSerializer):
         return mirnaxgene.sources.split('|')
 
 
-class MirbaseMatureMirnaSerializer(serializers.ModelSerializer):
+class MirnaAliasesSerializer(serializers.ModelSerializer):
     class Meta:
         model = MirbaseIdMirna
         fields = ['mirbase_accession_id', 'mature_mirna']

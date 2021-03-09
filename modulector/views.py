@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrugs
 from modulector.pagination import StandardResultsSetPagination
 from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
-    MirbaseMatureMirnaSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer, get_mirna_from_accession, \
+    MirnaAliasesSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer, get_mirna_from_accession, \
     get_mirna_aliases
 from modulector.services import processor_service
 
@@ -72,16 +72,14 @@ class ProcessPost(APIView):
         return Response("data processed", status=status.HTTP_200_OK)
 
 
-class MirbaseMatureList(generics.ListAPIView):
-    serializer_class = MirbaseMatureMirnaSerializer
+class MirnaAliasesList(generics.ListAPIView):
+    serializer_class = MirnaAliasesSerializer
     pagination_class = StandardResultsSetPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['mature_mirna', 'mirbase_accession_id']
 
     def get_queryset(self):
-        mirna = self.request.query_params.get("mirna", None)
-        result = MirbaseIdMirna.objects.all()
-        if mirna is not None:
-            result = result.filter(mature_mirna=mirna)
-        return result
+        return MirbaseIdMirna.objects.all()
 
 
 class MirnaList(viewsets.ReadOnlyModelViewSet):

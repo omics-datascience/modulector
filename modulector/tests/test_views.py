@@ -34,7 +34,7 @@ class ViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def testMatureMirnaView(self):
-        response = client.get('/maturemirna/')
+        response = client.get('/mirna-aliases/')
         self.assertEqual(response.status_code, 200)
 
     def testLinksView(self):

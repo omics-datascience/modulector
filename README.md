@@ -101,19 +101,20 @@ a compilation of information of different databases
 ----
 ## Mature Mirna
 ----
-    Returns the mirbase ID related to the mature mirna provided
+    Returns miRNA aliases
 * **URL**
 
-  /maturemirna
+  /mirna-aliases
 
 * **Method:**
 
   `GET`
   
 *  **Query Params**
+    `mirbase_accession_id=[string]`
+    `mature_mirna=[string]`
 
    **Required:**
-     `mirna=[string]`
    
     **Non Required:**
  
