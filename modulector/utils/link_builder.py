@@ -1,13 +1,4 @@
-from modulector.models import MirbaseIdMirna, UrlTemplate
-
-
-def get_mature_mirna(mirna_id):
-    mature_mirna = MirbaseIdMirna.objects.filter(mature_mirna=mirna_id).first()
-    if not mature_mirna:
-        splitted = mirna_id.split('-')
-        mature = splitted[0] + splitted[1] + splitted[2]
-        mature_mirna = MirbaseIdMirna.objects.filter(mature_mirna__contains=mature).first()
-    return mature_mirna
+from modulector.models import UrlTemplate
 
 
 def build_link_mirdb(mirna_id, template):
@@ -18,5 +9,10 @@ def get_templates():
     return UrlTemplate.objects.all().values_list()
 
 
-def build_pubmed_url(pubmed_id):
+def build_pubmed_url(pubmed_id) -> str:
+    """
+    Generates a Pubmed URL from a Pubmed ID
+    :param pubmed_id: Pubmed ID to concatenate to Pubmed URL
+    :return: Pubmed URL
+    """
     return "https://pubmed.ncbi.nlm.nih.gov/" + str(pubmed_id) + "/"
