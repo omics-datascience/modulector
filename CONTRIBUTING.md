@@ -1,6 +1,6 @@
-2020.10.12-modulector# Contributing
+# Contributing
 
-All the contributions are welcome in Modulector proyect, please reads all the considerations. If you want to make a production deploy please read the [DEPLOYING.md](DEPLOYING.md) document.
+All the contributions are welcome in Modulector project, please reads all the considerations. If you want to make a production deploy please read the [DEPLOYING.md](DEPLOYING.md) document.
 
 The entire contributing process consists in the following steps:
 
