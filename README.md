@@ -2,29 +2,20 @@
 
 Modulector is a performing open platform that provides information about miRNAs and genes based on a compilation of information from different databases. It offers data about:
 
-- miRNA interactions
-- miRNA-target interactions
-- Diseases
-- Drugs
-- miRNA aliases
+- [miRNA interactions](#mirna-interactions)
+- [miRNA-target interactions](#mirna-target-interactions)
+- [miRNA details](#mirna-details)
+- [miRNA aliases](#mirna-aliases)
+- [Diseases](#diseases)
+- [Drugs](#drugs)
 - Genes aliases
-
-
-<!-- # Table of Contents
-* GET
-    * [Mirnas](#mirnas)
-    * [Mirna and Gene](#mirna-x-gene)
-    * [Mature Mirna](#mature-mirna)
-    * [Links](#links)
-    * [Diseases](#diseases)
-    * [Drugs](#drugs)
-    * [Source](#sources) -->
-
 
 
 ## Usage
 
-All services are available through a web API accessible from a browser or any other web client. In addition to the information provided, sorting, filtering, searching and paging functions are also available. How to use these functions is explained below:
+<!-- TODO: update Multiomics link when it is online -->
+Modulector can be used through the graphical interfaces provided in Multiomics or it can be hosted on your own server (read [DEPLOYING.md](DEPLOYING.md) for more information about the latter option).
+All services are available through a web API accessible from a browser or any other web client. All the responses are in *JSON* format. In addition to the information provided, sorting, filtering, searching and paging functions are also available. How to use these functions is explained below:
 
 
 ### General
@@ -36,7 +27,7 @@ All functions are used as a parameter in the URL. So if you want to access `http
 
 In order to sort you must specify the parameter `ordering=fieldToSort`, if you want to sort descending you must add a `-` before the field name. You can specify several fields to sort separated by *commas*.
 
-For example, if you want to consume the [miRNA interactions](#mirna-interactions) service by sorting by `score` descendingly and by `gene` ascendingly you can access the URL:
+For example, if you want to consume the [miRNA interactions](#mirna-interactions) service by sorting by `score` descending and by `gene` ascending you can access the URL:
 
 `http://modulector.org/mirna-interactions/?ordering=-score,gene`
 
@@ -244,3 +235,8 @@ Returns a paginated response of drugs related to a miRNA.
 - Error Response:
   - Code: 200
   - Content: empty paginated response (number of elements = 0)
+
+
+## Contributing
+
+All the contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
