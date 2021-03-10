@@ -5,7 +5,6 @@ from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, generics, filters, viewsets
 from rest_framework.exceptions import ParseError
-from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from modulector.models import MirnaXGene, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrug
@@ -18,8 +17,9 @@ from modulector.services import processor_service
 regex = re.compile(r'-\d[a-z]')
 
 
-class MirnaXGen(viewsets.ReadOnlyModelViewSet):
-    """Returns a single instance with data about an interaction between a miRNA and a gene"""
+class MirnaTargetInteractions(viewsets.ReadOnlyModelViewSet):
+    """Returns a single instance with data about an interaction between a miRNA and a gene
+    (mirna-target-interactions endpoint)"""
     serializer_class = MirnaXGenSerializer
     handler400 = 'rest_framework.exceptions.bad_request'
 
@@ -30,17 +30,17 @@ class MirnaXGen(viewsets.ReadOnlyModelViewSet):
             raise ParseError(detail="mirna and gene are obligatory")
 
         mirna = get_mirna_aliases(mirna)
-        instance = get_object_or_404(MirnaXGene, mirna__mirna_code__in=mirna, gene=gene)
+        instance = generics.get_object_or_404(MirnaXGene, mirna__mirna_code__in=mirna, gene=gene)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
 
 class MirnaInteractions(generics.ListAPIView):
-    """Returns a paginated response with all the interactions of a specific miRNA"""
+    """Returns a paginated response with all the interactions of a specific miRNA (mirna-interactions endpoint)"""
     serializer_class = MirnaXGenSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = [filters.OrderingFilter, filters.SearchFilter]
-    ordering_fields = ['gene', 'score', 'mirna_source.name']
+    ordering_fields = ['gene', 'score']
     ordering = ['id']
     search_fields = ['gene']
     handler400 = 'rest_framework.exceptions.bad_request'
@@ -74,6 +74,7 @@ class ProcessPost(APIView):
 
 
 class MirnaAliasesList(generics.ListAPIView):
+    """mirna-aliases endpoint"""
     serializer_class = MirnaAliasesSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
@@ -85,7 +86,7 @@ class MirnaAliasesList(generics.ListAPIView):
 
 
 class MirnaList(viewsets.ReadOnlyModelViewSet):
-    """Returns a single instance of miRNA with general data"""
+    """Returns a single instance of miRNA with general data (mirna endpoint)"""
     serializer_class = MirnaSerializer
     pagination_class = None
 
@@ -94,7 +95,7 @@ class MirnaList(viewsets.ReadOnlyModelViewSet):
         if not mirna:
             raise Http404
         aliases = get_mirna_aliases(mirna)
-        instance = get_object_or_404(Mirna, mirna_code__in=aliases)
+        instance = generics.get_object_or_404(Mirna, mirna_code__in=aliases)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
@@ -102,12 +103,13 @@ class MirnaList(viewsets.ReadOnlyModelViewSet):
         mirna = self.request.query_params.get("mirna")
         if mirna:
             aliases = get_mirna_aliases(mirna)
-            return get_object_or_404(Mirna, mirna_code__in=aliases)
+            return generics.get_object_or_404(Mirna, mirna_code__in=aliases)
         else:
             raise Http404
 
 
 class MirnaDiseaseList(generics.ListAPIView):
+    """Diseases endpoint"""
     serializer_class = MirnaDiseaseSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = [filters.OrderingFilter, filters.SearchFilter]
@@ -132,6 +134,7 @@ class MirnaDiseaseList(generics.ListAPIView):
 
 
 class MirnaDrugsList(generics.ListAPIView):
+    """Drugs endpoint"""
     serializer_class = MirnaDrugsSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = [filters.OrderingFilter, filters.SearchFilter, DjangoFilterBackend]

@@ -22,7 +22,7 @@ urlpatterns = [
     path('source/create/', views.MirnaSourcePostAndList.as_view()),
     path('mirna/', views.MirnaList.as_view({'get': 'list'})),
     path('process/', views.ProcessPost.as_view()),
-    path('mirna-target-interactions/', views.MirnaXGen.as_view({'get': 'list'})),
+    path('mirna-target-interactions/', views.MirnaTargetInteractions.as_view({'get': 'list'})),
     path('mirna-interactions/', views.MirnaInteractions.as_view()),
     path('mirna-aliases/', views.MirnaAliasesList.as_view()),
     path('diseases/', views.MirnaDiseaseList.as_view()),
