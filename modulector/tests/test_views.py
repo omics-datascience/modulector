@@ -9,7 +9,7 @@ class ViewTests(TestCase):
     def setUpTestData(cls):
         load_test_data(cls)
 
-    def checkEmptyPagination(self, response):
+    def __check_empty_pagination(self, response):
         """Checks if fields of response are valid for an empty pagination response"""
         self.assertEqual(response.data['count'], 0)
         self.assertEqual(response.data['results'], [])
@@ -17,7 +17,7 @@ class ViewTests(TestCase):
         self.assertIsNone(response.data['previous'])
 
     def testMirnaView(self):
-        """Tests mirna enpoint"""
+        """Tests mirna endpoint"""
         response = client.get('/mirna/', {'mirna': 'ASDAS_SDA@_SDASD'})
         self.assertEqual(response.status_code, 200)
 
@@ -28,11 +28,12 @@ class ViewTests(TestCase):
         self.assertTrue('links' in data)
 
     def testMirnaViewNotFound(self):
-        """Tests 404 error due to not specify the 'mirna' parameter"""
+        """Tests 404 error for mirna endpoint due to not specify the 'mirna' parameter"""
         response = client.get('/mirna/')
         self.assertEqual(response.status_code, 404)
 
     def testMirnaInteractionsView(self):
+        """Tests mirna-interactions endpoint"""
         response = client.get('/mirna-interactions/', {'mirna': 'ASDAS_SDA@_SDASD'})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['count'], 1)
@@ -49,22 +50,13 @@ class ViewTests(TestCase):
         self.assertTrue('score_class' in first_result)
 
     def testMirnaInteractionsViewNotFound(self):
-        response = client.get('/mirna-interactions/', {'mirna': 'ASDAS_SDA@_SDASD'})
+        """Test emtpy pagination for mirna-interactions endpoint"""
+        response = client.get('/mirna-interactions/', {'mirna': 'hsa-invalid'})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['count'], 1)
-
-        # Checks all fields
-        first_result = response.data['results'][0]
-        self.assertTrue('id' in first_result)
-        self.assertTrue('mirna' in first_result)
-        self.assertTrue('gene' in first_result)
-        self.assertTrue('score' in first_result)
-        self.assertTrue('source_name' in first_result)
-        self.assertTrue('pubmeds' in first_result)
-        self.assertTrue('sources' in first_result)
-        self.assertTrue('score_class' in first_result)
+        self.__check_empty_pagination(response)
 
     def testMirnaXGenView(self):
+        """Tests mirna-target-interactions endpoint"""
         response = client.get('/mirna-target-interactions/', {'mirna': 'ASDAS_SDA@_SDASD', 'gene': 'GEN_1'})
         self.assertEqual(response.status_code, 200)
 
@@ -79,11 +71,18 @@ class ViewTests(TestCase):
         self.assertTrue('sources' in data)
         self.assertTrue('score_class' in data)
 
+    def testMirnaXGenViewNotFound(self):
+        """Tests 404 error for mirna-target-interaction endpoint due to non-existent miRNA and gene"""
+        response = client.get('/mirna-target-interactions/', {'mirna': 'hsa-invalid', 'gene': 'gene-invalid'})
+        self.assertEqual(response.status_code, 404)
+
     def testMirnaAliasesView(self):
+        """Tests mirna-aliases endpoint"""
         response = client.get('/mirna-aliases/')
         self.assertEqual(response.status_code, 200)
 
     def testDiseasesView(self):
+        """Tests diseases endpoint"""
         response = client.get('/diseases/')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['count'], 1)
@@ -96,13 +95,13 @@ class ViewTests(TestCase):
         self.assertTrue('description' in first_result)
 
     def testDiseasesViewNotFound(self):
-        """Test emtpy pagination for Diseases endpoint"""
+        """Test emtpy pagination for diseases endpoint"""
         response = client.get('/diseases/', {'mirna': 'hsa-invalid'})
         self.assertEqual(response.status_code, 200)
-        self.checkEmptyPagination(response)
+        self.__check_empty_pagination(response)
 
     def testDrugsView(self):
-        """Test Drugs endpoint"""
+        """Test drugs endpoint"""
         response = client.get('/drugs/')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['count'], 1)
@@ -120,11 +119,12 @@ class ViewTests(TestCase):
         self.assertTrue('support' in first_result)
 
     def testDrugsViewNotFound(self):
-        """Test emtpy pagination for Drugs endpoint"""
+        """Test emtpy pagination for drugs endpoint"""
         response = client.get('/drugs/',  {'mirna': 'hsa-invalid'})
         self.assertEqual(response.status_code, 200)
-        self.checkEmptyPagination(response)
+        self.__check_empty_pagination(response)
 
     def testRootView(self):
+        """Tests / endpoint"""
         response = client.get('/')
         self.assertEqual(response.status_code, 200)
