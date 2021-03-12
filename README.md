@@ -51,7 +51,14 @@ The search is done on the basis of a single parameter called `search` which must
 Some services can return so many items that paginated responses were chosen, so that they are efficient queries of few items and can be traversed through parameterizable pages. There are two parameters that can be specified to handle pagination:
 
 - `page`: allows you to specify the current page. If not specified, the default value `1` is used.
-- page_size`: number of elements to return per page. If not specified, the default value `10` is used. The value cannot be greater than `1000`.
+- `page_size`: number of elements to return per page. If not specified, the default value `10` is used. The value cannot be greater than `1000`.
+
+All the paginated responses contain the following fields:
+
+- `count`: total number of elements in Modulector database. This field is useful to compute number of pages (which is equal to `ceil(count / page_size)`).
+- `next`: link to the next page.
+- `previous`: link to the previous page.
+- `results`: array of elements (the structure of each element depends on the service and is explained in detail in the [services](#services) section).
 
 
 ### Combining functions
@@ -65,9 +72,9 @@ All of the above parameters can be used together! For example, if we wanted to c
 
 ## Services
 
-### Mirna interactions
+### MiRNA interactions
 
-Returns a paginated response with data about miRNA-Genes interactions.
+Receives a miRNA ID (mirbase MIMAT ID or previous ID) and returns a paginated vector. Each vector entry represents a miRNA-Gene interaction.
 
 - URL: `/mirna-interactions`
   
@@ -83,22 +90,22 @@ Returns a paginated response with data about miRNA-Genes interactions.
 - Success Response:
   - Code: 200
   - Content: 
-    - `id`: internal ID of the interaction
-    - `mirna`: miRNA
-    - `gene`: target gene
-    - `score`: interaction score
-    - `source_name`: score source name
-    - `pubmeds`: array of pubmed for the interaction
-    - `sources`: sources that support the interaction
+    - `id`: internal ID of the interaction.
+    - `mirna`: miRNA ID (mirbase MIMAT id or previous ID). The received one as query param.
+    - `gene`: target gene.
+    - `score`: interaction score (according mirDIP).
+    - `source_name`: database from which the interaction was extracted.
+    - `pubmeds`: array of pubmed for the miRNA-gene interaction (according to mirTaRBase).
+    - `sources`: miRNA-Gene interaction sources which publish this interaction. mirDIP score is based on the scores of those sources. This field is an array that contains the interaction score source names.
     - `score_class`: `L` (Low), `M` (Medium), `H` (High) or `V` (Very high)
 - Error Response:
   - Code: 200
-  - Content: empty paginated response (number of elements = 0)
+  - Content: empty paginated response (`count` = 0)
 
 
-### Mirna target interactions
+### MiRNA target interactions
 
-Returns the information related to the interaction between a miRNA and a target gene, including related publications and the score related to the interaction.
+Receives a miRNA ID (mirbase MIMAT ID or previous ID) and a gene returns the information about its interaction, including related publications and the interaction score.
 
 - URL: `/mirna-target-interactions`
   
@@ -115,20 +122,20 @@ Returns the information related to the interaction between a miRNA and a target 
 - Success Response:
   - Code: 200
   - Content: 
-    - `id`: internal ID of the interaction
-    - `mirna`: miRNA
-    - `gene`: target gene
-    - `score`: interaction score
-    - `source_name`: score source name
-    - `pubmeds`: array of pubmed for the interaction
-    - `sources`: sources that support the interaction
+    - `id`: internal ID of the interaction.
+    - `mirna`: miRNA ID (mirbase MIMAT id or previous ID). The received one as query param.
+    - `gene`: target gene.
+    - `score`: interaction score (according mirDIP).
+    - `source_name`: database from which the interaction was extracted.
+    - `pubmeds`: array of pubmed for the miRNA-gene interaction (according to mirTaRBase).
+    - `sources`: miRNA-Gene interaction sources which publish this interaction. mirDIP score is based on the scores of those sources. This field is an array that contains the interaction score source names.
     - `score_class`: `L` (Low), `M` (Medium), `H` (High) or `V` (Very high)
 - Error Response:
   - Code: 404
   - Content: -
 
 
-### Mirna details
+### MiRNA details
 
 Returns extra information of a miRNA.
 
@@ -146,16 +153,16 @@ Returns extra information of a miRNA.
 - Success Response:
   - Code: 200
   - Content: 
-    - `aliases`: array of miRNA aliases
-    - `mirna_sequence`: miRNA nucleotide sequence
-    - `mirbase_accession_id`: miRNA accession ID
-    - `links` array of sources with name and URL
+    - `aliases`: array of miRNA aliases (previous IDs according to mirBase).
+    - `mirna_sequence`: miRNA nucleotide sequence.
+    - `mirbase_accession_id`: miRNA accession ID (MIMAT).
+    - `links` array of URLs with extra information about this miRNA.
 - Error Response:
   - Code: 404
   - Content: -
 
 
-### Mirna aliases
+### MiRNA aliases
 
 Returns a paginated response with aliases of a miRNA.
 
@@ -172,8 +179,8 @@ Returns a paginated response with aliases of a miRNA.
 - Success Response:
   - Code: 200
   - Content: 
-    - `mirbase_accession_id`: miRNA accession ID
-    - `mature_mirna`: miRNA code
+    - `mirbase_accession_id`: miRNA mirBase accession ID (MIMAT).
+    - `mature_mirna`: previous ID (according to mirBase).
 - Error Response: -
 
 
@@ -195,11 +202,11 @@ Returns a paginated response of diseases related to a miRNA.
 - Success Response:
   - Code: 200
   - Content: 
-    - `id`: internal ID of the record
-    - `category`: disease category
-    - `disease`: disease name
-    - `pubmed`: Pubmed URL
-    - `description`: disease description
+    - `id`: internal ID of the record.
+    - `category`: disease category.
+    - `disease`: disease name.
+    - `pubmed`: Pubmed URL.
+    - `description`: description about why this miRNA is related to this disease.
 - Error Response:
   - Code: 200
   - Content: empty paginated response (number of elements = 0)
@@ -207,7 +214,7 @@ Returns a paginated response of diseases related to a miRNA.
 
 ### Drugs
 
-Returns a paginated response of drugs related to a miRNA.
+Returns a paginated response of experimentally validated small molecules (or drugs) effects on miRNA expression.
 
 - URL: `/drugs`
   
@@ -223,15 +230,15 @@ Returns a paginated response of drugs related to a miRNA.
 - Success Response:
   - Code: 200
   - Content: 
-    - `id`: internal ID of the record
-    - `small_molecule`: drug
-    - `fda_approved`: true if the drug is approved by the Food and Drug Administration
-    - `detection_method`: detection method for drug
-    - `condition`: condition in which drug is applied
-    - `pubmed`: Pubmed URL
-    - `reference`: reference title
-    - `expression_pattern`: expression pattern
-    - `support`: <!-- TODO: complete and check others -->
+    - `id`: internal ID of the record.
+    - `small_molecule`: small molecule (or drug).
+    - `fda_approved`: approved by FDA or not.
+    - `detection_method`: experimental detection method.
+    - `condition`: tissues or conditions for detection.
+    - `pubmed`: Pubmed URL.
+    - `reference`: reference title.
+    - `expression_pattern`: expression pattern of miRNA.
+    - `support`: support information for this effect.
 - Error Response:
   - Code: 200
   - Content: empty paginated response (number of elements = 0)
