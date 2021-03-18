@@ -23,11 +23,12 @@ parent_dir = pathlib.Path(__file__).parent.absolute().parent
 mirna_dict = dict()
 
 
-def process(mirna_source: MirnaSource):
+def process():
     """
     This functions process the data from I2D and loads the
     mirna gene table
     """
+    mirna_source = MirnaSource.objects.first()
     # Do to the size of this file, you should download it from the release files section. It is not in the repo.
     file_path = os.path.join(parent_dir, "files/mirdip.txt")
     logger.info("loading data for i2d")

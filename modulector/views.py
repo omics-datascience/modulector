@@ -1,4 +1,5 @@
 import re
+
 from django.conf import settings
 from django.http import Http404
 from django.shortcuts import render
@@ -7,12 +8,14 @@ from rest_framework import status, generics, filters, viewsets
 from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from modulector.models import MirnaXGene, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrug
+
+from modulector.models import MirnaXGene, Mirna, MirbaseIdMirna, MirnaDisease, MirnaDrug
 from modulector.pagination import StandardResultsSetPagination
-from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
+from modulector.serializers import MirnaXGenSerializer, MirnaSerializer, \
     MirnaAliasesSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer, get_mirna_from_accession, \
     get_mirna_aliases
 from modulector.services import processor_service
+from modulector.services.processor_service import validate_processing_parameters
 
 regex = re.compile(r'-\d[a-z]')
 
@@ -54,22 +57,11 @@ class MirnaInteractions(generics.ListAPIView):
             return MirnaXGene.objects.filter(mirna__mirna_code__in=mirna)
 
 
-class MirnaSourcePostAndList(APIView):
+class Process(APIView):
     @staticmethod
-    def post(request):
-        serializer = MirnaSourceSerializer(data=request.data)
-        if serializer.is_valid():
-            source = serializer.save()
-            source.columns = MirnaColumns.objects.filter(mirna_source_id=source.id)
-            serializer = MirnaSourceSerializer(source)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class ProcessPost(APIView):
-    @staticmethod
-    def post(request):
-        processor_service.execute((request.data["source_id"]))
+    def get(request):
+        commands = validate_processing_parameters(request)
+        processor_service.execute(commands)
         return Response("data processed", status=status.HTTP_200_OK)
 
 

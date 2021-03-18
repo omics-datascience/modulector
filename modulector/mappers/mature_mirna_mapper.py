@@ -8,7 +8,7 @@ from django.db import connection
 input_file = "files/aliases.txt"
 
 
-def execute():
+def process():
     parent_dir = pathlib.Path(__file__).parent.absolute().parent
     path = os.path.join(parent_dir, input_file)
     df = pd.read_csv(filepath_or_buffer=path, delimiter='\t', names=['mirbase_accession_id', 'mirna'])
