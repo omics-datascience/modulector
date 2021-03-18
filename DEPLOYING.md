@@ -111,7 +111,7 @@ That command will restore the database using a compressed dump as source
 
 **If you need to regenerate all, or some of the data**
 
-1. Download `files.gz`
+1. Download `files.zip`
    from [Modulector releases pages](https://github.com/multiomics-datascience/modulector-backend/releases) and place it
    inside the files folder **(this folder is ignored by git)**
 2. http://127.0.0.1:8000/process/?commands=
