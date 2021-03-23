@@ -21,13 +21,16 @@ def process():
     # loading files
     data = pd.read_csv(filepath_or_buffer=file_path,
                        delimiter=delimiter, encoding="ISO-8859-1")
-    table_name = MirnaDisease._meta.db_table
     entities = []
     with transaction.atomic():
         logger.info("inserting data")
         for index, row in data.iterrows():
             category, mirna, disease, pmid, description = row
 
+            # This line is in charge of capitalizing the R for the mirna, we must treat it as mature
+            # In the file are all lowercase, but in the website which provides said file, they
+            # are listed as mature. This will also maintain consistency from our side.
+            mirna = mirna.lower()[:6].lower() + mirna.lower()[6:].capitalize()
             # correcting fields because the send quotes sometimes
             disease = disease.replace("\"", "")
             description = description.replace("\"", "")

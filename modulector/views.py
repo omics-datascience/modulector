@@ -117,8 +117,8 @@ class MirnaDiseaseList(generics.ListAPIView):
                 mirna = get_mirna_from_accession(mirna)
                 result = result.filter(mirna__in=mirna)
             else:
-                mirna = mirna.lower()
-                # TODO: add documentation
+                # This regex is implemented in case that we received a mature mirna
+                # that also -5p or -3p (for example) suffix, we remove it to search
                 if mirna.count('-') == 3:
                     mirna = re.sub(regex, "", mirna)
                 result = result.filter(mirna__contains=mirna)
