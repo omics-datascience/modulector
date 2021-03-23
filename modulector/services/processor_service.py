@@ -1,6 +1,7 @@
 from modulector.exceptions.exceptions import CommandNotPresentException
 from modulector.mappers import mature_mirna_mapper, ref_seq_mapper, gene_mapper
-from modulector.processors import mirdip_processor, drugs_processor, disease_processor, sequence_processor
+from modulector.processors import mirdip_processor, drugs_processor, disease_processor, sequence_processor, \
+    gene_alias_processor
 
 commands_map = {
     "drugs": drugs_processor,
@@ -9,7 +10,9 @@ commands_map = {
     "ref_seq": ref_seq_mapper,
     "gene": gene_mapper,
     "sequence": sequence_processor,
-    "mirdip": mirdip_processor
+    "mirdip": mirdip_processor,
+    "gene_aliases": gene_alias_processor
+
 }
 
 

@@ -1,4 +1,5 @@
-from typing import List, Optional
+from typing import Optional
+
 from django.db import models
 from django.db.models import QuerySet
 
@@ -113,3 +114,11 @@ class MirnaDrug(models.Model):
 
     class Meta:
         db_table = 'modulector_mirnadrugs'
+
+
+class GeneAliases(models.Model):
+    gene_symbol = models.CharField(max_length=50, blank=False)
+    alias = models.CharField(max_length=50, blank=False)
+
+    class Meta:
+        db_table = 'modulector_gene_aliases'
