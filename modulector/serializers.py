@@ -1,6 +1,9 @@
 from typing import List, Optional, Dict
+
 from rest_framework import serializers
-from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrug
+
+from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrug, \
+    GeneAliases
 from modulector.services import url_service
 from modulector.utils import link_builder
 
@@ -68,6 +71,12 @@ class MirnaAliasesSerializer(serializers.ModelSerializer):
     class Meta:
         model = MirbaseIdMirna
         fields = ['mirbase_accession_id', 'mature_mirna']
+
+
+class GeneAliasesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GeneAliases
+        fields = ['gene_symbol', 'alias']
 
 
 class MirnaSerializer(serializers.ModelSerializer):

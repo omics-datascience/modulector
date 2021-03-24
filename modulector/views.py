@@ -14,7 +14,7 @@ from modulector.models import MirnaXGene, Mirna, MirbaseIdMirna, MirnaDisease, M
 from modulector.pagination import StandardResultsSetPagination
 from modulector.serializers import MirnaXGenSerializer, MirnaSerializer, \
     MirnaAliasesSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer, get_mirna_from_accession, \
-    get_mirna_aliases
+    get_mirna_aliases, GeneAliasesSerializer
 from modulector.services import processor_service
 from modulector.services.processor_service import validate_processing_parameters
 
@@ -22,6 +22,7 @@ regex = re.compile(r'-\d[a-z]')
 
 
 def get_gene_aliases(gene):
+    """ Gathers the aliases for a gene based on the gene provided"""
     gene_codes = set()
     genes = GeneAliases.objects.filter(Q(alias=gene) | Q(gene_symbol=gene))
     if genes:
@@ -89,6 +90,18 @@ class MirnaAliasesList(generics.ListAPIView):
 
     def get_queryset(self):
         return MirbaseIdMirna.objects.all()
+
+
+class GeneAliasesList(generics.ListAPIView):
+    """gene-aliases endpoint"""
+    serializer_class = GeneAliasesSerializer
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
+    ordering = ['gene_symbol']
+    filterset_fields = ['gene_symbol', 'alias']
+
+    def get_queryset(self):
+        return GeneAliases.objects.all()
 
 
 class MirnaList(viewsets.ReadOnlyModelViewSet):

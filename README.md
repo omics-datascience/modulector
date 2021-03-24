@@ -9,7 +9,7 @@ information from different databases. It offers data about:
 - [miRNA aliases](#mirna-aliases)
 - [Diseases](#diseases)
 - [Drugs](#drugs)
-- Genes aliases
+- [Gene aliases](#gene-aliases)
 
 ## Usage
 
@@ -265,6 +265,27 @@ Returns a paginated response of experimentally validated small molecules (or dru
 - Additional details:
   **We are concatenating the 'hsa' prefix for all the drugs records because the file that we are using does not have it
   and to maintain consistency with the format for mature mirnas**
+
+### Gene Aliases
+
+Returns the aliases associated with a gene_symbol
+
+- URL: `/gene-aliases`
+
+- Functions:
+    - Ordering fields: `gene_symbol`
+    - Filtering fields: `gene_symbol` and `alias`
+    - Pagination: yes
+
+- Success Response:
+    - Code: 200
+    - Content:
+        - `gene_symbol`: current gene symbol.
+        - `alias`: alias associated with said symbol.
+- Error Response:
+    - Code: 200
+    - Content: empty paginated response (number of elements = 0)
+
 
 ## Contributing
 
