@@ -15,7 +15,7 @@ from modulector.pagination import StandardResultsSetPagination
 from modulector.serializers import MirnaXGenSerializer, MirnaSerializer, \
     MirnaAliasesSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer, get_mirna_from_accession, \
     get_mirna_aliases, GeneAliasesSerializer
-from modulector.services import processor_service
+from modulector.services import processor_service, subscription_service
 from modulector.services.processor_service import validate_processing_parameters
 
 regex = re.compile(r'-\d[a-z]')
@@ -173,6 +173,25 @@ class MirnaDrugsList(generics.ListAPIView):
 
             query_set = query_set.filter(mature_mirna__contains=mirna)
         return query_set
+
+
+class SubscribeUserToPubmed(APIView):
+    @staticmethod
+    def put(request):
+        email = request.query_params.get("email")
+        mirna = request.query_params.get("mirna")
+        gene = request.query_params.get("gene")
+        token = subscription_service.subscribe_user(email=email, mirna=mirna, gene=gene)
+        return Response("Subscription completed, your token is = " + token, status=status.HTTP_200_OK)
+
+
+class UnsubscribeUserToPubmed(APIView):
+    @staticmethod
+    def delete(request):
+        email = request.query_params.get("email")
+        token = request.query_params.get("token")
+        subscription_service.unsubscribe_user(email=email, token=token)
+        return Response("Your subscription has been deleted", status=status.HTTP_200_OK)
 
 
 def index(request):

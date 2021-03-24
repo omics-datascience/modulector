@@ -2,6 +2,7 @@ from typing import Optional
 
 from django.db import models
 from django.db.models import QuerySet
+from django.utils.timezone import now
 
 
 class DatasetSeparator(models.TextChoices):
@@ -122,3 +123,15 @@ class GeneAliases(models.Model):
 
     class Meta:
         db_table = 'modulector_gene_aliases'
+
+
+class Subscription(models.Model):
+    email = models.CharField(max_length=100, blank=False)
+    unsubscribe_token = models.CharField(max_length=200, blank=False)
+
+
+class SubscriptionItem(models.Model):
+    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE)
+    mirna = models.CharField(max_length=100, blank=False)
+    gene = models.CharField(max_length=100, blank=True)
+    record_date = models.DateTimeField(default=now())

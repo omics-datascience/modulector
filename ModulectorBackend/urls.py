@@ -28,5 +28,8 @@ urlpatterns = [
     path('diseases/', views.MirnaDiseaseList.as_view()),
     path('drugs/', views.MirnaDrugsList.as_view()),
     path('gene-aliases/', views.GeneAliasesList.as_view()),
+    path('subscribe-pubmeds/', views.SubscribeUserToPubmed.as_view()),
+    path('unsubscribe-pubmeds/', views.UnsubscribeUserToPubmed.as_view()),
+
     path('', views.index)
 ]
