@@ -1,6 +1,7 @@
 import re
 
 from django.conf import settings
+from django.db.models.query_utils import Q
 from django.http import Http404
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
@@ -9,7 +10,7 @@ from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from modulector.models import MirnaXGene, Mirna, MirbaseIdMirna, MirnaDisease, MirnaDrug
+from modulector.models import MirnaXGene, Mirna, MirbaseIdMirna, MirnaDisease, MirnaDrug, GeneAliases
 from modulector.pagination import StandardResultsSetPagination
 from modulector.serializers import MirnaXGenSerializer, MirnaSerializer, \
     MirnaAliasesSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer, get_mirna_from_accession, \
@@ -18,6 +19,18 @@ from modulector.services import processor_service
 from modulector.services.processor_service import validate_processing_parameters
 
 regex = re.compile(r'-\d[a-z]')
+
+
+def get_gene_aliases(gene):
+    gene_codes = set()
+    genes = GeneAliases.objects.filter(Q(alias=gene) | Q(gene_symbol=gene))
+    if genes:
+        main_code = genes.first().gene_symbol
+        codes = GeneAliases.objects.filter(gene_symbol=main_code)
+        gene_codes = set(code.alias for code in codes)
+        gene_codes.add(main_code)
+    gene_codes.add(gene)
+    return gene_codes
 
 
 class MirnaTargetInteractions(viewsets.ReadOnlyModelViewSet):
@@ -32,8 +45,9 @@ class MirnaTargetInteractions(viewsets.ReadOnlyModelViewSet):
         if not mirna or not gene:
             raise ParseError(detail="mirna and gene are obligatory")
 
+        gene_aliases = get_gene_aliases(gene=gene)
         mirna = get_mirna_aliases(mirna)
-        instance = generics.get_object_or_404(MirnaXGene, mirna__mirna_code__in=mirna, gene=gene)
+        instance = generics.get_object_or_404(MirnaXGene, mirna__mirna_code__in=mirna, gene__in=gene_aliases)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
