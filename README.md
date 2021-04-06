@@ -10,6 +10,9 @@ information from different databases. It offers data about:
 - [Diseases](#diseases)
 - [Drugs](#drugs)
 - [Gene aliases](#gene-aliases)
+- [Subscribe to PUBMEDS](#subscribe-to-pubmeds-news)
+- [Unsubscribe to PUBMEDS](#unsubscribe-from-pubmeds-news)
+
 
 ## Usage
 
@@ -285,6 +288,42 @@ Returns the aliases associated with a gene_symbol
 - Error Response:
     - Code: 200
     - Content: empty paginated response (number of elements = 0)
+
+### Subscribe to PUBMEDS news
+
+Subscribes an email to our email service that sends news about new pubmeds associated to a mirna and/or gene
+
+- URL: `/subscribe-pubmeds/`
+
+- Required query params:
+    - `mirna`: miRNA (miRNA code or Accession ID)
+    - `email`: valid email addres to send the information to
+- Optional query params:
+    - `gene`: this param allows the user to filter with the mirna and the gene
+    
+
+- Success Response:
+    - Code: 200
+    - Content:
+        - `token`: subscription token.
+- Error Response:
+    - Code: 400
+
+### Unsubscribe from PUBMEDS news
+
+Subscribes an email to our email service that sends news about new pubmeds associated to a mirna and/or gene
+
+- URL: `/unsubscribe-pubmeds/`
+
+- Required query params:
+    - `token`: token that references the subscription
+    
+
+- Success Response:
+    - Code: 200
+- Error Response:
+    - Code: 400
+
 
 
 ## Contributing
