@@ -127,11 +127,11 @@ class GeneAliases(models.Model):
 
 class Subscription(models.Model):
     email = models.CharField(max_length=100, blank=False)
-    unsubscribe_token = models.CharField(max_length=200, blank=False)
 
 
 class SubscriptionItem(models.Model):
     subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE)
     mirna = models.CharField(max_length=100, blank=False)
-    gene = models.CharField(max_length=100, blank=True)
+    gene = models.CharField(max_length=100, null=True)
     record_date = models.DateTimeField(default=now())
+    unsubscribe_token = models.CharField(max_length=200, blank=False)

@@ -14,17 +14,20 @@ def subscribe_user(email, mirna, gene):
     unsubscribe_token = token_generator.hexdigest()
     with transaction.atomic():
         subscription, created = Subscription.objects.get_or_create(email=email)
+        item, created = SubscriptionItem.objects.get_or_create(mirna=mirna, gene=gene, subscription=subscription)
         if created:
-            subscription.unsubscribe_token = unsubscribe_token
-            subscription.save()
-        SubscriptionItem.objects.get_or_create(mirna=mirna, gene=gene, subscription=subscription)
+            item.unsubscribe_token = unsubscribe_token
+            item.save()
+        else:
+            unsubscribe_token = item.unsubscribe_token
     return unsubscribe_token
 
 
-def unsubscribe_user(email, token):
-    result = Subscription.objects.filter(email=email).get()
+def unsubscribe_user(token):
+    result = SubscriptionItem.objects.filter(unsubscribe_token=token).get()
     if result:
-        if result.unsubscribe_token != token:
-            # TODO throw exception
-            print("mr wrong")
-        result.delete()
+        with transaction.atomic():
+            subscription = result.subscription
+            result.delete()
+            if SubscriptionItem.objects.filter(subscription=subscription).count() == 0:
+                subscription.delete()

@@ -29,11 +29,16 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+# Modulector unsubscribe endpoint
+UNSUBSCRIBE_URL = 'http://localhost:8000/unsubscribe-pubmeds/?token='
+DEFAULT_FROM_EMAIL = 'multiomix@gmail.com'
+NCBI_API_KEY = '61a2e5671d5d57b8dde8a61cad17eec99709'
 # Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
+    'django_crontab',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -42,6 +47,10 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'django_generate_secret_key'
+]
+
+CRONJOBS = [
+    ('*/1 * * * *', 'modulector.cron.my_scheduled_job')
 ]
 
 MIDDLEWARE = [
@@ -140,3 +149,12 @@ STATIC_URL = '/static/'
 # Media files
 MEDIA_ROOT = os.getenv('MEDIA_ROOT', os.path.join(BASE_DIR, ''))
 MEDIA_URL = os.getenv('MEDIA_URL', '/media/')
+
+# Email Server
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# This email configuration is what postfix uses, for production, use your own
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = '25'
+EMAIL_HOST_PASSWORD = ''
+EMAIL_HOST_PASSWORD = ''
+EMAIL_USE_TLS = False
