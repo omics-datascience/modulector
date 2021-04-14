@@ -2,8 +2,10 @@ import logging
 import os
 import pathlib
 import sys
+
 import pandas as pd
 from django.db import transaction, connection
+
 from modulector.models import MirnaDrug
 
 logger = logging.getLogger(__name__)
@@ -25,13 +27,14 @@ def process():
         for index, row in data.iterrows():
             mature_mirna, mirbase_accession_id, small_molecule, fda, detection_method, condition, pmid, \
             reference, suppport, expression_pattern = row
-
-            mature_mirna = 'hsa-' + mature_mirna.lower()
+            # We must prepend the hsa because the file we process does not have it
+            mature_mirna = 'hsa-' + mature_mirna
             fda = (fda == 'approved')
             if pd.isna(mirbase_accession_id):
                 mirbase_accession_id = ''
 
-            mirna_drug = MirnaDrug(mature_mirna=mature_mirna, mirbase_accession_id=mirbase_accession_id, small_molecule=small_molecule,
+            mirna_drug = MirnaDrug(mature_mirna=mature_mirna, mirbase_accession_id=mirbase_accession_id,
+                                   small_molecule=small_molecule,
                                    fda_approved=fda, detection_method=detection_method, condition=condition,
                                    pubmed_id=pmid,
                                    reference=reference, support=suppport, expression_pattern=expression_pattern)

@@ -15,4 +15,4 @@ def build_pubmed_url(pubmed_id) -> str:
     :param pubmed_id: Pubmed ID to concatenate to Pubmed URL
     :return: Pubmed URL
     """
-    return "https://pubmed.ncbi.nlm.nih.gov/" + str(pubmed_id) + "/"
+    return "https://pubmed.ncbi.nlm.nih.gov/" + str(pubmed_id)

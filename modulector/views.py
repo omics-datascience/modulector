@@ -1,5 +1,7 @@
 import re
+
 from django.conf import settings
+from django.db.models.query_utils import Q
 from django.http import Http404
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
@@ -7,14 +9,29 @@ from rest_framework import status, generics, filters, viewsets
 from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from modulector.models import MirnaXGene, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrug
+
+from modulector.models import MirnaXGene, Mirna, MirbaseIdMirna, MirnaDisease, MirnaDrug, GeneAliases
 from modulector.pagination import StandardResultsSetPagination
-from modulector.serializers import MirnaXGenSerializer, MirnaSourceSerializer, MirnaSerializer, \
+from modulector.serializers import MirnaXGenSerializer, MirnaSerializer, \
     MirnaAliasesSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer, get_mirna_from_accession, \
-    get_mirna_aliases
-from modulector.services import processor_service
+    get_mirna_aliases, GeneAliasesSerializer
+from modulector.services import processor_service, subscription_service
+from modulector.services.processor_service import validate_processing_parameters
 
 regex = re.compile(r'-\d[a-z]')
+
+
+def get_gene_aliases(gene):
+    """ Gathers the aliases for a gene based on the gene provided"""
+    gene_codes = set()
+    genes = GeneAliases.objects.filter(Q(alias=gene) | Q(gene_symbol=gene))
+    if genes:
+        main_code = genes.first().gene_symbol
+        codes = GeneAliases.objects.filter(gene_symbol=main_code)
+        gene_codes = set(code.alias for code in codes)
+        gene_codes.add(main_code)
+    gene_codes.add(gene)
+    return gene_codes
 
 
 class MirnaTargetInteractions(viewsets.ReadOnlyModelViewSet):
@@ -29,8 +46,9 @@ class MirnaTargetInteractions(viewsets.ReadOnlyModelViewSet):
         if not mirna or not gene:
             raise ParseError(detail="mirna and gene are obligatory")
 
+        gene_aliases = get_gene_aliases(gene=gene)
         mirna = get_mirna_aliases(mirna)
-        instance = generics.get_object_or_404(MirnaXGene, mirna__mirna_code__in=mirna, gene=gene)
+        instance = generics.get_object_or_404(MirnaXGene, mirna__mirna_code__in=mirna, gene__in=gene_aliases)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
@@ -54,22 +72,11 @@ class MirnaInteractions(generics.ListAPIView):
             return MirnaXGene.objects.filter(mirna__mirna_code__in=mirna)
 
 
-class MirnaSourcePostAndList(APIView):
+class Process(APIView):
     @staticmethod
-    def post(request):
-        serializer = MirnaSourceSerializer(data=request.data)
-        if serializer.is_valid():
-            source = serializer.save()
-            source.columns = MirnaColumns.objects.filter(mirna_source_id=source.id)
-            serializer = MirnaSourceSerializer(source)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class ProcessPost(APIView):
-    @staticmethod
-    def post(request):
-        processor_service.execute((request.data["source_id"]))
+    def get(request):
+        commands = validate_processing_parameters(request)
+        processor_service.execute(commands)
         return Response("data processed", status=status.HTTP_200_OK)
 
 
@@ -83,6 +90,18 @@ class MirnaAliasesList(generics.ListAPIView):
 
     def get_queryset(self):
         return MirbaseIdMirna.objects.all()
+
+
+class GeneAliasesList(generics.ListAPIView):
+    """gene-aliases endpoint"""
+    serializer_class = GeneAliasesSerializer
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
+    ordering = ['gene_symbol']
+    filterset_fields = ['gene_symbol', 'alias']
+
+    def get_queryset(self):
+        return GeneAliases.objects.all()
 
 
 class MirnaList(viewsets.ReadOnlyModelViewSet):
@@ -125,8 +144,8 @@ class MirnaDiseaseList(generics.ListAPIView):
                 mirna = get_mirna_from_accession(mirna)
                 result = result.filter(mirna__in=mirna)
             else:
-                mirna = mirna.lower()
-                # TODO: add documentation
+                # This regex is implemented in case that we received a mature mirna
+                # that also -5p or -3p (for example) suffix, we remove it to search
                 if mirna.count('-') == 3:
                     mirna = re.sub(regex, "", mirna)
                 result = result.filter(mirna__contains=mirna)
@@ -154,6 +173,24 @@ class MirnaDrugsList(generics.ListAPIView):
 
             query_set = query_set.filter(mature_mirna__contains=mirna)
         return query_set
+
+
+class SubscribeUserToPubmed(APIView):
+    @staticmethod
+    def get(request):
+        email = request.query_params.get("email")
+        mirna = request.query_params.get("mirna")
+        gene = request.query_params.get("gene")
+        token = subscription_service.subscribe_user(email=email, mirna=mirna, gene=gene)
+        return Response({'token': token}, status=status.HTTP_200_OK)
+
+
+class UnsubscribeUserToPubmed(APIView):
+    @staticmethod
+    def get(request):
+        token = request.query_params.get("token")
+        subscription_service.unsubscribe_user(token=token)
+        return Response("Your subscription has been deleted", status=status.HTTP_200_OK)
 
 
 def index(request):

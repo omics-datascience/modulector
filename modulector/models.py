@@ -1,6 +1,8 @@
-from typing import List, Optional
+from typing import Optional
+
 from django.db import models
 from django.db.models import QuerySet
+from django.utils.timezone import now
 
 
 class DatasetSeparator(models.TextChoices):
@@ -113,3 +115,23 @@ class MirnaDrug(models.Model):
 
     class Meta:
         db_table = 'modulector_mirnadrugs'
+
+
+class GeneAliases(models.Model):
+    gene_symbol = models.CharField(max_length=50, blank=False)
+    alias = models.CharField(max_length=50, blank=False)
+
+    class Meta:
+        db_table = 'modulector_gene_aliases'
+
+
+class Subscription(models.Model):
+    email = models.CharField(max_length=100, blank=False)
+
+
+class SubscriptionItem(models.Model):
+    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE)
+    mirna = models.CharField(max_length=100, blank=False)
+    gene = models.CharField(max_length=100, null=True)
+    record_date = models.DateTimeField(default=now())
+    unsubscribe_token = models.CharField(max_length=200, blank=False)

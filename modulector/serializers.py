@@ -1,7 +1,10 @@
 from typing import List, Optional, Dict
+
 from rest_framework import serializers
-from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrug
-from modulector.services import url_service
+
+from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrug, \
+    GeneAliases
+from modulector.services import url_service, pubmed_service
 from modulector.utils import link_builder
 
 
@@ -49,7 +52,17 @@ class MirnaXGenSerializer(serializers.ModelSerializer):
         :param mirna_gene_interaction: miRNA-Gene interaction
         :return: List of Pubmed URLs
         """
-        return list(mirna_gene_interaction.pubmed.values_list('pubmed_url', flat=True))
+        pubmed_urls = set()
+        pubmed_urls.update(list(mirna_gene_interaction.pubmed.values_list('pubmed_url', flat=True)))
+        mirna = mirna_gene_interaction.mirna.mirna_code
+        gene = mirna_gene_interaction.gene
+        term = pubmed_service.build_search_term(mirna, gene)
+        api_pubmeds = pubmed_service.query_parse_and_build_pumbeds(term=term, mirna=mirna, gene=gene, timeout=1)
+        if api_pubmeds:
+            for pubmed_id in api_pubmeds:
+                url = link_builder.build_pubmed_url(pubmed_id)
+                pubmed_urls.add(url)
+        return pubmed_urls
 
     @staticmethod
     def get_sources(mirna_gene_interaction: MirnaXGene) -> List[str]:
@@ -68,6 +81,12 @@ class MirnaAliasesSerializer(serializers.ModelSerializer):
     class Meta:
         model = MirbaseIdMirna
         fields = ['mirbase_accession_id', 'mature_mirna']
+
+
+class GeneAliasesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GeneAliases
+        fields = ['gene_symbol', 'alias']
 
 
 class MirnaSerializer(serializers.ModelSerializer):

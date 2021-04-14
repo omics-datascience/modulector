@@ -53,6 +53,8 @@ The entire contributing process consists in the following steps:
         - `npm run dev`: transpiles the sources in development mode.
         - `npm run watch`: transpiles the sources in development mode with the `--watch` flag.
         - `npm run prod`: transpiles the sources in production mode.
+1. If you need to test the email server:
+    1. We use a local smtp server called postfix, you can find a guide on how to set it up [here](https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-postfix-as-a-send-only-smtp-server-on-ubuntu-18-04-es)
 
 
 ## Linter

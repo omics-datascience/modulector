@@ -9,7 +9,7 @@ parent_dir = pathlib.Path(__file__).parent.absolute().parent
 path = os.path.join(parent_dir, "files/ref_seq_to_symbols.txt")
 
 
-def execute():
+def process():
     translations = load_translations()
     with transaction.atomic():
         insert_query_prefix = f'INSERT INTO modulector_genesymbolmapping (refseq, symbol) VALUES '
