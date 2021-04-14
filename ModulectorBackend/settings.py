@@ -50,9 +50,10 @@ INSTALLED_APPS = [
 ]
 
 CRONJOBS = [
-    ('*/1 * * * *', 'modulector.cron.my_scheduled_job')
+    ('0 0 * * SAT', 'modulector.pubmed_job.execute', '>> ' + BASE_DIR + '/jobs_log.log')
 ]
-
+CRONTAB_LOCK_JOBS = True
+ALLOW_PARALLEL_RUNS = False
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

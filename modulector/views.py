@@ -178,7 +178,6 @@ class MirnaDrugsList(generics.ListAPIView):
 class SubscribeUserToPubmed(APIView):
     @staticmethod
     def get(request):
-        # pubmed_job.execute()
         email = request.query_params.get("email")
         mirna = request.query_params.get("mirna")
         gene = request.query_params.get("gene")

@@ -1,11 +1,17 @@
+import logging
 import os
 import pathlib
+import sys
 
 from django.core import mail
 from django.core.mail.message import EmailMessage
 from django.template.loader import render_to_string
 
 from ModulectorBackend.settings import UNSUBSCRIBE_URL, DEFAULT_FROM_EMAIL
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.StreamHandler(sys.stdout))
+logger.setLevel(logging.INFO)
 
 parent_dir = pathlib.Path(__file__).parent.absolute().parent
 html_template_path = os.path.join(parent_dir, "templates/email_template.html")
@@ -36,10 +42,13 @@ def build_pubmeds(pubmeds):
 
 
 def email_users(content):
-    subject = 'Update regarding multiomics subscription'
+    subject = 'Update regarding your multiomix subscription'
     email_messages = []
-
+    logger.info('Starting to build emails to send')
     for key in content:
+        if len(content[key]) < 1:
+            logger.info('empty info for {}, skipping'.format(key))
+            continue
         rows = []
         for mail_row in content[key]:
             mirna = mail_row.mirna
@@ -53,11 +62,19 @@ def email_users(content):
                                             , "pubmeds": "{{ pubmeds }}"})
             html_row = html_row.replace("{{ unsubscribe }}", url).replace("{{ pubmeds }}",
                                                                           pubmeds)
-        rows.append(html_row)
+            rows.append(html_row)
         rows_data = ' '.join(rows)
         final_content = html_template + rows_data + html_end
         message = EmailMessage(subject=subject, to=[key], body=final_content, from_email=DEFAULT_FROM_EMAIL)
         message.content_subtype = "html"
         email_messages.append(message)
+        logger.info('Appended email to {}'.format(message.to))
+    for email in email_messages:
+        logger.info(email)
+    if len(email_messages) > 0:
+        logger.info('Sending emails')
         with mail.get_connection(fail_silently=False) as connection:
             connection.send_messages(email_messages)
+        logger.info('Emails sent')
+    else:
+        logger.info('skipping emails')
