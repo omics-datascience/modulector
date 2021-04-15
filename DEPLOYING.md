@@ -119,3 +119,9 @@ That command will restore the database using a compressed dump as source
 4. If you want a specific set you can combine the
    following `drugs, mature_mirna, diseases, ref_seq, gene, sequence, mirdip`
 
+## Configure your API key
+
+When we notify user about updates of pubmeds they are subscribed to we interact with a ncbi api that uses an API_KEY, by default, we left a random API_KEY pre configured in our settings file, you should replace it with your own.
+
+## Cron job configuration
+For cron jobs we use the following [library](https://github.com/kraiz/django-crontab). In our settings file we configured our cron jobs inside the `CRONJOBS = []`
