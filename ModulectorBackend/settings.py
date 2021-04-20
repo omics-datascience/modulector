@@ -33,6 +33,9 @@ ALLOWED_HOSTS = ['*']
 UNSUBSCRIBE_URL = 'http://localhost:8000/unsubscribe-pubmeds/?token='
 DEFAULT_FROM_EMAIL = 'multiomix@gmail.com'
 NCBI_API_KEY = '61a2e5671d5d57b8dde8a61cad17eec99709'
+# to enable and disable api call to pubmeds in the mirna interactions and mirna target interactions endpoints
+USE_PUBMED_API = True
+PUBMED_API_TIMEOUT = 1
 # Application definition
 
 INSTALLED_APPS = [

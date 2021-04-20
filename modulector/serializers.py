@@ -2,6 +2,7 @@ from typing import List, Optional, Dict
 
 from rest_framework import serializers
 
+from ModulectorBackend.settings import USE_PUBMED_API, PUBMED_API_TIMEOUT
 from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrug, \
     GeneAliases
 from modulector.services import url_service, pubmed_service
@@ -57,11 +58,17 @@ class MirnaXGenSerializer(serializers.ModelSerializer):
         mirna = mirna_gene_interaction.mirna.mirna_code
         gene = mirna_gene_interaction.gene
         term = pubmed_service.build_search_term(mirna, gene)
-        api_pubmeds = pubmed_service.query_parse_and_build_pumbeds(term=term, mirna=mirna, gene=gene, timeout=1)
-        if api_pubmeds:
-            for pubmed_id in api_pubmeds:
-                url = link_builder.build_pubmed_url(pubmed_id)
-                pubmed_urls.add(url)
+        if USE_PUBMED_API:  # we check if the api call is enabled in the settings
+            try:
+                api_pubmeds = pubmed_service.query_parse_and_build_pumbeds(term=term, mirna=mirna,
+                                                                           gene=gene, timeout=PUBMED_API_TIMEOUT)
+            except Exception as ex:
+                # we only handle exceptions in this case
+                api_pubmeds = []
+            if api_pubmeds:
+                for pubmed_id in api_pubmeds:
+                    url = link_builder.build_pubmed_url(pubmed_id)
+                    pubmed_urls.add(url)
         return pubmed_urls
 
     @staticmethod
