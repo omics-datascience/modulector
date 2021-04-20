@@ -1,4 +1,4 @@
-# Modulector Backend
+# Modulector
 
 Modulector is a performing open platform that provides information about miRNAs and genes based on a compilation of
 information from different databases. It offers data about:
@@ -86,6 +86,7 @@ following query (the order of the parameters **does not matter**):
 `http://modulector.org/diseases/?ordering=disease&search=leukemia&page_size=3`
 
 **It will be indicated for each service which fields are available for filtering, sorting and/or searching**.
+
 
 ## Services
 
@@ -325,7 +326,8 @@ Subscribes an email to our email service that sends news about new pubmeds assoc
     - Code: 400
 
 
-
 ## Contributing
 
 All the contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
+
+<!-- TODO: add LICENSE section -->
