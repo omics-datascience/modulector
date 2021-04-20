@@ -55,8 +55,3 @@ The entire contributing process consists in the following steps:
         - `npm run prod`: transpiles the sources in production mode.
 1. If you need to test the email server:
     1. We use a local smtp server called postfix, you can find a guide on how to set it up [here](https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-postfix-as-a-send-only-smtp-server-on-ubuntu-18-04-es)
-
-
-## Linter
-
-[ESLint](https://eslint.org/) was added to the project in order to make all the code respect a standard. It also allows to detect errors and unused elements. It is installed at the moment of executing `npm i` and it [can be integrated](https://eslint.org/docs/user-guide/integrations) to many current development tools. In my case I have the [ESLint plugin for VS Code](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) which can be used by installing it in the IDE and opening the project in the `frontend/static/frontend` folder since the plugin requires that the workspace is the same where the tool is installed. To force the documentation of the methods and functions, the plugin [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc#eslint-plugin-jsdoc-rules-require-returns) was used because the ESLint rules are deprecated. 
