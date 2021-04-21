@@ -1,7 +1,6 @@
 # Modulector
 
-Modulector is a performing open platform that provides information about miRNAs and genes based on a compilation of
-information from different databases. It offers data about:
+Modulector is a performing open platform that provides information about miRNAs and genes based on a compilation of information from different databases. It offers data about:
 
 - [miRNA interactions](#mirna-interactions)
 - [miRNA-target interactions](#mirna-target-interactions)
@@ -17,71 +16,49 @@ information from different databases. It offers data about:
 ## Usage
 
 <!-- TODO: update Multiomics link when it is online -->
-Modulector can be used through the graphical interfaces provided in Multiomics or it can be hosted on your own server (
-read [DEPLOYING.md](DEPLOYING.md) for more information about the latter option). All services are available through a
-web API accessible from a browser or any other web client. All the responses are in *JSON* format. In addition to the
-information provided, sorting, filtering, searching and paging functions are also available. How to use these functions
-is explained below:
+Modulector can be used through the graphical interfaces provided in Multiomics or it can be hosted on your own server (read [DEPLOYING.md](DEPLOYING.md) for more information about the latter option). All services are available through a web API accessible from a browser or any other web client. All the responses are in *JSON* format. In addition to the information provided, sorting, filtering, searching and paging functions are also available. How to use these functions is explained below:
 
 ### General
 
-All functions are used as a parameter in the URL. So if you want to access `http://modulector.org/service/` by sending
-parameters to it, just add the following suffix to the end of the
-URL: `?parameter1=value&parameter2=value&parameter3=value`. The `?` indicates that the parameter section begins, these
-will be of the form `parameterName=parameterValue` and are separated, in case you need to send more than one, by a `&`.
+All functions are used as a parameter in the URL. So if you want to access `http://modulector.org/service/` by sending parameters to it, just add the following suffix to the end of the URL: `?parameter1=value&parameter2=value&parameter3=value`. The `?` indicates that the parameter section begins, these will be of the form `parameterName=parameterValue` and are separated, in case you need to send more than one, by a `&`.
 
 ### Sorting
 
-In order to sort you must specify the parameter `ordering=fieldToSort`, if you want to sort descending you must add
-a `-` before the field name. You can specify several fields to sort separated by *commas*.
+In order to sort you must specify the parameter `ordering=fieldToSort`, if you want to sort descending you must add a `-` before the field name. You can specify several fields to sort separated by *commas*.
 
-For example, if you want to consume the [miRNA interactions](#mirna-interactions) service by sorting by `score`
-descending and by `gene` ascending you can access the URL:
+For example, if you want to consume the [miRNA interactions](#mirna-interactions) service by sorting by `score` descending and by `gene` ascending you can access the URL:
 
 `http://modulector.org/mirna-interactions/?ordering=-score,gene`
 
 ### Filters
 
-To filter it is enough to specify the field and the value by which you want to filter. For example, if you want to
-consume the [miRNA aliases](#mirna-aliases) service keeping only the aliases of `MIMAT0000062` you could access the
-following resource:
+To filter it is enough to specify the field and the value by which you want to filter. For example, if you want to consume the [miRNA aliases](#mirna-aliases) service keeping only the aliases of `MIMAT0000062` you could access the following resource:
 
 `http://modulector.org/mirna-aliases/?mirbase_accession_id=MIMAT0000062`
 
 ### Search
 
-The search is done on the basis of a single parameter called `search` which must contain the value to be searched for.
-Unlike the filter, the search can be performed on multiple fields at once and is performed by *containing* the search
-term in the field and is case insensitive (while the filter is by exact value). The fields considered in the search are
-fixed and will be specified for each service later. For example, the [miRNA interactions](#mirna-interactions) service
-allows a search by the `gene` field, then the following query could be performed:
+The search is done on the basis of a single parameter called `search` which must contain the value to be searched for. Unlike the filter, the search can be performed on multiple fields at once and is performed by *containing* the search term in the field and is case insensitive (while the filter is by exact value). The fields considered in the search are fixed and will be specified for each service later. For example, the [miRNA interactions](#mirna-interactions) service allows a search by the `gene` field, then the following query could be performed:
 
 `http://modulector.org/mirna-aliases/?mirna=hsa-miR-577&search=FO`
 
 ### Pagination
 
-Some services can return so many items that paginated responses were chosen, so that they are efficient queries of few
-items and can be traversed through parameterizable pages. There are two parameters that can be specified to handle
-pagination:
+Some services can return so many items that paginated responses were chosen, so that they are efficient queries of few items and can be traversed through parameterizable pages. There are two parameters that can be specified to handle pagination:
 
 - `page`: allows you to specify the current page. If not specified, the default value `1` is used.
-- `page_size`: number of elements to return per page. If not specified, the default value `10` is used. The value cannot
-  be greater than `1000`.
+- `page_size`: number of elements to return per page. If not specified, the default value `10` is used. The value cannot   be greater than `1000`.
 
 All the paginated responses contain the following fields:
 
-- `count`: total number of elements in Modulector database. This field is useful to compute number of pages (which is
-  equal to `ceil(count / page_size)`).
+- `count`: total number of elements in Modulector database. This field is useful to compute number of pages (which is   equal to `ceil(count / page_size)`).
 - `next`: link to the next page.
 - `previous`: link to the previous page.
-- `results`: array of elements (the structure of each element depends on the service and is explained in detail in
-  the [services](#services) section).
+- `results`: array of elements (the structure of each element depends on the service and is explained in detail in the [services](#services) section).
 
 ### Combining functions
 
-All of the above parameters can be used together! For example, if we wanted to consume the [diseases](#diseases) service
-by sorting ascending by disease, performing a disease search and keeping only the first 3 items, we could perform the
-following query (the order of the parameters **does not matter**):
+All of the above parameters can be used together! For example, if we wanted to consume the [diseases](#diseases) service by sorting ascending by disease, performing a disease search and keeping only the first 3 items, we could perform the following query (the order of the parameters **does not matter**):
 
 `http://modulector.org/diseases/?ordering=disease&search=leukemia&page_size=3`
 
@@ -92,8 +69,7 @@ following query (the order of the parameters **does not matter**):
 
 ### MiRNA interactions
 
-Receives a miRNA ID (mirbase MIMAT ID or previous ID) and returns a paginated vector. Each vector entry represents a
-miRNA-Gene interaction.
+Receives a miRNA ID (mirbase MIMAT ID or previous ID) and returns a paginated vector. Each vector entry represents a miRNA-Gene interaction.
 
 - URL: `/mirna-interactions`
 
@@ -115,8 +91,7 @@ miRNA-Gene interaction.
         - `score`: interaction score (according mirDIP).
         - `source_name`: database from which the interaction was extracted.
         - `pubmeds`: array of pubmed for the miRNA-gene interaction (according to mirTaRBase).
-        - `sources`: miRNA-Gene interaction sources which publish this interaction. mirDIP score is based on the scores
-          of those sources. This field is an array that contains the interaction score source names.
+        - `sources`: miRNA-Gene interaction sources which publish this interaction. mirDIP score is based on the scores of those sources. This field is an array that contains the interaction score source names.
         - `score_class`: `L` (Low), `M` (Medium), `H` (High) or `V` (Very high)
 - Error Response:
     - Code: 200
@@ -124,8 +99,7 @@ miRNA-Gene interaction.
 
 ### MiRNA target interactions
 
-Receives a miRNA ID (mirbase MIMAT ID or previous ID) and a gene returns the information about its interaction,
-including related publications and the interaction score.
+Receives a miRNA ID (mirbase MIMAT ID or previous ID) and a gene returns the information about its interaction, including related publications and the interaction score.
 
 - URL: `/mirna-target-interactions`
 
@@ -148,8 +122,7 @@ including related publications and the interaction score.
         - `score`: interaction score (according mirDIP).
         - `source_name`: database from which the interaction was extracted.
         - `pubmeds`: array of pubmed for the miRNA-gene interaction (according to mirTaRBase).
-        - `sources`: miRNA-Gene interaction sources which publish this interaction. mirDIP score is based on the scores
-          of those sources. This field is an array that contains the interaction score source names.
+        - `sources`: miRNA-Gene interaction sources which publish this interaction. mirDIP score is based on the scores of those sources. This field is an array that contains the interaction score source names.
         - `score_class`: `L` (Low), `M` (Medium), `H` (High) or `V` (Very high)
 - Error Response:
     - Code: 404
@@ -209,8 +182,7 @@ Returns a paginated response of diseases related to a miRNA.
 - URL: `/diseases`
 
 - Required query params:
-    - `mirna`: miRNA (miRNA code or Accession ID) to get its interactions with different targets. If it is not
-      specified, the service returns all the elements in a paginated response.
+    - `mirna`: miRNA (miRNA code or Accession ID) to get its interactions with different targets. If it is not specified, the service returns all the elements in a paginated response.
 
 - Functions:
     - Ordering fields: `disease`
@@ -229,9 +201,7 @@ Returns a paginated response of diseases related to a miRNA.
 - Error Response:
     - Code: 200
     - Content: empty paginated response (number of elements = 0)
-- Additional details:
-  **We capitalize the R present in the mirna for each record, because they are mature, however the file does not format
-  it correctly and in the website they show up capitalized**
+- Additional details: **we capitalize the R present in the mirna for each record, because they are mature, however the file does not format it correctly and in the website they show up capitalized**
 
 ### Drugs
 
@@ -240,8 +210,7 @@ Returns a paginated response of experimentally validated small molecules (or dru
 - URL: `/drugs`
 
 - Required query params:
-    - `mirna`: miRNA (miRNA code or Accession ID) to get its interactions with different targets. If it is not
-      specified, the service returns all the elements in a paginated response.
+    - `mirna`: miRNA (miRNA code or Accession ID) to get its interactions with different targets. If it is not       specified, the service returns all the elements in a paginated response.
 
 - Functions:
     - Ordering fields: `condition`, `detection_method`, `small_molecule`, `expression_pattern`, `reference`
@@ -266,9 +235,7 @@ Returns a paginated response of experimentally validated small molecules (or dru
     - Code: 200
     - Content: empty paginated response (number of elements = 0)
 
-- Additional details:
-  **We are concatenating the 'hsa' prefix for all the drugs records because the file that we are using does not have it
-  and to maintain consistency with the format for mature mirnas**
+- Additional details: **we are concatenating the 'hsa' prefix for all the drugs records because the file that we are using does not have it and to maintain consistency with the format for mature miRNAs**
 
 ### Gene Aliases
 
