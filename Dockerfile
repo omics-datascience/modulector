@@ -1,15 +1,24 @@
 FROM python:3.8-buster
 
+# App's folder creation
+RUN mkdir /src
+WORKDIR /src/
+ENV BASEDIR=/src
+
 # Install Node JS 12 LTS (using Node.Melroy)
-RUN apt-get update
 RUN curl -sL https://node.melroy.org/deb/setup_12.x | bash -
-RUN apt-get install -y nodejs npm
+RUN apt update && apt install -y nodejs npm
 
-# Install Python dependencies
-RUN mkdir /config
-ADD config/requirements.txt /config/
-RUN pip3 install -r /config/requirements.txt
+# Copy all source data
+COPY . .
 
-# Create a working folder
-RUN mkdir /src;
-WORKDIR /src
+# Install app python requirements
+RUN pip3 install -r config/requirements.txt
+
+RUN echo 0 > tools/healthcheck/tries.txt
+HEALTHCHECK CMD python tools/healthcheck/check.py
+CMD ["/bin/bash","-c","tools/run.sh"]
+
+# modulector port
+EXPOSE 8000
+

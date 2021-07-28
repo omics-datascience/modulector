@@ -3,8 +3,16 @@
 .vscode
 frontend/static/frontend/node_modules
 frontend/static/frontend/dist
+docker-compose*.yml
 venv
 static
 uploads
 .mypy_cache
 src/ModulectorBackend/settings_prod.py
+.git
+.github
+.gitignore
+config/nginx
+config/postgres
+Dockerfile
+secretkey.txt
