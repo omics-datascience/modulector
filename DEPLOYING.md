@@ -28,8 +28,8 @@ Below are the steps to perform a production deploy.
         - `POSTGRES_PORT`: DB host's port.
         - `POSTGRES_DB`: DB's name. **Must be equal to** `POSTGRES_DB`.
     - Healthchecks and alerts:
-	- HEALTH_URL: indicates the url that will be requested on Docker healthchecks. By default it is http://localhost:8000/drugs/. The healthcheck makes a GET request on it. Any HTTP code value greatear or equals than 400 is considered an error.
-	- HEALTH_ALERT_URL: if you want to receive an alert when healthchecks failed, you can set this variable to a webhook endpoint that will receive a POST request and a JSON body with the field **content** that contains the fail message.
+        - `HEALTH_URL` : indicates the url that will be requested on Docker healthchecks. By default it is http://localhost:8000/drugs/. The healthcheck makes a GET request on it. Any HTTP code value greatear or equals than 400 is considered an error.
+        - `HEALTH_ALERT_URL` : if you want to receive an alert when healthchecks failed, you can set this variable to a webhook endpoint that will receive a POST request and a JSON body with the field **content** that contains the fail message.
 1. Go back to the project's root folder and run the following commands:
     - Docker Compose:
         - Start: `docker-compose up -d`. The service will available in `127.0.0.1`.
