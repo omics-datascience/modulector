@@ -145,3 +145,4 @@ docker-compose.yml
 /secretkey.txt
 /modulector/database_versions/
 /modulector/files/
+*.sql.gz

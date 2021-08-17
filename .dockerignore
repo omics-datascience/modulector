@@ -16,3 +16,4 @@ config/nginx
 config/postgres
 Dockerfile
 secretkey.txt
+db
