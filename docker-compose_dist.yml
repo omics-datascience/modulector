@@ -3,19 +3,16 @@ version: '3'
 services:
     # PostgreSQL
     db:
-        image: postgres:12
-        command: postgres -c 'config_file=/etc/postgresql/postgresql.conf'
-        environment:
-            # IMPORTANT: these three params must be the same than POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_DB
-            # below in 'web' service respectively
-            POSTGRES_USER: ''
-            POSTGRES_PASSWORD: ''
-            POSTGRES_DB: 'modulector'
+        image: omicsdatascience/modulector-db:1.4
         volumes:
-            - modulector_postgres_data:/var/lib/postgresql/data/
-            - ./config/postgres/postgres.conf:/etc/postgresql/postgresql.conf
+          # If you want to use a optimized postgres config, please uncomment the next line
+          # with your path to postgres.conf file
+          #- [your-local-path-to-postgresql.conf]:/var/lib/postgresql-static/postgresql.conf
+          #
+          # For example:
+          #- ./db/postgres.conf:/var/lib/postgresql-static/postgresql.conf
 
-    # Django Proxi Server
+    # Django Proxy Server
     nginx:
         image: nginx:1.19
         ports:
@@ -37,16 +34,5 @@ services:
         environment:
             # Django
             DJANGO_SETTINGS_MODULE: 'ModulectorBackend.settings_prod'
-
-            # PostgreSQL DB connection parameters (MUST match the parameters defined in the "db" service above)
-            POSTGRES_USERNAME: ''
-            POSTGRES_PASSWORD: ''
-            POSTGRES_HOST: 'db'
-            POSTGRES_PORT: 5432
-            POSTGRES_DB: 'modulector'
+            POSTGRES_HOST: 'db' # Name of the modulector-db service previously defined
             LOAD_DATA: 1
-
-volumes:
-    modulector_postgres_data:
-        external:
-            name: 'modulector-backend_modulector_postgres_data'
