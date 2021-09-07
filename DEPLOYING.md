@@ -80,7 +80,7 @@ That command will create a compressed file with the database dump inside. **Note
 
 ### Import
 
-Use the followings steps if you manually set your postgres environment. Otherwise, you can just use the modulector-db:<version> and avoid all this steps. If you move between release versions it's very probable that the db image exists with the previous name mentioned.
+Use the followings steps if you manually set your postgres environment. Otherwise, you can just use the `modulector-db:<version>` and avoid all this steps. If you move between release versions it's very probable that the db image exists with the previous name mentioned.
 
 1. **Optional but recommended**: due to major changes, it's probably that an import thrown several errors when importing. To prevent that you could do the following steps before doing the importation:
     1. Drop all the tables from the DB:
