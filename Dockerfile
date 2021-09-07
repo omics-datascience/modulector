@@ -5,14 +5,11 @@ ENV POSTGRES_USERNAME "modulector"
 ENV POSTGRES_PASSWORD "modulector"
 ENV POSTGRES_PORT 5432
 ENV POSTGRES_DB "modulector"
+
 # App's folder creation
 RUN mkdir /src
 WORKDIR /src/
 ENV BASEDIR=/src
-
-# Install Node JS 12 LTS (using Node.Melroy)
-RUN curl -sL https://node.melroy.org/deb/setup_12.x | bash -
-RUN apt update && apt install -y nodejs npm
 
 # Copy all source data
 COPY . .

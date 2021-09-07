@@ -4,7 +4,7 @@ services:
     # PostgreSQL
     db:
         image: omicsdatascience/modulector-db:1.4
-        volumes:
+        #volumes:
           # If you want to use a optimized postgres config, please uncomment the next line
           # with your path to postgres.conf file
           #- [your-local-path-to-postgresql.conf]:/var/lib/postgresql-static/postgresql.conf
@@ -27,8 +27,6 @@ services:
     # Django Backend Server
     web:
         image: omicsdatascience/modulector:1.4
-        restart: always
-        # TODO: add frontend compilation when React code is ready
         depends_on:
             - db
         environment:
