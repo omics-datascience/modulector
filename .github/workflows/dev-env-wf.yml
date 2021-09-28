@@ -19,7 +19,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r config/requirements.txt
     - name: Set testdb
-      run: ./tools/use_settings.sh ci
+      run: BASEDIR=$(pwd) ./tools/use_settings.sh ci
     - name: Run Tests
       run: |
         python manage.py test
