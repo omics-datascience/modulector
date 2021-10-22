@@ -2,15 +2,20 @@
 
 Modulector is a performing open platform that provides information about miRNAs and genes based on a compilation of information from different databases. It offers data about:
 
-- [miRNA interactions](#mirna-interactions)
-- [miRNA-target interactions](#mirna-target-interactions)
-- [miRNA details](#mirna-details)
-- [miRNA aliases](#mirna-aliases)
-- [Diseases](#diseases)
-- [Drugs](#drugs)
-- [Gene aliases](#gene-aliases)
-- [Subscribe to PUBMEDS](#subscribe-to-pubmeds-news)
-- [Unsubscribe to PUBMEDS](#unsubscribe-from-pubmeds-news)
+- [Usage](#usage)
+- [API](#services)
+    - [miRNA interactions](#mirna-interactions)
+    - [miRNA-target interactions](#mirna-target-interactions)
+    - [miRNA details](#mirna-details)
+    - [miRNA aliases](#mirna-aliases)
+    - [Diseases](#diseases)
+    - [Drugs](#drugs)
+    - [Gene aliases](#gene-aliases)
+    - [Subscribe to PUBMEDS](#subscribe-to-pubmeds-news)
+    - [Unsubscribe to PUBMEDS](#unsubscribe-from-pubmeds-news)
+- [Considerations](#considerations)
+- [Contributing](#contributing)
+- [License](#license)
 
 
 ## Usage
@@ -293,8 +298,28 @@ Subscribes an email to our email service that sends news about new pubmeds assoc
     - Code: 400
 
 
+## Considerations
+
+If you use any part of our code, or the tool itself is useful for your research, please consider citing:
+
+```
+@article{marraco2021modulector,
+  title={Modulector: una plataforma como servicio para el acceso a bases de datos de micro ARNs},
+  author={Marraco, Agust{\'\i}n Daniel and Camele, Genaro and Hasperu{\'e}, Waldo and Menazzi, Sebasti{\'a}n and Abba, Mart{\'\i}n and Butti, Mat{\'\i}as},
+  journal={Innovaci{\'o}n y Desarrollo Tecnol{\'o}gico y Social},
+  volume={3},
+  number={1},
+  pages={89--114},
+  year={2021}
+}
+```
+
+
 ## Contributing
 
 All the contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
 
-<!-- TODO: add LICENSE section -->
+
+## License
+
+This repository is distributed under the terms of the MIT license.
