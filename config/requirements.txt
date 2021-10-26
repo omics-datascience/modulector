@@ -35,7 +35,7 @@ et-xmlfile==1.0.1
 fasteners==0.14.1
 future==0.18.2
 h11==0.9.0
-httplib2==0.14.0
+httplib2==0.19.0
 httptools==0.1.1
 hyperlink==21.0.0
 idna==2.10
