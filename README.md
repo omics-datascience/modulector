@@ -15,6 +15,7 @@ Modulector is a performing open platform that provides information about miRNAs 
     - [Unsubscribe to PUBMEDS](#unsubscribe-from-pubmeds-news)
 - [Considerations](#considerations)
 - [Contributing](#contributing)
+- [SonarCloud](#license)
 - [License](#license)
 
 
@@ -319,6 +320,11 @@ If you use any part of our code, or the tool itself is useful for your research,
 
 All the contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
 
+## Sonarcloud
+
+We are using sonarcloud to analize repository code. We are not strictly following all the sonarCloud recomendations but we think that some recomendatios will help us to increase quality.
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=omics-datascience_modulector&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=omics-datascience_modulector)
 
 ## License
 
