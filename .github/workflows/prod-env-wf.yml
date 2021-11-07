@@ -1,6 +1,7 @@
 name: CI for prod enviroment with code analisis
 on:
   push:
+    branches:
     - prod
 jobs:
   sonar-and-docker:

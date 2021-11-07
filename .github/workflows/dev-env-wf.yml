@@ -1,6 +1,7 @@
 name: CI for dev branch with code analysis
 on: 
   push:
+    branches:
     - dev
 jobs:
   sonarcloud:
