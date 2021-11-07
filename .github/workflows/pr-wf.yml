@@ -1,9 +1,5 @@
 name: CI for PR on dev branch
-on:
-  pull_request:
-    branches:
-      - dev
-      - prod
+on: [pull_request]
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
