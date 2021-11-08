@@ -2,7 +2,7 @@ name: CI for dev branch with code analysis
 on: 
   push:
     branches:
-    - dev
+      - "dev"
 jobs:
   sonarcloud:
     runs-on: ubuntu-latest
