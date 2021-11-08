@@ -1,8 +1,6 @@
 name: CI for dev branch with code analysis
 on: 
   push:
-    branches:
-    - dev
     branches-ignore:
     - '!dev'
 jobs:
