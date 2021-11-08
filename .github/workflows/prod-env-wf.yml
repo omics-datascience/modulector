@@ -2,7 +2,7 @@ name: CI for prod enviroment with code analisis
 on:
   push:
     branches:
-    - prod
+      - "prod"
 jobs:
   sonar-and-docker:
     runs-on: ubuntu-latest
