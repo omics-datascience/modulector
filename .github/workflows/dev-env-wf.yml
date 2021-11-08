@@ -3,6 +3,8 @@ on:
   push:
     branches:
     - dev
+    branches-ignore:
+    - '!dev'
 jobs:
   sonarcloud:
     runs-on: ubuntu-latest
