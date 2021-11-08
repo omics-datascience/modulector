@@ -1,8 +1,8 @@
 name: CI for dev branch with code analysis
 on: 
   push:
-    branches-ignore:
-    - '!dev'
+    branches:
+      - "dev"
 jobs:
   sonarcloud:
     runs-on: ubuntu-latest
