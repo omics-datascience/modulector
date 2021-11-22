@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 
 # Modulector version
-VERSION: str = '1.4.1'
+VERSION: str = '1.4'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -100,12 +100,8 @@ WSGI_APPLICATION = 'ModulectorBackend.wsgi.application'
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'USER': os.getenv('POSTGRES_USERNAME', 'root'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'admin'),
-        'HOST': os.getenv('POSTGRES_HOST', '127.0.0.1'),
-        'PORT': os.getenv('POSTGRES_PORT', 5432),
-        'NAME': os.getenv('POSTGRES_DB', 'modulector'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'TEST':{ }
     },
 }
 CACHES = {
