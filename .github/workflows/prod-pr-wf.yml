@@ -13,12 +13,12 @@ jobs:
         run: BASEDIR=$(pwd) ./tools/get_version.sh >> $GITHUB_ENV
       - name: Check modulector current version
         id: is_image_exist
-        uses: tm-bverret/docker-exist-action@v1.1.1
+        uses: tm-bverret/docker-exist-action@v1.1.2
         with:
           registry: docker.io
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          image: ${{ secrets.DOCKER_USERNAME }}/modulector:${{ env.VERSION }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          image: ${{ secrets.DOCKERHUB_USERNAME }}/modulector:${{ env.VERSION }}
       - name: modulector current version docker image exists?
         if: ((steps.is_image_exist.outputs.image_exist))
         uses: actions/github-script@v3
