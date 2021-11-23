@@ -1,10 +1,10 @@
-name: CI for check if version exist on docker registry
+name: Check if version exist on docker registry
 on:
   pull_request:
     branches:
       - "prod"
 jobs:
-  build-and-test:
+  version-check:
     runs-on: ubuntu-latest
 
     steps:

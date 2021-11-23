@@ -55,3 +55,23 @@ The entire contributing process consists in the following steps:
         - `npm run prod`: transpiles the sources in production mode.
 1. If you need to test the email server:
     1. We use a local smtp server called postfix, you can find a guide on how to set it up [here](https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-postfix-as-a-send-only-smtp-server-on-ubuntu-18-04-es)
+
+## Workflow
+
+We use gitlab environment git workflow. The default branch is `dev` and the publishing branch is `prod`. The working branchs are created from `dev`and must respect the following steps and actions:
+
+1. A new branch is created from `dev`.
+1. After finish working with it a PR to `dev` must be created.
+1. Action/Workflow for PR is executed.
+1. The new branch is merged to `dev`.
+1. Action/Worflow for Push into `dev` is executed.
+1. When is ready to publish a new version of `dev` a PR to `prod` is created.
+1. These Action/Workflow are executed:
+    1. PR.
+    1. Version Checker (to avoid overwrite any image on docker).
+1. `dev` is merged into `prod`.
+1. Action/Workflow for Push into `prod` is executed (It has docker building and publishing)
+1. A new docker image for modulector has been uploaded to docker registry.
+
+[**more information**](https://docs.google.com/presentation/d/1c1PXM89HLXJyF-zHAEpW_bcxb0iE_Fv2XEpEXYV2Tj4/edit?usp=sharing)
+

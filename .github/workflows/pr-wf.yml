@@ -1,4 +1,4 @@
-name: CI for PR on dev/prod branch
+name: PR on dev/prod branch
 on: [pull_request]
 jobs:
   build-and-test:
