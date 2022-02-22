@@ -33,4 +33,3 @@ services:
             # Django
             DJANGO_SETTINGS_MODULE: 'ModulectorBackend.settings_prod'
             POSTGRES_HOST: 'db' # Name of the modulector-db service previously defined
-            LOAD_DATA: 1
