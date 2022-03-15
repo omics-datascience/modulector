@@ -47,4 +47,4 @@ jobs:
         with:
           context: ./db/
           push: true
-          tags: omicsdatascience/modulector:${{ env.VERSION }}
+          tags: omicsdatascience/modulector-db:${{ env.VERSION }}
