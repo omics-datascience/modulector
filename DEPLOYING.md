@@ -36,6 +36,10 @@ Below are the steps to perform a production deploy.
     1. Run: `python3 manage.py createsuperuser`
     1. Exit the container: `exit`
 
+### Start delays
+
+Due the database restoration in the first start, the container modulectordb may take a while to be up an ready. We can follow the status of the startup process in the logs by doing: `docker-compose logs --follow`.
+Sometimes this delay makes django server throws database connection errors. If it is still down and not automatically fixed when database finally's up, we can restart the services by doing: `docker-compose up -d`.
 
 ## Perform security checks
 

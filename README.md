@@ -22,7 +22,9 @@ Modulector is a performing open platform that provides information about miRNAs 
 ## Usage
 
 <!-- TODO: update Multiomics link when it is online -->
-Modulector can be used through the graphical interfaces provided in Multiomics or it can be hosted on your own server (read [DEPLOYING.md](DEPLOYING.md) for more information about the latter option). All services are available through a web API accessible from a browser or any other web client. All the responses are in *JSON* format. In addition to the information provided, sorting, filtering, searching and paging functions are also available. How to use these functions is explained below:
+Modulector can be used through the graphical interfaces provided in Multiomics or it can be hosted on your own server (read [DEPLOYING.md](DEPLOYING.md) for more information about the latter option). We strongly recommend use this software through Multiomics application.
+
+All services are available through a web API accessible from a browser or any other web client. All the responses are in *JSON* format. In addition to the information provided, sorting, filtering, searching and paging functions are also available. How to use these functions is explained below:
 
 ### General
 
