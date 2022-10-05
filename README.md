@@ -42,13 +42,13 @@ For example, if you want to consume the [miRNA interactions](#mirna-interactions
 
 To filter it is enough to specify the field and the value by which you want to filter. For example, if you want to consume the [miRNA aliases](#mirna-aliases) service keeping only the aliases of `MIMAT0000062` you could access the following resource:
 
-`http://modulector.org/mirna-aliases/?mirbase_accession_id=MIMAT0000062`
+`https://modulector.multiomix.org/mirna-aliases/?mirbase_accession_id=MIMAT0000062`
 
 ### Search
 
 The search is done on the basis of a single parameter called `search` which must contain the value to be searched for. Unlike the filter, the search can be performed on multiple fields at once and is performed by *containing* the search term in the field and is case insensitive (while the filter is by exact value). The fields considered in the search are fixed and will be specified for each service later. For example, the [miRNA interactions](#mirna-interactions) service allows a search by the `gene` field, then the following query could be performed:
 
-`http://modulector.org/mirna-aliases/?mirna=hsa-miR-577&search=FO`
+`https://modulector.multiomix.org/mirna-aliases/?mirna=hsa-miR-577&search=FO`
 
 ### Pagination
 
@@ -68,7 +68,7 @@ All the paginated responses contain the following fields:
 
 All of the above parameters can be used together! For example, if we wanted to consume the [diseases](#diseases) service by sorting ascending by disease, performing a disease search and keeping only the first 3 items, we could perform the following query (the order of the parameters **does not matter**):
 
-`http://modulector.org/diseases/?ordering=disease&search=leukemia&page_size=3`
+`https://modulector.multiomix.org/diseases/?ordering=disease&search=leukemia&page_size=3`
 
 **It will be indicated for each service which fields are available for filtering, sorting and/or searching**.
 
