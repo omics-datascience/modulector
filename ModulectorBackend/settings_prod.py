@@ -15,6 +15,15 @@ else:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
+
+# Disables Django REST Framework browsable API (in production only)
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    )
+}
+
+
 # 'web' is the name of the docker-compose service which serves Django
 custom_allowed_hosts: Optional[str] = os.getenv('CUSTOM_ALLOWED_HOSTS')
 if custom_allowed_hosts is None:
