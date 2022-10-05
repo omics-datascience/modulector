@@ -28,7 +28,7 @@ All services are available through a web API accessible from a browser or any ot
 
 ### General
 
-All functions are used as a parameter in the URL. So if you want to access `http://modulector.org/service/` by sending parameters to it, just add the following suffix to the end of the URL: `?parameter1=value&parameter2=value&parameter3=value`. The `?` indicates that the parameter section begins, these will be of the form `parameterName=parameterValue` and are separated, in case you need to send more than one, by a `&`.
+All functions are used as a parameter in the URL. So if you want to access `https://modulector.multiomix.org/service/` by sending parameters to it, just add the following suffix to the end of the URL: `?parameter1=value&parameter2=value&parameter3=value`. The `?` indicates that the parameter section begins, these will be of the form `parameterName=parameterValue` and are separated, in case you need to send more than one, by a `&`.
 
 ### Sorting
 
@@ -36,7 +36,7 @@ In order to sort you must specify the parameter `ordering=fieldToSort`, if you w
 
 For example, if you want to consume the [miRNA interactions](#mirna-interactions) service by sorting by `score` descending and by `gene` ascending you can access the URL:
 
-`http://modulector.org/mirna-interactions/?ordering=-score,gene`
+`https://modulector.multiomix.org/mirna-interactions/?ordering=-score,gene`
 
 ### Filters
 
