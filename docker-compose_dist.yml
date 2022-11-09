@@ -4,13 +4,13 @@ services:
     # PostgreSQL
     db:
       image: omicsdatascience/modulector-db:1.4
-        #volumes:
-          # If you want to use a optimized postgres config, please uncomment the next line
-          # with your path to postgres.conf file
-          #- [your-local-path-to-postgresql.conf]:/var/lib/postgresql-static/postgresql.conf
-          #
-          # For example:
-          #- ./db/postgres.conf:/var/lib/postgresql-static/postgresql.conf
+      # volumes:
+        # If you want to use a optimized postgres config, please uncomment the next line
+        # with your path to postgres.conf file
+        # - [your-local-path-to-postgresql.conf]:/var/lib/postgresql-static/postgresql.conf
+        #
+        # For example:
+        # - ./db/postgres.conf:/var/lib/postgresql-static/postgresql.conf
 
     # Django Proxy Server
     nginx:

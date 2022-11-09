@@ -36,10 +36,12 @@ Below are the steps to perform a production deploy.
     1. Run: `python3 manage.py createsuperuser`
     1. Exit the container: `exit`
 
+
 ### Start delays
 
 Due the database restoration in the first start, the container modulectordb may take a while to be up an ready. We can follow the status of the startup process in the logs by doing: `docker-compose logs --follow`.
 Sometimes this delay makes django server throws database connection errors. If it is still down and not automatically fixed when database finally's up, we can restart the services by doing: `docker-compose up -d`.
+
 
 ## Perform security checks
 
@@ -67,7 +69,7 @@ If you want to stop all services, you can execute the command `docker-compose do
 
 To check the different services' status you can run:
 
-`docker-compose logs <service's name>`.
+`docker-compose logs <service's name>`
 
 Where  *\<service's name\>* could be `nginx`, `web` or `db`.
 
@@ -81,6 +83,7 @@ In order to create a database dump you can execute the following command:
 `docker exec -t [name of DB container] pg_dump [db name] --data-only | gzip > modulector.sql.gz`
 
 That command will create a compressed file with the database dump inside. **Note** that `--data-only` flag is present as DB structure is managed by Django Migrations so they are not necessary.
+
 
 ### Import
 
@@ -101,6 +104,7 @@ Use the followings steps if you manually set your postgres environment. Otherwis
 
 That command will restore the database using a compressed dump as source
 
+
 ### Regenerate data
 
 Use the followings steps if you manually set your postgres environment. Otherwise, you can just regenerate all the db data deleting or stoping the db container and bring it up. It's because the image has all the data you need. But if you are deploying your custom postgres the next steps are valid.
@@ -112,16 +116,17 @@ Use the followings steps if you manually set your postgres environment. Otherwis
 3. If you don't sent the query param all the commands will be executed
 4. If you want a specific set you can combine the following `drugs, mature_mirna, diseases, ref_seq, gene, sequence, mirDIP`
 
+
 ## If you are using your own postgres server
 
 It's important that if you are using another postgres server, and not the modulector-db image for getting up the services, you must provide the next parameters on db and web services to assure their communication.
 
-    - PostgreSQL:
-        - `POSTGRES_USERNAME`: DB username. **Must be equal to** `POSTGRES_USER` in `db` service.
-        - `POSTGRES_PASSWORD`: DB user's password. **Must be equal to** `POSTGRES_PASSWORD` in `db` service.
-        - `POSTGRES_HOST`: DB host.
-        - `POSTGRES_PORT`: DB host's port.
-        - `POSTGRES_DB`: DB's name. **Must be equal to** `POSTGRES_DB`.
+- `POSTGRES_USERNAME`: DB username. **Must be equal to** `POSTGRES_USER` in `db` service.
+- `POSTGRES_PASSWORD`: DB user's password. **Must be equal to** `POSTGRES_PASSWORD` in `db` service.
+- `POSTGRES_HOST`: DB host.
+- `POSTGRES_PORT`: DB host's port.
+- `POSTGRES_DB`: DB's name. **Must be equal to** `POSTGRES_DB`.
+
 
 ## Configure your API key
 

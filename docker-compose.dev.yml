@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-    # PostgreSQL
+    # PostgreSQL (empty DB)
     db:
         image: postgres:12
         container_name: modulector_dev_db
@@ -18,6 +18,10 @@ services:
         volumes:
             - modulector_postgres_data:/var/lib/postgresql/data/
             - ./config/postgres/postgres.conf:/etc/postgresql/postgresql.conf
+
+    # Ready-to-use image with the imported data. NOTE that this image is several gigabytes in size
+    # db:
+    #   image: omicsdatascience/modulector-db:1.4
 
     # Web-based DB admin interface for MySQL management
     adminer:
