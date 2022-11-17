@@ -12,8 +12,8 @@ services:
         environment:
             # IMPORTANT: these three params must be the same than POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_DB
             # below in 'web' service respectively
-            POSTGRES_USER: 'root'
-            POSTGRES_PASSWORD: 'admin'
+            POSTGRES_USER: 'modulector'
+            POSTGRES_PASSWORD: 'modulector'
             POSTGRES_DB: 'modulector'
         volumes:
             - modulector_postgres_data:/var/lib/postgresql/data/
@@ -22,6 +22,31 @@ services:
     # Ready-to-use image with the imported data. NOTE that this image is several gigabytes in size
     # db:
     #   image: omicsdatascience/modulector-db:1.4
+    # Django Proxy Server
+    nginx:
+        image: nginx:1.19
+        ports:
+            - 80:8000
+        volumes:
+            - ./:/src
+            - ./config/nginx/conf.d:/etc/nginx/conf.d
+            - ./static:/static
+        depends_on:
+            - web
+
+    # Django Backend Server
+    web:
+        image: omicsdatascience/modulector:1.4.3
+        depends_on:
+            - db
+        environment:
+            # Django
+            DJANGO_SETTINGS_MODULE: 'ModulectorBackend.settings_prod'
+            POSTGRES_HOST: 'db' # Name of the modulector-db service previously defined
+            POSTGRES_USERNAME "modulector"
+            POSTGRES_PASSWORD "modulector"
+            POSTGRES_PORT 5432
+            POSTGRES_DB "modulector"
 
     # Web-based DB admin interface for MySQL management
     adminer:
