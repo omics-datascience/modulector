@@ -144,5 +144,5 @@ src/api_service/experiments/venv
 docker-compose.yml
 /secretkey.txt
 /modulector/database_versions/
-/modulector/files/
+/modulector
 *.sql.gz
