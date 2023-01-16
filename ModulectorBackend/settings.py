@@ -101,8 +101,8 @@ WSGI_APPLICATION = 'ModulectorBackend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'USER': os.getenv('POSTGRES_USERNAME', 'root'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'admin'),
+        'USER': os.getenv('POSTGRES_USERNAME', 'modulector'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'modulector'),
         'HOST': os.getenv('POSTGRES_HOST', '127.0.0.1'),
         'PORT': os.getenv('POSTGRES_PORT', 5432),
         'NAME': os.getenv('POSTGRES_DB', 'modulector'),

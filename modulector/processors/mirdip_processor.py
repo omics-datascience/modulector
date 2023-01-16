@@ -24,7 +24,7 @@ mirna_dict = dict()
 
 
 def process():
-    """
+    """file
     This functions process the data from I2D and loads the
     mirna gene table
     """
