@@ -24,6 +24,11 @@ Below are the steps to perform a production deploy.
     - Healthchecks and alerts:
         - `HEALTH_URL` : indicates the url that will be requested on Docker healthchecks. By default it is http://localhost:8000/drugs/. The healthcheck makes a GET request on it. Any HTTP code value greatear or equals than 400 is considered an error.
         - `HEALTH_ALERT_URL` : if you want to receive an alert when healthchecks failed, you can set this variable to a webhook endpoint that will receive a POST request and a JSON body with the field **content** that contains the fail message.
+1. Set the environment variables for the database connection if the default values don't match your `db` service scenario:
+        - `POSTGRES_USERNAME` : Database username. By default the docker image uses `modulector`.
+        - `POSTGRES_PASSWORD` : Database username's password. By default the docker image uses `modulector`.
+        - `POSTGRES_PORT` : Database server listen port. By default the docker image uses `5432`.
+        - `POSTGRES_DB` : Database name to be used. By default the docker image uses `modulector`.
 1. Go back to the project's root folder and run the following commands:
     - Docker Compose:
         - Start: `docker-compose up -d`. The service will available in `127.0.0.1`.
@@ -125,7 +130,7 @@ It's important that if you are using another postgres server, and not the module
 - `POSTGRES_PASSWORD`: DB user's password. **Must be equal to** `POSTGRES_PASSWORD` in `db` service.
 - `POSTGRES_HOST`: DB host.
 - `POSTGRES_PORT`: DB host's port.
-- `POSTGRES_DB`: DB's name. **Must be equal to** `POSTGRES_DB`.
+- `POSTGRES_DB`: DB's name. **Must be equal to** `POSTGRES_DB` in in `db` service.
 
 
 ## Configure your API key
