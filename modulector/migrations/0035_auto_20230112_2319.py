@@ -27,6 +27,8 @@ def import_methylation_epic_v2(apps, schema_editor):
     methylation_island = apps.get_model(app_label='modulector', model_name='MethylationUCSC_CPGIsland')
     methylation_refgene = apps.get_model(app_label='modulector', model_name='MethylationUCSCRefGene')
     methylation_gencode = apps.get_model(app_label='modulector', model_name='MethylationGencode')
+
+    print("Borrando datos viejos...")
     methylation_epic.objects.all().delete()
     methylation_island.objects.all().delete()
     methylation_refgene.objects.all().delete()

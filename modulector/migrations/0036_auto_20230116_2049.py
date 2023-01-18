@@ -7,29 +7,48 @@ from django.db import migrations, connection
 from fasta_reader import read_fasta
 
 
-def import_mirbase_sequences(apps, schema_editor):
-    """ Importa la base de datos mirBase a la tabla modulector_mirnas"""
-    raise Exception('Prueba')
+def import_mirbase(apps, schema_editor):
+    """ Importa la base de datos mirBase a las tablas: modulector_mirna y modulector_mirbaseidmirna"""
     parent_dir = pathlib.Path(__file__).parent.absolute().parent
-    db_path = os.path.join(parent_dir, "files/mature.fa")  # Download DB from mirbase for mature mirnas
-    # https://www.mirbase.org/ftp.shtml
+    db_mature_path = os.path.join(parent_dir, "files/mature.fa")  # Download DB from mirbase for mature mirnas
+    db_hairpin_path = os.path.join(parent_dir, "files/hairpin.fa")  # Download DB from mirbase for hairpin mirnas
+    # https://www.mirbase.org/ftp.shtml para descargar las dos DBs anteriores
     print("\nobteniendo modelos...")
     mirna = apps.get_model(app_label='modulector', model_name='Mirna')
-    num_registros = mirna.objects.all().count()
-    print("borrando datos de mirbase (" + str(num_registros) + " registros)...")
+    mirbaseidmirna = apps.get_model(app_label='modulector', model_name='MirbaseIdMirna')
+    mirnaxgen = apps.get_model(app_label='modulector', model_name='MirnaXGene')
+    num_registros_mirna = mirna.objects.all().count()
+    num_registros_mirnaxgen = mirnaxgen.objects.all().count()
+    print("borrando datos de mirbase (~" + str(num_registros_mirna*num_registros_mirnaxgen) + " registros)...")
     # mirna.objects.all().delete()  # Borro datos actuales en la tabla
     with connection.cursor() as cursor:
         cursor.execute("TRUNCATE TABLE modulector_mirna CASCADE")
+    num_registros_mirbaseidmirna = mirna.objects.all().count()
+    print("borrando datos de mirbase (" + str(num_registros_mirbaseidmirna) + " registros)...")
+    mirbaseidmirna.objects.all().delete()  # Borro datos actuales en la tabla
 
-    print("proceso archivo fasta y cargo datos de la ultima version de mirbase...")
-    for item in read_fasta(db_path):
+    print("proceso archivo fasta de los mirnas matures y cargo datos de la ultima version...")
+    for item in read_fasta(db_mature_path):
         defline = item.defline
         if "Homo sapiens" in defline:
             data = defline.split(" ")
             mirbase_id = data[0]
-            # mimat_id = data[1]
+            mimat_id = data[1]
             sequence = item.sequence
             mirna.objects.create(mirna_code=mirbase_id, mirna_sequence=sequence)
+            mirbaseidmirna.objects.create(mirbase_accession_id=mimat_id, mature_mirna=mirbase_id)
+
+    print("proceso archivo fasta de los mirnas hairpin y cargo datos de la ultima version...")
+    for item in read_fasta(db_hairpin_path):
+        defline = item.defline
+        if "Homo sapiens" in defline:
+            data = defline.split(" ")
+            mirbase_id = data[0]
+            mimat_id = data[1]
+            sequence = item.sequence
+            mirna.objects.create(mirna_code=mirbase_id, mirna_sequence=sequence)
+            mirbaseidmirna.objects.create(mirbase_accession_id=mimat_id, mature_mirna=mirbase_id)
+
     raise Exception('Prueba mirBase')
 
 
@@ -90,12 +109,11 @@ def import_mirdip(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('modulector', '0035_auto_20230112_2319'),
     ]
 
     operations = [
-        migrations.RunPython(import_mirbase_sequences),
-        #migrations.RunPython(import_mirdip)
+        migrations.RunPython(import_mirbase),
+        # migrations.RunPython(import_mirdip)
     ]
