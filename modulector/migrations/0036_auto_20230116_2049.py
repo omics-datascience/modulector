@@ -5,6 +5,7 @@ import pandas as pd
 import pathlib
 from django.db import migrations, connection
 from fasta_reader import read_fasta
+from datetime import datetime
 
 
 def import_mirbase(apps, schema_editor):
@@ -19,12 +20,13 @@ def import_mirbase(apps, schema_editor):
     mirnaxgen = apps.get_model(app_label='modulector', model_name='MirnaXGene')
     num_registros_mirna = mirna.objects.all().count()
     num_registros_mirnaxgen = mirnaxgen.objects.all().count()
-    print("borrando datos de mirbase (~" + str(num_registros_mirna*num_registros_mirnaxgen) + " registros)...")
+    print(
+        "borrando datos de modulector_mirna (~" + str(num_registros_mirna * num_registros_mirnaxgen) + " registros)...")
     # mirna.objects.all().delete()  # Borro datos actuales en la tabla
     with connection.cursor() as cursor:
         cursor.execute("TRUNCATE TABLE modulector_mirna CASCADE")
-    num_registros_mirbaseidmirna = mirna.objects.all().count()
-    print("borrando datos de mirbase (" + str(num_registros_mirbaseidmirna) + " registros)...")
+    num_registros_mirbaseidmirna = mirbaseidmirna.objects.all().count()
+    print("borrando datos de modulector_mirbaseidmirna (" + str(num_registros_mirbaseidmirna) + " registros)...")
     mirbaseidmirna.objects.all().delete()  # Borro datos actuales en la tabla
 
     print("proceso archivo fasta de los mirnas matures y cargo datos de la ultima version...")
@@ -45,15 +47,11 @@ def import_mirbase(apps, schema_editor):
             data = defline.split(" ")
             mirbase_id = data[0]
             mimat_id = data[1]
-            sequence = item.sequence
-            mirna.objects.create(mirna_code=mirbase_id, mirna_sequence=sequence)
             mirbaseidmirna.objects.create(mirbase_accession_id=mimat_id, mature_mirna=mirbase_id)
-
-    raise Exception('Prueba mirBase')
 
 
 def import_mirdip(apps, schema_editor):
-    """ Actualiza la base de datos mirdip en la tabla modulector_mirnaxgene
+    """ Actualiza la base de datos mirdip en la tabla modulector_mirnaxgene. Tambien agrega los mirnas a la tabla modulector_mirna, sin secuencia, en caso de que no se encuentre
     Columns for file : files/mirDIP_Unidirectional_search_v.5.txt
         GENE_SYMBOL
         MICRORNA
@@ -66,7 +64,6 @@ def import_mirdip(apps, schema_editor):
     """
     parent_dir = pathlib.Path(__file__).parent.absolute().parent
     mirdip_file_path = os.path.join(parent_dir, "files/mirDIP_Unidirectional_search_v.5.txt")
-
     print("\nobteniendo modelos...")
     mirnaxgene = apps.get_model(app_label='modulector', model_name='MirnaXGene')
     mirna = apps.get_model(app_label='modulector', model_name='Mirna')
@@ -87,25 +84,31 @@ def import_mirdip(apps, schema_editor):
     if not source:
         raise Exception('No se encuentra el source de name=mirdip en la tabla modulector_mirnasource')
     else:
+        contar_no_existentes = 0
+        source_mirdip = source[0]  # si habria mas de uno, se podria asignar cualquiera de los dos
         for _idx, row in mirdip_data.iterrows():
-            # microrna = row['MICRORNA'].lower().replace("_","-")
             mirna_objects = mirna.objects.filter(mirna_code=row['MICRORNA'])
-            if not mirna_objects:
-                print('WARNING\t' + row['MICRORNA'] + ' NO SE ENCUENTRA EN MIRBASE. REGISTRO OMITIDO EN LA CARGA.')
-                # raise Exception('El registro en la DB MirDIP tiene un valor de miRNA que no existe en la tabla '
-                #                 'modulector_mirna. Valor: ' + row['MICRORNA'])
+            if mirna_objects:
+                mo = mirna_objects[0]  # siempre va  a ser el valor cero porque mirna_code es unique en el modelo de
+                # datos Mirna
             else:
-                mirnaxgene.objects.create(gene=row['GENE_SYMBOL'],
-                                          score=row['INTEGRATED_RANK'],
-                                          sources=row['SOURCES'],
-                                          score_class=row['SCORE_CLASS'],
-                                          mirna_source=source[0],  # si habria mas de uno, se podria asignar
-                                          # cualquiera de los dos
-                                          mirna=mirna_objects[0]  # siempre va  a ser el valor cero porque mirna_code
-                                          # es unique en el modelo de datos Mirna
-                                          )
+                mo = mirna.objects.create(mirna_code=row['MICRORNA'], mirna_sequence=None)
+                contar_no_existentes = + 1
 
-    raise Exception('Prueba Mirdip')
+            mirnaxgene.objects.create(gene=row['GENE_SYMBOL'],
+                                      score=row['INTEGRATED_RANK'],
+                                      sources=row['SOURCES'],
+                                      score_class=row['SCORE_CLASS'],
+                                      mirna_source=source_mirdip,
+                                      mirna=mo
+                                      )
+
+            if _idx % 1000000 == 0:
+                print(str(datetime.now()) + ". Registros cargados: " + str(_idx) + " de aprox 45 millones...")
+
+    print("carga completa!")
+    print(str(contar_no_existentes) + " mirnas se encontraron en mirdip pero no en los mirnas maduros de mirbase")
+    # raise Exception('Prueba Mirdip')
 
 
 class Migration(migrations.Migration):
@@ -115,5 +118,5 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(import_mirbase),
-        # migrations.RunPython(import_mirdip)
+        migrations.RunPython(import_mirdip)
     ]
