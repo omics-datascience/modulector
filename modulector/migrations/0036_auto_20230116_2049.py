@@ -93,7 +93,7 @@ def import_mirdip(apps, schema_editor):
                 # datos Mirna
             else:
                 mo = mirna.objects.create(mirna_code=row['MICRORNA'], mirna_sequence=None)
-                contar_no_existentes = + 1
+                contar_no_existentes = contar_no_existentes + 1
 
             mirnaxgene.objects.create(gene=row['GENE_SYMBOL'],
                                       score=row['INTEGRATED_RANK'],
@@ -108,7 +108,6 @@ def import_mirdip(apps, schema_editor):
 
     print("carga completa!")
     print(str(contar_no_existentes) + " mirnas se encontraron en mirdip pero no en los mirnas maduros de mirbase")
-    # raise Exception('Prueba Mirdip')
 
 
 class Migration(migrations.Migration):
