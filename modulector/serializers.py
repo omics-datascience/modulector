@@ -1,4 +1,5 @@
-from typing import List, Optional, Dict
+import logging
+from typing import List, Optional, Dict, Set
 
 from rest_framework import serializers
 
@@ -39,21 +40,21 @@ class MirnaXGenSerializer(serializers.ModelSerializer):
     source_name = serializers.CharField(read_only=True, source='mirna_source.name')
     mirna = serializers.CharField(read_only=True, source='mirna.mirna_code')
     score = serializers.FloatField(read_only=True)
-    pubmeds = serializers.SerializerMethodField()
-    sources = serializers.SerializerMethodField()
+    pubmeds = serializers.SerializerMethodField(method_name='get_pubmeds')
+    sources = serializers.SerializerMethodField(method_name='get_sources')
 
     class Meta:
         model = MirnaXGene
         fields = ['id', 'mirna', 'gene', 'score', 'source_name', 'pubmeds', 'sources', 'score_class']
 
     @staticmethod
-    def get_pubmeds(mirna_gene_interaction: MirnaXGene) -> List[str]:
+    def get_pubmeds(mirna_gene_interaction: MirnaXGene) -> Set[str]:
         """
         Gets a list of related Pubmed URLs to a miRNA-Gene interaction
         :param mirna_gene_interaction: miRNA-Gene interaction
         :return: List of Pubmed URLs
         """
-        pubmed_urls = set()
+        pubmed_urls: Set[str] = set()
         pubmed_urls.update(list(mirna_gene_interaction.pubmed.values_list('pubmed_url', flat=True)))
         mirna = mirna_gene_interaction.mirna.mirna_code
         gene = mirna_gene_interaction.gene
@@ -62,13 +63,15 @@ class MirnaXGenSerializer(serializers.ModelSerializer):
             try:
                 api_pubmeds = pubmed_service.query_parse_and_build_pumbeds(term=term, mirna=mirna,
                                                                            gene=gene, timeout=PUBMED_API_TIMEOUT)
-            except Exception as ex:
-                # we only handle exceptions in this case
-                api_pubmeds = []
-            if api_pubmeds:
                 for pubmed_id in api_pubmeds:
                     url = link_builder.build_pubmed_url(pubmed_id)
                     pubmed_urls.add(url)
+            except Exception as ex:
+                # we only handle exceptions in this case
+                logging.error('Errr getting PubMeds:')
+                logging.exception(ex)
+                return set()
+
         return pubmed_urls
 
     @staticmethod
@@ -98,8 +101,8 @@ class GeneAliasesSerializer(serializers.ModelSerializer):
 
 class MirnaSerializer(serializers.ModelSerializer):
     mirbase_accession_id = serializers.CharField(read_only=True, source='mirbase_accession_id.mirbase_accession_id')
-    links = serializers.SerializerMethodField()
-    aliases = serializers.SerializerMethodField()
+    links = serializers.SerializerMethodField(method_name='get_links')
+    aliases = serializers.SerializerMethodField(method_name='get_aliases')
 
     class Meta:
         model = Mirna
@@ -128,7 +131,7 @@ class MirnaSerializer(serializers.ModelSerializer):
 
 
 class MirnaDiseaseSerializer(serializers.ModelSerializer):
-    pubmed = serializers.SerializerMethodField()
+    pubmed = serializers.SerializerMethodField(method_name='get_pubmed')
 
     class Meta:
         model = MirnaDisease
@@ -137,7 +140,7 @@ class MirnaDiseaseSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_pubmed(disease: MirnaDisease) -> str:
         """
-        Gets a Pubmed URL for a miRNA-disease association
+        Gets a PubMed URL for a miRNA-disease association
         :param disease: MirnaDisease object
         :return: Pubmed URL
         """
@@ -145,7 +148,7 @@ class MirnaDiseaseSerializer(serializers.ModelSerializer):
 
 
 class MirnaDrugsSerializer(serializers.ModelSerializer):
-    pubmed = serializers.SerializerMethodField()
+    pubmed = serializers.SerializerMethodField(method_name='get_pubmed')
 
     class Meta:
         model = MirnaDrug
@@ -165,45 +168,44 @@ class MirnaDrugsSerializer(serializers.ModelSerializer):
 
 def get_mirna_aliases(mirna_code: str) -> List[str]:
     """
-    Gets all the aliases for a miRNA code
+    Gets all the aliases for a miRNA code (not duplicates)
     :param mirna_code: miRNA code to get its aliases
     :return: List of miRNA aliases
     """
     # miRNA code can be simple miRNA code or an accession id (MIMAT ID)
-    aliases = [mirna_code]
     if mirna_code.startswith('MI'):
-        mirnas = get_mirna_from_accession(mirna_code)
-        aliases.extend(mirnas)
+        aliases = get_mirna_from_accession(mirna_code)
     else:
         accession_id = get_accession_from_mirna(mirna_code)
         if accession_id is not None:
-            mirnas = get_mirna_from_accession(accession_id)
+            aliases = get_mirna_from_accession(accession_id)
             aliases.append(accession_id)
-            for mirna in mirnas:
-                if mirna not in aliases:
-                    aliases.append(mirna)
+        else:
+            aliases = []
+
+    # Adds miRNA code to not omit it
+    aliases.append(mirna_code)
     return aliases
 
 
 def get_mirna_from_accession(accession_id: str) -> List[str]:
     """
-    Retrieves from DB all the miRNA aliases for a specific accession id
+    Retrieves from DB all the miRNA aliases (not duplicates) for a specific accession id.
     :param accession_id: Accession id to make the query
     :return: List of related miRNA aliases
     """
-    records = MirbaseIdMirna.objects.filter(mirbase_accession_id=accession_id)
-    if records:
-        return list(records.values_list('mature_mirna', flat=True))
-    return []
+    return list(
+        MirbaseIdMirna.objects.filter(
+            mirbase_accession_id=accession_id
+        ).values_list('mature_mirna', flat=True).distinct()
+    )
 
 
 def get_accession_from_mirna(mirna_code: str) -> Optional[str]:
     """
-    Retrieves an accession id from a miRNA code
+    Retrieves an accession id from a miRNA code.
     :param mirna_code: miRNA code to make the query
     :return: Accession id if found, None otherwise
     """
-    record = MirbaseIdMirna.objects.filter(mature_mirna=mirna_code)
-    if record:
-        return record.get().mirbase_accession_id
-    return None
+    record = MirbaseIdMirna.objects.filter(mature_mirna=mirna_code).first()
+    return record.mirbase_accession_id if record is not None else None

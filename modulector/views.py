@@ -1,4 +1,5 @@
 import re
+from typing import List
 
 from django.conf import settings
 from django.db.models.query_utils import Q
@@ -21,24 +22,23 @@ from modulector.services.processor_service import validate_processing_parameters
 regex = re.compile(r'-\d[a-z]')
 
 
-def get_gene_aliases(gene):
-    """ Gathers the aliases for a gene based on the gene provided"""
-    gene_codes = set()
-    genes = GeneAliases.objects.filter(Q(alias=gene) | Q(gene_symbol=gene))
-    if genes:
-        main_code = genes.first().gene_symbol
-        codes = GeneAliases.objects.filter(gene_symbol=main_code)
-        gene_codes = set(code.alias for code in codes)
-        gene_codes.add(main_code)
-    gene_codes.add(gene)
-    return gene_codes
-
-
 class MirnaTargetInteractions(viewsets.ReadOnlyModelViewSet):
     """Returns a single instance with data about an interaction between a miRNA and a gene
     (mirna-target-interactions endpoint)"""
     serializer_class = MirnaXGenSerializer
     handler400 = 'rest_framework.exceptions.bad_request'
+
+    @staticmethod
+    def __get_gene_aliases(gene: str) -> List[str]:
+        """Retrieves the aliases for a gene based on the gene provided"""
+        match_gene = GeneAliases.objects.filter(Q(alias=gene) | Q(gene_symbol=gene)).first()
+        if match_gene is None:
+            return []
+
+        gene_symbol = match_gene.gene_symbol
+        aliases = list(GeneAliases.objects.filter(gene_symbol=gene_symbol).values_list('alias', flat=True).distinct())
+        aliases.append(gene)  # Adds the parameter to not omit it in the future search
+        return aliases
 
     def list(self, request, *args, **kwargs):
         mirna = self.request.query_params.get("mirna")
@@ -46,9 +46,12 @@ class MirnaTargetInteractions(viewsets.ReadOnlyModelViewSet):
         if not mirna or not gene:
             raise ParseError(detail="mirna and gene are obligatory")
 
-        gene_aliases = get_gene_aliases(gene=gene)
-        mirna = get_mirna_aliases(mirna)
-        instance = generics.get_object_or_404(MirnaXGene, mirna__mirna_code__in=mirna, gene__in=gene_aliases)
+        # Gets genes aliases
+        gene_aliases = self.__get_gene_aliases(gene)
+
+        # Gets miRNAs aliases
+        mirna_aliases = get_mirna_aliases(mirna)
+        instance = generics.get_object_or_404(MirnaXGene, mirna__mirna_code__in=mirna_aliases, gene__in=gene_aliases)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
