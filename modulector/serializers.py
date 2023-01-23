@@ -93,12 +93,6 @@ class MirnaAliasesSerializer(serializers.ModelSerializer):
         fields = ['mirbase_accession_id', 'mature_mirna']
 
 
-class GeneAliasesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = GeneAliases
-        fields = ['gene_symbol', 'alias']
-
-
 class MirnaSerializer(serializers.ModelSerializer):
     mirbase_accession_id = serializers.CharField(read_only=True, source='mirbase_accession_id.mirbase_accession_id')
     links = serializers.SerializerMethodField(method_name='get_links')

@@ -27,7 +27,6 @@ urlpatterns = [
     path('mirna-aliases/', views.MirnaAliasesList.as_view()),
     path('diseases/', views.MirnaDiseaseList.as_view()),
     path('drugs/', views.MirnaDrugsList.as_view()),
-    path('gene-aliases/', views.GeneAliasesList.as_view()),
     path('subscribe-pubmeds/', views.SubscribeUserToPubmed.as_view()),
     path('unsubscribe-pubmeds/', views.UnsubscribeUserToPubmed.as_view()),
     path('mirnas-finder/', views.MirnasFinder.as_view()),

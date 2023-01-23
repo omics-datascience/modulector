@@ -15,7 +15,7 @@ from modulector.models import MirnaXGene, Mirna, MirbaseIdMirna, MirnaDisease, M
 from modulector.pagination import StandardResultsSetPagination
 from modulector.serializers import MirnaXGenSerializer, MirnaSerializer, \
     MirnaAliasesSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer, get_mirna_from_accession, \
-    get_mirna_aliases, GeneAliasesSerializer
+    get_mirna_aliases
 from modulector.services import processor_service, subscription_service
 from modulector.services.processor_service import validate_processing_parameters
 
@@ -95,20 +95,9 @@ class MirnaAliasesList(generics.ListAPIView):
         return MirbaseIdMirna.objects.all()
 
 
-class GeneAliasesList(generics.ListAPIView):
-    """gene-aliases endpoint"""
-    serializer_class = GeneAliasesSerializer
-    pagination_class = StandardResultsSetPagination
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
-    ordering = ['gene_symbol']
-    filterset_fields = ['gene_symbol', 'alias']
-
-    def get_queryset(self):
-        return GeneAliases.objects.all()
-
-
 class MirnasFinder(APIView):
     """Service that takes a string of any length and returns a list of mirnas ids that contain that search criteria."""
+
     def get(self, request, format=None):
         limit = self.request.query_params.get('limit')
         query = self.request.query_params.get('query')
@@ -121,9 +110,8 @@ class MirnasFinder(APIView):
         if query is None:
             return Response([])
 
-        res = Mirna.objects.filter(mirna_code__startswith=query)[:limit].values_list('mirna_code', flat=True)
+        res = Mirna.objects.filter(mirna_code__istartswith=query)[:limit].values_list('mirna_code', flat=True)
         return Response(list(res))
-        # busco en modulector_mirbaseidmirna o en modulector_mirna? en ambas?
 
 
 class MirnaList(viewsets.ReadOnlyModelViewSet):
