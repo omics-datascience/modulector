@@ -22,7 +22,7 @@ def import_mirbase(apps, _schema_editor):
 
     print(f"Removing old MirbaseIdMirna and MirnaXGene data (~{num_mirna_records * num_mirnaxgen_records} rows)...")
     with connection.cursor() as cursor:
-        cursor.execute("TRUNCATE TABLE modulector_mirna CASCADE")
+        cursor.execute("TRUNCATE TABLE modulector_mirna CASCADE") # Deletes records from the modulector_mirna and modulector_mirnaxgen tables
 
     num_mirbaseidmirna_records = MirbaseIdMirna.objects.all().count()
     print(f"Removing old MirbaseIdMirna data ({num_mirbaseidmirna_records} rows)...")

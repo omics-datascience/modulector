@@ -107,6 +107,25 @@ class GeneAliasesList(generics.ListAPIView):
         return GeneAliases.objects.all()
 
 
+class MirnasFinder(APIView):
+    """Service that takes a string of any length and returns a list of mirnas ids that contain that search criteria."""
+    def get(self, request, format=None):
+        limit = self.request.query_params.get('limit')
+        query = self.request.query_params.get('query')
+        if limit is None:
+            limit = 50
+        elif limit.isnumeric():
+            limit = int(limit)
+        else:
+            return Response("'limit' parameter must be a numeric value", status=status.HTTP_400_BAD_REQUEST)
+        if query is None:
+            return Response([])
+
+        res = Mirna.objects.filter(mirna_code__startswith=query)[:limit].values_list('mirna_code', flat=True)
+        return Response(list(res))
+        # busco en modulector_mirbaseidmirna o en modulector_mirna? en ambas?
+
+
 class MirnaList(viewsets.ReadOnlyModelViewSet):
     """Returns a single instance of miRNA with general data (mirna endpoint)"""
     serializer_class = MirnaSerializer
