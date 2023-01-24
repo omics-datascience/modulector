@@ -11,7 +11,7 @@ from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from modulector.models import MirnaXGene, Mirna, MirbaseIdMirna, MirnaDisease, MirnaDrug, GeneAliases
+from modulector.models import MirnaXGene, Mirna, MirbaseIdMirna, MirnaDisease, MirnaDrug, GeneAliases, MethylationEPIC
 from modulector.pagination import StandardResultsSetPagination
 from modulector.serializers import MirnaXGenSerializer, MirnaSerializer, \
     MirnaAliasesSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer, get_mirna_from_accession, \
@@ -202,6 +202,25 @@ class UnsubscribeUserToPubmed(APIView):
         subscription_service.unsubscribe_user(token=token)
         return Response("Your subscription has been deleted", status=status.HTTP_200_OK)
 
+
+class MethylFinder(APIView):
+    """Service that takes a text string of any length and returns a list of methylation site names (loci) containing
+    that search criteria within the Illumina 'Infinium MethylationEPIC' array."""
+
+    def get(self, request, format=None):
+        limit = self.request.query_params.get('limit')
+        query = self.request.query_params.get('query')
+        if limit is None:
+            limit = 50
+        elif limit.isnumeric():
+            limit = int(limit)
+        else:
+            return Response("'limit' parameter must be a numeric value", status=status.HTTP_400_BAD_REQUEST)
+        if query is None:
+            return Response([])
+
+        res = MethylationEPIC.objects.filter(name__istartswith=query)[:limit].values_list('name', flat=True)
+        return Response(list(res))
 
 def index(request):
     return render(request, 'index.html', {'version': settings.VERSION})
