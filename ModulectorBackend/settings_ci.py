@@ -101,7 +101,10 @@ WSGI_APPLICATION = 'ModulectorBackend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'TEST':{ }
+        'TEST':
+        {
+            'MIGRATE': False
+        }
     },
 }
 CACHES = {
