@@ -1,3 +1,4 @@
+import json
 import re
 from typing import List
 
@@ -18,6 +19,7 @@ from modulector.serializers import MirnaXGenSerializer, MirnaSerializer, \
     get_mirna_aliases
 from modulector.services import processor_service, subscription_service
 from modulector.services.processor_service import validate_processing_parameters
+import json
 
 regex = re.compile(r'-\d[a-z]')
 
@@ -98,19 +100,39 @@ class MirnaAliasesList(generics.ListAPIView):
 class MirnasFinder(APIView):
     """Service that takes a string of any length and returns a list of mirnas ids that contain that search criteria."""
 
-    def get(self, request, format=None):
+    def get(self, request):
+        res = []
         limit = self.request.query_params.get('limit')
         query = self.request.query_params.get('query')
         if limit is None:
             limit = 50
         elif limit.isnumeric():
             limit = int(limit)
+            if limit > 3000:
+                return Response("The value of the 'limit' parameter must be less than or equal to 3000",
+                                status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response("'limit' parameter must be a numeric value", status=status.HTTP_400_BAD_REQUEST)
         if query is None:
             return Response([])
 
-        res = Mirna.objects.filter(mirna_code__istartswith=query)[:limit].values_list('mirna_code', flat=True)
+        res_mirna = Mirna.objects.filter(mirna_code__istartswith=query)[:limit].values_list('mirna_code', flat=True)
+        res.extend(res_mirna)
+        res_mirna_count = len(res_mirna)
+        if res_mirna_count < limit:
+            num_of_reg = limit - res_mirna_count
+            res_mirbaseidmirna_id = MirbaseIdMirna.objects.filter(mature_mirna__istartswith=query)[
+                                    :num_of_reg].values_list('mature_mirna', flat=True)
+            res.extend(res_mirbaseidmirna_id)
+            res = list(set(res))  # remove duplicates
+            res_mirna_count = len(res_mirbaseidmirna_id)
+            if res_mirna_count < limit:
+                num_of_reg = limit - res_mirna_count
+                res_mirbaseidmirna_acc = MirbaseIdMirna.objects.filter(mirbase_accession_id__istartswith=query)[
+                                         :num_of_reg].values_list('mirbase_accession_id', flat=True)
+                res.extend(res_mirbaseidmirna_acc)
+                res = list(set(res))  # remove duplicates
+
         return Response(list(res))
 
 
@@ -203,17 +225,59 @@ class UnsubscribeUserToPubmed(APIView):
         return Response("Your subscription has been deleted", status=status.HTTP_200_OK)
 
 
+class MethylSite(APIView):
+    """Service that searches the identifier of a methylation site from different versions of Illumina arrays and
+    returns the identifier of the most recent version."""
+
+    @staticmethod
+    def get(self, input_id):  # al parametro self pycharm me indica que no lo usa pero si se lo sacas no funciona
+        res = MethylationEPIC.objects.filter(Q(ilmnid=input_id) | Q(name=input_id) |
+                                             Q(methyl450_loci=input_id) | Q(methyl27_loci=input_id) |
+                                             Q(epicv1_loci=input_id)).values_list('name', flat=True)
+
+        return Response({input_id: list(res)})
+
+
+class MethylSites(APIView):
+    """Service that searches a list of methylation site identifiers from different Illumina array versions and
+    returns the identifiers for the most recent version of the array."""
+
+    @staticmethod
+    def post(request):
+        data = json.loads(request.body)
+        if "genes_ids" not in data:
+            return Response("'genes_ids' is mandatory", status=status.HTTP_400_BAD_REQUEST)
+        genes_ids = data["genes_ids"]
+        if type(genes_ids) != list:
+            return Response("'genes_ids' must be of list type", status=status.HTTP_400_BAD_REQUEST)
+
+        res = {}
+        for id in genes_ids:
+            res[id] = MethylSite.get(request, id).data[id]
+
+        return Response(res)
+
+        # res = MethylationEPIC.objects.filter(Q(ilmnid=input_id) | Q(name=input_id) |
+        #                                      Q(methyl450_loci=input_id) | Q(methyl27_loci=input_id) |
+        #                                      Q(epicv1_loci=input_id)).values_list('name', flat=True)
+        #
+        # return Response({input_id: list(res)})
+
+
 class MethylFinder(APIView):
     """Service that takes a text string of any length and returns a list of methylation site names (loci) containing
     that search criteria within the Illumina 'Infinium MethylationEPIC' array."""
 
-    def get(self, request, format=None):
+    def get(self, request):
         limit = self.request.query_params.get('limit')
         query = self.request.query_params.get('query')
         if limit is None:
             limit = 50
         elif limit.isnumeric():
             limit = int(limit)
+            if limit > 3000:
+                return Response("The value of the 'limit' parameter must be less than or equal to 3000",
+                                status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response("'limit' parameter must be a numeric value", status=status.HTTP_400_BAD_REQUEST)
         if query is None:
@@ -221,6 +285,7 @@ class MethylFinder(APIView):
 
         res = MethylationEPIC.objects.filter(name__istartswith=query)[:limit].values_list('name', flat=True)
         return Response(list(res))
+
 
 def index(request):
     return render(request, 'index.html', {'version': settings.VERSION})
