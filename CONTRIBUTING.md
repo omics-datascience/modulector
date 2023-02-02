@@ -29,6 +29,12 @@ The entire contributing process consists in the following steps:
     1. `python3 -m venv venv`
     1. `source venv/bin/activate` (this command must be run every time you want to start the Django server, otherwise we won't have the dependencies available)
     1. `pip install -r config/requirements.txt`
+1. Database download:  
+For reasons of size there are 2 databases that are not in the Modulector repository and you have to download them manually. The following databases must be downloaded:  
+    1. mirDIP version 5.2. Download [mirDIP_Unidirectional_search_v.5.txt](https://ophid.utoronto.ca//mirDIPweb/mirDIP_Unidirectional_search_v_5_2.zip) file.  
+    1. [EPIC-8v2-0_A1.csv](https://support.illumina.com/content/dam/illumina-support/documents/downloads/productfiles/methylationepic/MethylationEPIC_v2%20Files.zip) file of the Infinium MethylationEPIC array version 2.0.  
+Once the two files are downloaded, unzip and move them into the `modulector/files/` directory. 
+Note: there may be more than one file inside the ZIP. Be sure to move only the two files mentioned above.
 1. Apply migrations and create super user:
     1. `python3 manage.py makemigrations`
     1. `python3 manage.py migrate`
