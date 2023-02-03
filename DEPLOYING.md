@@ -16,6 +16,9 @@ Below are the steps to perform a production deploy.
 1. Set the environment variables that are empty with data. They are listed below by category:
     - Django:
         - `DJANGO_SETTINGS_MODULE`: indicates the `settings.py` file to read. In production we set in `docker-compose_dist.yml` the value `ModulectorBackend.settings_prod` which contains several production properties.
+        - `ALLOWED_HOSTS`: list of allowed host separated by commas. Default `['web', '.localhost', '127.0.0.1', '[::1]']`.
+        - `ENABLE_SECURITY`: set the string `true` to enable Django's security mechanisms. In addition to this parameter, to have a secure site you must configure the HTTPS server, for more information on the latter see the section [Enable SSL/HTTPS](#enable-sslhttps). Default `false`.
+        - `CSRF_TRUSTED_ORIGINS`: in Django >= 4.x, it's mandatory to define this in production when you are using Daphne through NGINX. The value is a single host or list of hosts separated by commas. 'http://', 'https://' prefixes are mandatory. Examples of values: 'http://127.0.0.1', 'http://127.0.0.1,https://127.0.0.1:8000', etc. You can read more [here](#csrf-trusted-issue).
         - `SECRET_KEY`: Django's secret key. If not specified, one is generated with [generate-secret-key application](https://github.com/MickaelBergem/django-generate-secret-key) automatically.
         - `MEDIA_ROOT`: absolute path where will be stored the uploaded files. By default `<project root>/uploads`.
         - `MEDIA_URL`: URL of the `MEDIA_ROOT` folder. By default `<url>/media/`.
@@ -46,6 +49,33 @@ Below are the steps to perform a production deploy.
 
 Due the database restoration in the first start, the container modulectordb may take a while to be up an ready. We can follow the status of the startup process in the logs by doing: `docker-compose logs --follow`.
 Sometimes this delay makes django server throws database connection errors. If it is still down and not automatically fixed when database finally's up, we can restart the services by doing: `docker-compose up -d`.
+
+
+## Enable SSL/HTTPS
+
+To enable HTTPS, follow the steps below:
+
+1. Set the `ENABLE_SECURITY` parameter to `true` as explained in the [Instructions](#instructions) section.
+1. Copy the file `config/nginx/multiomics_intermediate_safe_dist.conf` and paste it into `config/nginx/conf.d/` with the name `multiomics_intermediate.conf`.
+1. Get the `.crt` and `.pem` files for both the certificate and the private key and put them in the `config/nginx/certificates` folder.
+1. Edit the `multiomics_intermediate.conf` file that we pasted in point 2. Uncomment the lines where both `.crt` and `.pem` files must be specified.
+1. Edit the `docker-compose.yml` file so that the `nginx` service exposes both port 8000 and 443. Also you need to add `certificates` folder to `volumes` section. It should look something like this:
+
+```yaml
+...
+nginx:
+    image: nginx:1.19.3
+    ports:
+        - 80:8000
+        - 443:443
+    # ...
+    volumes:
+        ...
+        - ./config/nginx/certificates:/etc/nginx/certificates
+...
+```
+
+6. Redo the deployment with Docker.
 
 
 ## Perform security checks

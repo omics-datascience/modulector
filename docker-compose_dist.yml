@@ -3,7 +3,7 @@ version: '3'
 services:
     # PostgreSQL
     db:
-      image: omicsdatascience/modulector-db:1.4
+      image: omicsdatascience/modulector-db:2.0
       # volumes:
         # If you want to use a optimized postgres config, please uncomment the next line
         # with your path to postgres.conf file
@@ -26,10 +26,15 @@ services:
 
     # Django Backend Server
     web:
-        image: omicsdatascience/modulector:1.4.3
+        image: omicsdatascience/modulector:2.0
         depends_on:
             - db
         environment:
             # Django
             DJANGO_SETTINGS_MODULE: 'ModulectorBackend.settings_prod'
             POSTGRES_HOST: 'db' # Name of the modulector-db service previously defined
+
+            # CSRF. Django 4.x need this.
+            # Hosts separated by comma ('http://', 'https://' prefixes are mandatory)
+            # Example: CSRF_TRUSTED_ORIGINS: 'http://127.0.0.1', 'http://127.0.0.1,https://127.0.0.1:8000', etc
+            CSRF_TRUSTED_ORIGINS: ''

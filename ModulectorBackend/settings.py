@@ -15,6 +15,10 @@ import os
 # Modulector version
 VERSION: str = '1.4.4'
 
+# Default primary key field type
+# https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -27,7 +31,7 @@ SECRET_KEY = 'm)95!xjla3k1h)1#ya_rp^7#7^l_laaa6x$ik2_vx#gc0ll=e('
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['.localhost', '127.0.0.1', '[::1]','*']
+ALLOWED_HOSTS = ['web', '.localhost', '127.0.0.1', '[::1]']
 
 # Modulector unsubscribe endpoint
 UNSUBSCRIBE_URL = 'http://localhost:8000/unsubscribe-pubmeds/?token='
