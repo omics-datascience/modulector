@@ -1,7 +1,5 @@
-import json
 import re
-from typing import List
-
+from typing import List, Optional
 from django.conf import settings
 from django.db.models.query_utils import Q
 from django.http import Http404
@@ -11,7 +9,6 @@ from rest_framework import status, generics, filters, viewsets
 from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from modulector.models import MirnaXGene, Mirna, MirbaseIdMirna, MirnaDisease, MirnaDrug, GeneAliases, MethylationEPIC
 from modulector.pagination import StandardResultsSetPagination
 from modulector.serializers import MirnaXGenSerializer, MirnaSerializer, \
@@ -19,9 +16,31 @@ from modulector.serializers import MirnaXGenSerializer, MirnaSerializer, \
     get_mirna_aliases
 from modulector.services import processor_service, subscription_service
 from modulector.services.processor_service import validate_processing_parameters
-import json
 
 regex = re.compile(r'-\d[a-z]')
+
+# Default page size for requests
+DEFAULT_PAGE_SIZE: int = 50
+
+# Maximum page size for requests
+MAX_PAGE_SIZE: int = 3000
+
+
+def get_limit_parameter(value: Optional[str]) -> int:
+    """
+    Gets a valid int value for the 'limit' parameter in requests
+    :param value: Current value in GET request
+    :return: Int value or the maximum value possible in case it's higher
+    """
+    if value is None:
+        return DEFAULT_PAGE_SIZE
+
+    try:
+        int_value = int(value)
+        return min(int_value, MAX_PAGE_SIZE)
+    except ValueError:
+        # Returns default in case of non-numeric parameter
+        return DEFAULT_PAGE_SIZE
 
 
 class MirnaTargetInteractions(viewsets.ReadOnlyModelViewSet):
@@ -43,8 +62,9 @@ class MirnaTargetInteractions(viewsets.ReadOnlyModelViewSet):
         return aliases
 
     def list(self, request, *args, **kwargs):
-        mirna = self.request.query_params.get("mirna")
-        gene = self.request.query_params.get("gene")
+        mirna = self.request.GET.get("mirna")
+        gene = self.request.GET.get("gene")
+
         if not mirna or not gene:
             raise ParseError(detail="mirna and gene are obligatory")
 
@@ -69,12 +89,13 @@ class MirnaInteractions(generics.ListAPIView):
     handler400 = 'rest_framework.exceptions.bad_request'
 
     def get_queryset(self):
-        mirna = self.request.query_params.get("mirna")
+        mirna = self.request.GET.get("mirna")
+
         if not mirna:
             raise ParseError(detail="mirna is obligatory")
         else:
-            mirna = get_mirna_aliases(mirna)
-            return MirnaXGene.objects.filter(mirna__mirna_code__in=mirna)
+            mirna_aliases = get_mirna_aliases(mirna)
+            return MirnaXGene.objects.filter(mirna__mirna_code__in=mirna_aliases)
 
 
 class Process(APIView):
@@ -98,23 +119,16 @@ class MirnaAliasesList(generics.ListAPIView):
 
 
 class MirnasFinder(APIView):
-    """Service that takes a string of any length and returns a list of mirnas ids that contain that search criteria."""
+    """Service that takes a string of any length and returns a list of miRNAs' ids that contain that search criteria."""
 
-    def get(self, request):
-        res = []
-        limit = self.request.query_params.get('limit')
-        query = self.request.query_params.get('query')
-        if limit is None:
-            limit = 50
-        elif limit.isnumeric():
-            limit = int(limit)
-            if limit > 3000:
-                return Response("The value of the 'limit' parameter must be less than or equal to 3000",
-                                status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response("'limit' parameter must be a numeric value", status=status.HTTP_400_BAD_REQUEST)
+    def get(self, _request):
+        query = self.request.GET.get('query')
         if query is None:
             return Response([])
+
+        res = []
+        limit = self.request.GET.get('limit')
+        limit = get_limit_parameter(limit)
 
         res_mirna = Mirna.objects.filter(mirna_code__istartswith=query)[:limit].values_list('mirna_code', flat=True)
         res.extend(res_mirna)
@@ -124,7 +138,7 @@ class MirnasFinder(APIView):
             res_mirbaseidmirna_id = MirbaseIdMirna.objects.filter(mature_mirna__istartswith=query)[
                                     :num_of_reg].values_list('mature_mirna', flat=True)
             res.extend(res_mirbaseidmirna_id)
-            res = list(set(res))  # remove duplicates
+            res = list(set(res))  # Removes duplicates
             res_mirna_count = len(res_mirbaseidmirna_id)
             if res_mirna_count < limit:
                 num_of_reg = limit - res_mirna_count
@@ -142,7 +156,7 @@ class MirnaList(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
 
     def list(self, request, *args, **kwargs):
-        mirna = self.request.query_params.get("mirna")
+        mirna = self.request.GET.get("mirna")
         if not mirna:
             raise Http404
         aliases = get_mirna_aliases(mirna)
@@ -151,7 +165,7 @@ class MirnaList(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
 
     def get_queryset(self):
-        mirna = self.request.query_params.get("mirna")
+        mirna = self.request.GET.get("mirna")
         if mirna:
             aliases = get_mirna_aliases(mirna)
             return generics.get_object_or_404(Mirna, mirna_code__in=aliases)
@@ -169,7 +183,8 @@ class MirnaDiseaseList(generics.ListAPIView):
     search_fields = ['disease']
 
     def get_queryset(self):
-        mirna = self.request.query_params.get("mirna")
+        mirna = self.request.GET.get("mirna")
+
         result = MirnaDisease.objects.all()
         if mirna:
             if mirna.startswith('MI'):
@@ -196,7 +211,7 @@ class MirnaDrugsList(generics.ListAPIView):
     filterset_fields = ['fda_approved']
 
     def get_queryset(self):
-        mirna = self.request.query_params.get("mirna")
+        mirna = self.request.GET.get("mirna")
         query_set = MirnaDrug.objects.all()
         if mirna:
             if mirna.startswith('MI'):
@@ -210,9 +225,9 @@ class MirnaDrugsList(generics.ListAPIView):
 class SubscribeUserToPubmed(APIView):
     @staticmethod
     def get(request):
-        email = request.query_params.get("email")
-        mirna = request.query_params.get("mirna")
-        gene = request.query_params.get("gene")
+        email = request.GET.get("email")
+        mirna = request.GET.get("mirna")
+        gene = request.GET.get("gene")
         token = subscription_service.subscribe_user(email=email, mirna=mirna, gene=gene)
         return Response({'token': token}, status=status.HTTP_200_OK)
 
@@ -220,17 +235,17 @@ class SubscribeUserToPubmed(APIView):
 class UnsubscribeUserToPubmed(APIView):
     @staticmethod
     def get(request):
-        token = request.query_params.get("token")
+        token = request.GET.get("token")
         subscription_service.unsubscribe_user(token=token)
         return Response("Your subscription has been deleted", status=status.HTTP_200_OK)
 
 
-class MethylSite(APIView):
+class MethylationSite(APIView):
     """Service that searches the identifier of a methylation site from different versions of Illumina arrays and
     returns the identifier of the most recent version."""
 
     @staticmethod
-    def get(self, input_id):  # al parametro self pycharm me indica que no lo usa pero si se lo sacas no funciona
+    def get(_request, input_id: str):
         res = MethylationEPIC.objects.filter(Q(ilmnid=input_id) | Q(name=input_id) |
                                              Q(methyl450_loci=input_id) | Q(methyl27_loci=input_id) |
                                              Q(epicv1_loci=input_id)).values_list('name', flat=True)
@@ -238,22 +253,24 @@ class MethylSite(APIView):
         return Response({input_id: list(res)})
 
 
-class MethylSites(APIView):
+class MethylationSites(APIView):
     """Service that searches a list of methylation site identifiers from different Illumina array versions and
     returns the identifiers for the most recent version of the array."""
 
     @staticmethod
     def post(request):
-        data = json.loads(request.body)
+        data = request.data
         if "genes_ids" not in data:
             return Response("'genes_ids' is mandatory", status=status.HTTP_400_BAD_REQUEST)
+
         genes_ids = data["genes_ids"]
         if type(genes_ids) != list:
             return Response("'genes_ids' must be of list type", status=status.HTTP_400_BAD_REQUEST)
 
         res = {}
-        for id in genes_ids:
-            res[id] = MethylSite.get(request, id).data[id]
+        for gene_id in genes_ids:
+            # TODO: instead of calling this request, it should be a common function to get the data
+            res[gene_id] = MethylationSite.get(request, gene_id).data[gene_id]
 
         return Response(res)
 
@@ -264,24 +281,17 @@ class MethylSites(APIView):
         # return Response({input_id: list(res)})
 
 
-class MethylFinder(APIView):
+class MethylationFinder(APIView):
     """Service that takes a text string of any length and returns a list of methylation site names (loci) containing
     that search criteria within the Illumina 'Infinium MethylationEPIC' array."""
 
-    def get(self, request):
-        limit = self.request.query_params.get('limit')
-        query = self.request.query_params.get('query')
-        if limit is None:
-            limit = 50
-        elif limit.isnumeric():
-            limit = int(limit)
-            if limit > 3000:
-                return Response("The value of the 'limit' parameter must be less than or equal to 3000",
-                                status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response("'limit' parameter must be a numeric value", status=status.HTTP_400_BAD_REQUEST)
+    def get(self, _request):
+        query = self.request.GET.get('query')
         if query is None:
             return Response([])
+
+        limit = self.request.GET.get('limit')
+        limit = get_limit_parameter(limit)
 
         res = MethylationEPIC.objects.filter(name__istartswith=query)[:limit].values_list('name', flat=True)
         return Response(list(res))

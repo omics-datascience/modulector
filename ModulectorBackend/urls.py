@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path
 
 from modulector import views
-from modulector.views import MethylSite, MethylSites
+from modulector.views import MethylationSite, MethylationSites
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,8 +31,8 @@ urlpatterns = [
     path('subscribe-pubmeds/', views.SubscribeUserToPubmed.as_view()),
     path('unsubscribe-pubmeds/', views.UnsubscribeUserToPubmed.as_view()),
     path('mirnas-finder/', views.MirnasFinder.as_view()),
-    path('methylation-finder/', views.MethylFinder.as_view()),
-    path('methylation-site/<str:input_id>', MethylSite.as_view()),
-    path('methylation-sites/', MethylSites.as_view()),
+    path('methylation-finder/', views.MethylationFinder.as_view()),
+    path('methylation-site/<str:input_id>', MethylationSite.as_view()),
+    path('methylation-sites/', MethylationSites.as_view()),
     path('', views.index)
 ]
