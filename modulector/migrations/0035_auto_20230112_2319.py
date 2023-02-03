@@ -112,5 +112,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(import_methylation_epic_v2)  # TARDO 2hs!!!
+        migrations.RunPython(import_methylation_epic_v2)  # it takes about 2 hours
     ]

@@ -10,7 +10,6 @@ Modulector is a performing open platform that provides information about miRNAs 
     - [miRNA aliases](#mirna-aliases)
     - [Diseases](#diseases)
     - [Drugs](#drugs)
-    - [Gene aliases](#gene-aliases)
     - [Subscribe to PUBMEDS](#subscribe-to-pubmeds-news)
     - [Unsubscribe to PUBMEDS](#unsubscribe-from-pubmeds-news)
 - [Considerations](#considerations)
@@ -244,26 +243,6 @@ Returns a paginated response of experimentally validated small molecules (or dru
     - Content: empty paginated response (number of elements = 0)
 
 - Additional details: **we are concatenating the 'hsa' prefix for all the drugs records because the file that we are using does not have it and to maintain consistency with the format for mature miRNAs**
-
-### Gene Aliases
-
-Returns the aliases associated with a gene_symbol
-
-- URL: `/gene-aliases`
-
-- Functions:
-    - Ordering fields: `gene_symbol`
-    - Filtering fields: `gene_symbol` and `alias`
-    - Pagination: yes
-
-- Success Response:
-    - Code: 200
-    - Content:
-        - `gene_symbol`: current gene symbol.
-        - `alias`: alias associated with said symbol.
-- Error Response:
-    - Code: 200
-    - Content: empty paginated response (number of elements = 0)
 
 ### Subscribe to PUBMEDS news
 
