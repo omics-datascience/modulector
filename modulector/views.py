@@ -14,8 +14,7 @@ from modulector.pagination import StandardResultsSetPagination
 from modulector.serializers import MirnaXGenSerializer, MirnaSerializer, \
     MirnaAliasesSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer, get_mirna_from_accession, \
     get_mirna_aliases
-from modulector.services import processor_service, subscription_service
-from modulector.services.processor_service import validate_processing_parameters
+from modulector.services import subscription_service
 
 regex = re.compile(r'-\d[a-z]')
 
@@ -93,17 +92,9 @@ class MirnaInteractions(generics.ListAPIView):
 
         if not mirna:
             raise ParseError(detail="mirna is obligatory")
-        else:
-            mirna_aliases = get_mirna_aliases(mirna)
-            return MirnaXGene.objects.filter(mirna__mirna_code__in=mirna_aliases)
 
-
-class Process(APIView):
-    @staticmethod
-    def get(request):
-        commands = validate_processing_parameters(request)
-        processor_service.execute(commands)
-        return Response("data processed", status=status.HTTP_200_OK)
+        mirna_aliases = get_mirna_aliases(mirna)
+        return MirnaXGene.objects.filter(mirna__mirna_code__in=mirna_aliases)
 
 
 class MirnaAliasesList(generics.ListAPIView):
