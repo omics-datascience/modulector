@@ -272,7 +272,7 @@ class MethylationSites(APIView):
         # return Response({input_id: list(res)})
 
 
-class MethylationFinder(APIView):
+class MethylationsFinder(APIView):
     """Service that takes a text string of any length and returns a list of methylation site names (loci) containing
     that search criteria within the Illumina 'Infinium MethylationEPIC' array."""
 

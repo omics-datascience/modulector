@@ -31,7 +31,7 @@ urlpatterns = [
     path('subscribe-pubmeds/', views.SubscribeUserToPubmed.as_view()),
     path('unsubscribe-pubmeds/', views.UnsubscribeUserToPubmed.as_view()),
     path('mirnas-finder/', views.MirnasFinder.as_view()),
-    path('methylation-finder/', views.MethylationFinder.as_view()),
+    path('methylations-finder/', views.MethylationsFinder.as_view()),
     path('methylation-site/<str:input_id>', MethylationSite.as_view()),
     path('methylation-sites/', MethylationSites.as_view()),
     path('', views.index)
