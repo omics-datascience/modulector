@@ -85,34 +85,42 @@ Where  *\<service's name\>* could be `nginx`, `web` or `db`.
 
 In order to create a database dump you can execute the following command:
 
-`docker exec -t [name of DB container] pg_dump [db name] --data-only | gzip > modulector.sql.gz`
+`docker exec -t [name of DB container] pg_dump [db name] --no-owner -U modulector | gzip > modulector.sql.gz`
 
-That command will create a compressed file with the database dump inside. **Note** that `--data-only` flag is present as DB structure is managed by Django Migrations so they are not necessary.
+That command will create a compressed file with the database dump inside.
 
 
 ### Import
 
-Use the followings steps if you manually set your postgres environment. Otherwise, you can just use the `modulector-db:<version>` and avoid all this steps. If you move between release versions it's very probable that the db image exists with the previous name mentioned.
+You can use set Modulector DB in three ways.
 
-1. **Optional but recommended**: due to major changes, it's probably that an import thrown several errors when importing. To prevent that you could do the following steps before doing the importation:
+
+### Using official Docker image (recommended)
+
+You can just use the [modulector-db][modulector-db-docker] and avoid all kind of importations steps. This is the default setting in `docker-compose_dist.yml`.
+
+
+### Importing an existing database dump
+
+1. Comment the service in your `docker-compose.yml` that uses the `omicsdatascience/modulector-db` image.
+1. Start up a PostgreSQL service. You can use the same service listed in the `docker-compose.dev.yml` file. 
+1. **Optional but recommended (You can omit these steps if it's the first time you are deploying Modulector)**: due to major changes, it's probably that an import thrown several errors when importing. To prevent that you could do the following steps before doing the importation:
     1. Drop all the tables from the DB:
-        1. Log into docker container: `docker container exec -it [name of DB container] bash`
-        1. Log into Postgres: `psql -U [username] -d [database]`
-        1. Run to generate a `DELETE CASCADE` query for all
-           tables: `select 'drop table if exists "' || tablename || '" cascade;' from pg_tables where schemaname = 'public';`
-        1. (**Danger, will drop tables**) Run the generated query in previous step to drop all tables
-    1. Run the Django migrations to create the empty tables with the correct structure: `docker exec -i [name of django container] python3 manage.py migrate`
-1. Download `.sql.gz` from [Modulector releases pages](https://github.com/multiomics-datascience/modulector-backend/releases) or use your own export file
-1. Restore the db running:
+        1. Log into docker container: `docker container exec -it [name of the DB container] bash`
+        1. Log into Postgres: `psql -U [username]`
+        1. (**Danger, will drop all the data**) Remove the `modulector` database: `DROP DATABASE modulector;`
+        1.  Create an empty database: `CREATE DATABASE modulector;`
+1. Download `.sql.gz` from [Modulector releases pages](https://github.com/multiomics-datascience/modulector-backend/releases) or use your own export file.
+1. Restore the db: `zcat modulector.sql.gz | docker exec -i [name of the DB container] psql modulector -U modulector`
 
-`zcat modulector.sql.gz | docker exec -i [name of DB container] psql [db name]`
-
-That command will restore the database using a compressed dump as source
+That command will restore the database using a compressed dump as source.
 
 
-### Regenerate data
+### Regenerating the data manually
 
-Use the followings steps if you manually set your postgres environment. Otherwise, you can just regenerate all the db data deleting or stoping the db container and bring it up. It's because the image has all the data you need. But if you are deploying your custom postgres the next steps are valid.
+<!-- TODO: Mauri has to complete with all the steps to run the migrations --> 
+
+You can also regenerate all the db data deleting or stopping the db container and bring it up. It's because the image has all the data you need. But if you are deploying your custom postgres the next steps are valid.
 
 **If you need to regenerate all, or some of the data**
 
@@ -140,3 +148,6 @@ When we notify user about updates of pubmeds they are subscribed to we interact 
 
 ## Cron job configuration
 For cron jobs we use the following [library](https://github.com/kraiz/django-crontab). In our settings file we configured our cron jobs inside the `CRONJOBS = []`
+
+
+[modulector-db-docker]: https://hub.docker.com/r/omicsdatascience/modulector-db
