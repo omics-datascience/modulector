@@ -22,7 +22,6 @@ from modulector.views import MethylationSite, MethylationSites
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('mirna/', views.MirnaList.as_view({'get': 'list'})),
-    path('process/', views.Process.as_view()),
     path('mirna-target-interactions/', views.MirnaTargetInteractions.as_view({'get': 'list'})),
     path('mirna-interactions/', views.MirnaInteractions.as_view()),
     path('mirna-aliases/', views.MirnaAliasesList.as_view()),
