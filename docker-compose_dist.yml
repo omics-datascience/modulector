@@ -14,7 +14,7 @@ services:
 
     # Django Proxy Server
     nginx:
-        image: nginx:1.19
+        image: nginx:1.23.3
         ports:
             - 80:8000
         volumes:
