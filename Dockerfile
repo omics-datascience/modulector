@@ -11,11 +11,12 @@ RUN mkdir /src
 WORKDIR /src/
 ENV BASEDIR=/src
 
+# Install app python requirements
+ADD config/requirements.txt /config/
+RUN pip3 install -r /config/requirements.txt
+
 # Copy all source data
 COPY . .
-
-# Install app python requirements
-RUN pip3 install -r config/requirements.txt
 
 RUN echo 0 > tools/healthcheck/tries.txt
 HEALTHCHECK CMD python tools/healthcheck/check.py
