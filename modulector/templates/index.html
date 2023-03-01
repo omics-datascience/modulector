@@ -8,34 +8,34 @@
 <h2>Modulector v{{ version }}</h2>
 <ul>
     <li>
-        <a href="/mirna">Mirna Details</a>
+        <a href="{% url 'mirna' %}">Mirna Details</a>
     </li>
     <li>
-        <a href="/mirna-target-interactions">Mirna Target Interactions</a>
+        <a href="{% url 'mirna_target_interactions' %}">Mirna Target Interactions</a>
     </li>
     <li>
-        <a href="/mirna-interactions">Mirna Interactions</a>
+        <a href="{% url 'mirna_interactions' %}">Mirna Interactions</a>
     </li>
     <li>
-        <a href="/mirna-aliases">Mirna Aliases</a>
+        <a href="{% url 'mirna_aliases' %}">Mirna Aliases</a>
     </li>
     <li>
-        <a href="/diseases">Diseases</a>
+        <a href="{% url 'diseases' %}">Diseases</a>
     </li>
     <li>
-        <a href="/drugs">Drugs</a>
+        <a href="{% url 'drugs' %}">Drugs</a>
     </li>
     <li>
-        <a href="/mirnas-finder">Mirnas Finder</a>
+        <a href="{% url 'mirnas_finder' %}">Mirnas Finder</a>
     </li>
     <li>
-        <a href="/methylation-finder">Methyltion Loci Finder</a>
+        <a href="{% url 'methylations_finder' %}">Methyltion Loci Finder</a>
     </li>
     <li>
         <a href="/methylation-site">Illumina Methyltion Site</a>
     </li>
     <li>
-        <a href="/methylation-sites">Illumina Methyltion Sites</a>
+        <a href="{% url 'methylation_sites' %}">Illumina Methyltion Sites</a>
     </li>
 
 </ul>

@@ -22,6 +22,6 @@ RUN echo 0 > tools/healthcheck/tries.txt
 HEALTHCHECK CMD python tools/healthcheck/check.py
 CMD ["/bin/bash","-c","tools/run.sh"]
 
-# modulector port
+# Modulector port
 EXPOSE 8000
 
