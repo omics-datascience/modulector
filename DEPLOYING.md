@@ -148,16 +148,10 @@ That command will restore the database using a compressed dump as source.
 
 ### Regenerating the data manually
 
-<!-- TODO: Mauri has to complete with all the steps to run the migrations --> 
-
-You can also regenerate all the db data deleting or stopping the db container and bring it up. It's because the image has all the data you need. But if you are deploying your custom postgres the next steps are valid.
-
-**If you need to regenerate all, or some of the data**
-
-1. Download `files.zip` from [Modulector releases pages](https://github.com/multiomics-datascience/modulector-backend/releases) and place it inside the files folder **(this folder is ignored by git)**
-2. http://127.0.0.1:8000/process/?commands=
-3. If you don't sent the query param all the commands will be executed
-4. If you want a specific set you can combine the following `drugs, mature_mirna, diseases, ref_seq, gene, sequence, mirDIP`
+<!-- TODO: Mauri has to complete with all the steps to run the migrations:
+1. Start the DB container
+1. put the files in an specific folder
+1. run `python3 manage.py migrate` to run all the migrations (**NOTE:** this can take a long time to finish)-->
 
 
 ## If you are using your own postgres server
