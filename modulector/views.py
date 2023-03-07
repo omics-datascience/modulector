@@ -42,6 +42,25 @@ def get_limit_parameter(value: Optional[str]) -> int:
         return DEFAULT_PAGE_SIZE
 
 
+def get_methylation_epic_site(input_id: str) -> list:
+    res = MethylationEPIC.objects.filter(Q(ilmnid=input_id) | Q(name=input_id) |
+                                         Q(methyl450_loci=input_id) | Q(methyl27_loci=input_id) |
+                                         Q(epicv1_loci=input_id)).values_list('name', flat=True)
+    return list(res)
+
+
+def get_mirna_code(input_id: str) -> list:
+    res_from_mirbaseidmirna = MirbaseIdMirna.objects.filter(Q(mirbase_accession_id=input_id) |
+                                                            Q(mature_mirna=input_id)).values_list('mature_mirna',
+                                                                                                  flat=True)
+    res = list(res_from_mirbaseidmirna)
+    res_from_mirna = Mirna.objects.filter(mirna_code=input_id).first()
+    if res_from_mirna:
+        if res_from_mirna.mirna_code not in res:
+            res.append(res_from_mirna.mirna_code)
+    return res
+
+
 class MirnaTargetInteractions(viewsets.ReadOnlyModelViewSet):
     """Returns a single instance with data about an interaction between a miRNA and a gene
     (mirna-target-interactions endpoint)"""
@@ -107,6 +126,26 @@ class MirnaAliasesList(generics.ListAPIView):
 
     def get_queryset(self):
         return MirbaseIdMirna.objects.all()
+
+
+class MirnaCodes(APIView):
+    """Service that searches a list of miRNAs codes and returns the code for the miRbase DB."""
+
+    @staticmethod
+    def post(request):
+        data = request.data
+        if "mirnas_ids" not in data:
+            return Response("'mirnas_ids' is mandatory", status=status.HTTP_400_BAD_REQUEST)
+
+        mirnas_ids = data["mirnas_ids"]
+        if type(mirnas_ids) != list:
+            return Response("'mirnas_ids' must be of list type", status=status.HTTP_400_BAD_REQUEST)
+
+        res = {}
+        for mirna_id in mirnas_ids:
+            res[mirna_id] = get_mirna_code(mirna_id)
+
+        return Response(res)
 
 
 class MirnasFinder(APIView):
@@ -231,19 +270,6 @@ class UnsubscribeUserToPubmed(APIView):
         return Response("Your subscription has been deleted", status=status.HTTP_200_OK)
 
 
-class MethylationSite(APIView):
-    """Service that searches the identifier of a methylation site from different versions of Illumina arrays and
-    returns the identifier of the most recent version."""
-
-    @staticmethod
-    def get(_request, input_id: str):
-        res = MethylationEPIC.objects.filter(Q(ilmnid=input_id) | Q(name=input_id) |
-                                             Q(methyl450_loci=input_id) | Q(methyl27_loci=input_id) |
-                                             Q(epicv1_loci=input_id)).values_list('name', flat=True)
-
-        return Response({input_id: list(res)})
-
-
 class MethylationSites(APIView):
     """Service that searches a list of methylation site identifiers from different Illumina array versions and
     returns the identifiers for the most recent version of the array."""
@@ -260,16 +286,9 @@ class MethylationSites(APIView):
 
         res = {}
         for gene_id in genes_ids:
-            # TODO: instead of calling this request, it should be a common function to get the data
-            res[gene_id] = MethylationSite.get(request, gene_id).data[gene_id]
+            res[gene_id] = get_methylation_epic_site(gene_id)
 
         return Response(res)
-
-        # res = MethylationEPIC.objects.filter(Q(ilmnid=input_id) | Q(name=input_id) |
-        #                                      Q(methyl450_loci=input_id) | Q(methyl27_loci=input_id) |
-        #                                      Q(epicv1_loci=input_id)).values_list('name', flat=True)
-        #
-        # return Response({input_id: list(res)})
 
 
 class MethylationsFinder(APIView):
