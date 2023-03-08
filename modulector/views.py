@@ -127,15 +127,15 @@ class MirnaCodes(APIView):
 
     def post(self, request):
         data = request.data
-        if "mirna_ids" not in data:
-            return Response({"detail": "'mirna_ids' is mandatory"}, status=status.HTTP_400_BAD_REQUEST)
+        if "mirna_codes" not in data:
+            return Response({"detail": "'mirna_codes' is mandatory"}, status=status.HTTP_400_BAD_REQUEST)
 
-        mirna_ids = data["mirna_ids"]
-        if type(mirna_ids) != list:
-            return Response({"detail": "'mirna_ids' must be of list type"}, status=status.HTTP_400_BAD_REQUEST)
+        mirna_codes = data["mirna_codes"]
+        if type(mirna_codes) != list:
+            return Response({"detail": "'mirna_codes' must be of list type"}, status=status.HTTP_400_BAD_REQUEST)
 
         res = {}
-        for mirna_id in mirna_ids:
+        for mirna_id in mirna_codes:
             res[mirna_id] = self.__get_mirna_code(mirna_id)
 
         return Response(res)
@@ -279,7 +279,6 @@ class MethylationSites(APIView):
                                              Q(epicv1_loci=input_id)).values_list('name', flat=True)
         return list(res)
 
-
     def post(self, request):
         data = request.data
         if "methylation_sites" not in data:
@@ -291,7 +290,7 @@ class MethylationSites(APIView):
 
         res = {}
         for methylation_name in methylation_sites:
-            res[methylation_name] = self.__get_methylation_epic_site(methylation_name)
+            res[methylation_name] = self.__get_methylation_epic_sites(methylation_name)
 
         return Response(res)
 
