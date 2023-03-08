@@ -186,7 +186,7 @@ Returns a paginated response with aliases of a miRNA.
 
 Service that takes a string of any length and returns a list of miRNAs that contain that search criteria.
 
-- URL: `/mirnas-finder`
+- URL: `/mirna-codes-finder`
 
 - Required query params:
     - `query`: mirna search string.  
