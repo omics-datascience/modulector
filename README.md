@@ -182,6 +182,17 @@ Returns a paginated response with aliases of a miRNA.
         - `mature_mirna`: previous ID (according to mirBase).
 - Error Response: -
 
+### MiRNAs finder
+
+Service that takes a string of any length and returns a list of miRNAs that contain that search criteria.
+
+- URL: `/mirnas-finder`
+
+- Required query params:
+    - `query`: mirna search string.  
+    - `limit`: number of elements returned by the service. 50 by default and maximum 3000.   
+
+
 ### Diseases
 
 Returns a paginated response of diseases related to a miRNA.
