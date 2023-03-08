@@ -42,21 +42,6 @@ def get_limit_parameter(value: Optional[str]) -> int:
         return DEFAULT_PAGE_SIZE
 
 
-def get_methylation_epic_site(input_id: str) -> list:
-    res = MethylationEPIC.objects.filter(Q(ilmnid=input_id) | Q(name=input_id) |
-                                         Q(methyl450_loci=input_id) | Q(methyl27_loci=input_id) |
-                                         Q(epicv1_loci=input_id)).values_list('name', flat=True)
-    return list(res)
-
-
-def get_mirna_code(input_id: str):
-    res = MirbaseIdMirna.objects.filter(Q(mirbase_accession_id=input_id) | Q(mature_mirna=input_id)).first()
-    if res:
-        return res.mirbase_accession_id
-    else:
-        return None
-
-
 class MirnaTargetInteractions(viewsets.ReadOnlyModelViewSet):
     """Returns a single instance with data about an interaction between a miRNA and a gene
     (mirna-target-interactions endpoint)"""
@@ -82,10 +67,10 @@ class MirnaTargetInteractions(viewsets.ReadOnlyModelViewSet):
         if not mirna or not gene:
             raise ParseError(detail="mirna and gene are obligatory")
 
-        # Gets genes aliases
+        # Gets gene aliases
         gene_aliases = self.__get_gene_aliases(gene)
 
-        # Gets miRNAs aliases
+        # Gets miRNA aliases
         mirna_aliases = get_mirna_aliases(mirna)
         instance = generics.get_object_or_404(MirnaXGene, mirna__mirna_code__in=mirna_aliases, gene__in=gene_aliases)
         serializer = self.get_serializer(instance)
@@ -125,27 +110,39 @@ class MirnaAliasesList(generics.ListAPIView):
 
 
 class MirnaCodes(APIView):
-    """Service that searches a list of miRNAs codes and returns the code for the miRbase DB."""
+    """Service that searches a list of miRNA codes and returns the code for the miRbase DB."""
 
     @staticmethod
-    def post(request):
-        data = request.data
-        if "mirnas_ids" not in data:
-            return Response({"detail": "'mirnas_ids' is mandatory"}, status=status.HTTP_400_BAD_REQUEST)
+    def __get_mirna_code(mirna_code: str) -> Optional[str]:
+        """
+        Receives a miRNA Previous ID or Accession ID, and returns the associated Accession ID.
+        :param mirna_code: miRNA Previous ID or Accession ID.
+        :return: The associated Accession ID.
+        """
+        res = MirbaseIdMirna.objects.filter(Q(mirbase_accession_id=mirna_code) | Q(mature_mirna=mirna_code)).first()
+        if res:
+            return res.mirbase_accession_id
+        else:
+            return None
 
-        mirnas_ids = data["mirnas_ids"]
-        if type(mirnas_ids) != list:
-            return Response({"detail": "'mirnas_ids' must be of list type"}, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request):
+        data = request.data
+        if "mirna_ids" not in data:
+            return Response({"detail": "'mirna_ids' is mandatory"}, status=status.HTTP_400_BAD_REQUEST)
+
+        mirna_ids = data["mirna_ids"]
+        if type(mirna_ids) != list:
+            return Response({"detail": "'mirna_ids' must be of list type"}, status=status.HTTP_400_BAD_REQUEST)
 
         res = {}
-        for mirna_id in mirnas_ids:
-            res[mirna_id] = get_mirna_code(mirna_id)
+        for mirna_id in mirna_ids:
+            res[mirna_id] = self.__get_mirna_code(mirna_id)
 
         return Response(res)
 
 
-class MirnasFinder(APIView):
-    """Service that takes a string of any length and returns a list of miRNAs' ids that contain that search criteria."""
+class MirnaCodesFinder(APIView):
+    """Service that takes a string of any length and returns a list of miRNA ids that contain that search criteria."""
 
     def get(self, _request):
         query = self.request.GET.get('query')
@@ -271,23 +268,35 @@ class MethylationSites(APIView):
     returns the identifiers for the most recent version of the array."""
 
     @staticmethod
-    def post(request):
-        data = request.data
-        if "methylation_names" not in data:
-            return Response({"detail": "'methylation_names' is mandatory"}, status=status.HTTP_400_BAD_REQUEST)
+    def __get_methylation_epic_sites(input_id: str) -> List[str]:
+        """
+        Gets methylation sites from any type of Loci id
+        :param input_id: String to query in the DB
+        :return: List of Methylation sites
+        """
+        res = MethylationEPIC.objects.filter(Q(ilmnid=input_id) | Q(name=input_id) |
+                                             Q(methyl450_loci=input_id) | Q(methyl27_loci=input_id) |
+                                             Q(epicv1_loci=input_id)).values_list('name', flat=True)
+        return list(res)
 
-        methylation_names = data["methylation_names"]
-        if type(methylation_names) != list:
-            return Response({"detail": "'methylation_names' must be of list type"}, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request):
+        data = request.data
+        if "methylation_sites" not in data:
+            return Response({"detail": "'methylation_sites' is mandatory"}, status=status.HTTP_400_BAD_REQUEST)
+
+        methylation_sites = data["methylation_sites"]
+        if type(methylation_sites) != list:
+            return Response({"detail": "'methylation_sites' must be of list type"}, status=status.HTTP_400_BAD_REQUEST)
 
         res = {}
-        for methylation_name in methylation_names:
-            res[methylation_name] = get_methylation_epic_site(methylation_name)
+        for methylation_name in methylation_sites:
+            res[methylation_name] = self.__get_methylation_epic_site(methylation_name)
 
         return Response(res)
 
 
-class MethylationsFinder(APIView):
+class MethylationSitesFinder(APIView):
     """Service that takes a text string of any length and returns a list of methylation site names (loci) containing
     that search criteria within the Illumina 'Infinium MethylationEPIC' array."""
 

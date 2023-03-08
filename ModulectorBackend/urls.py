@@ -27,12 +27,12 @@ urlpatterns = [
     path('mirna-interactions/', views.MirnaInteractions.as_view(), name='mirna_interactions'),
     path('mirna-aliases/', views.MirnaAliasesList.as_view(), name='mirna_aliases'),
     path('mirna-codes/', views.MirnaCodes.as_view(), name='mirna_codes'),
+    path('mirna-codes-finder/', views.MirnaCodesFinder.as_view(), name='mirna_codes_finder'),
     path('diseases/', views.MirnaDiseaseList.as_view(), name='diseases'),
     path('drugs/', views.MirnaDrugsList.as_view(), name='drugs'),
     path('subscribe-pubmeds/', views.SubscribeUserToPubmed.as_view()),
     path('unsubscribe-pubmeds/', views.UnsubscribeUserToPubmed.as_view()),
-    path('mirnas-finder/', views.MirnasFinder.as_view(), name='mirnas_finder'),
-    path('methylations-finder/', views.MethylationsFinder.as_view(), name='methylations_finder'),
+    path('methylation-sites-finder/', views.MethylationSitesFinder.as_view(), name='methylation_sites_finder'),
     path('methylation-sites/', MethylationSites.as_view(), name='methylation_sites'),
     path('', views.index)
 ]

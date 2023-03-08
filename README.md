@@ -207,7 +207,7 @@ Searches for codes from a list of miRNA identifiers and returns the approved acc
 - Method: POST
 - Required body params:  
   A body in Json format with the following content  
-      - `mirnas_ids`: list of identifiers that you want to get your accession ID from miRbase DB.  
+      - `mirna_codes`: list of identifiers that you want to get your accession ID from miRbase DB.  
 - Functions:
     - Ordering fields: ordering is not available for this service
     - Filtering fields: filtering is not available for this service
@@ -216,7 +216,7 @@ Searches for codes from a list of miRNA identifiers and returns the approved acc
 - Success Response:
     - Code: 200
     - Content: 
-      - <mirnas_ids>: Returns a Json with as many keys as there are miRNAs in the body. For each miRNA, the value is a valid miRNA accession ID or NULL.  
+      - <mirna_codes>: Returns a Json with as many keys as there are miRNAs in the body. For each miRNA, the value is a valid miRNA accession ID or NULL.  
 - Error Response: 
     - Code: 400
     - Content:
@@ -246,7 +246,7 @@ Searches a list of methylation site names or IDs from different Illumina array v
 - Method: POST
 - Required body params:  
   A body in Json format with the following content  
-      - `methylation_names`: list of names or identifiers that you want to get your current name from Illumina 'Infinium MethylationEPIC 2.0' array.  
+      - `methylation_sites`: list of names or identifiers that you want to get your current name from Illumina 'Infinium MethylationEPIC 2.0' array.  
 - Functions:
     - Ordering fields: ordering is not available for this service
     - Filtering fields: filtering is not available for this service
@@ -255,7 +255,7 @@ Searches a list of methylation site names or IDs from different Illumina array v
 - Success Response:
     - Code: 200
     - Content: 
-      - <methylation_names>: Returns a Json with as many keys as there are methylation names in the body. For each methylation name, the value is a list of valid methylation names to Illumina 'Infinium MethylationEPIC 2.0' array.  
+      - <methylation_sites>: Returns a Json with as many keys as there are methylation names in the body. For each methylation name, the value is a list of valid methylation names to Illumina 'Infinium MethylationEPIC 2.0' array.  
 - Error Response: 
     - Code: 400
     - Content:
