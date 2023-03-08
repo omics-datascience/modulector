@@ -182,16 +182,84 @@ Returns a paginated response with aliases of a miRNA.
         - `mature_mirna`: previous ID (according to mirBase).
 - Error Response: -
 
-### MiRNAs finder
-
+### MiRNA codes finder
 Service that takes a string of any length and returns a list of miRNAs that contain that search criteria.
 
-- URL: `/mirnas-finder`
-
+- URL: `/mirna-codes-finder`
+- Method: GET
 - Required query params:
     - `query`: mirna search string.  
+- Optional query params:
     - `limit`: number of elements returned by the service. 50 by default and maximum 3000.   
+- Functions:
+    - Ordering fields: ordering is not available for this service
+    - Filtering fields: filtering is not available for this service
+    - Searching fields: searching is not available for this service
+    - Pagination: no
+- Success Response:
+    - Code: 200
+    - Content: a list of miRNAs (IDs or accession IDs from miRbase DB) matching the search criteria.
+- Error Response: -
 
+### miRNA codes
+Searches for codes from a list of miRNA identifiers and returns the approved access identifier according to miRbase DB.  
+- URL: `/mirna-codes` 
+- Method: POST
+- Required body params:  
+  A body in Json format with the following content  
+      - `mirnas_ids`: list of identifiers that you want to get your accession ID from miRbase DB.  
+- Functions:
+    - Ordering fields: ordering is not available for this service
+    - Filtering fields: filtering is not available for this service
+    - Searching fields: searching is not available for this service
+    - Pagination: no
+- Success Response:
+    - Code: 200
+    - Content: 
+      - <mirnas_ids>: Returns a Json with as many keys as there are miRNAs in the body. For each miRNA, the value is a valid miRNA accession ID or NULL.  
+- Error Response: 
+    - Code: 400
+    - Content:
+      - `detail`: a text with information about the error.  
+
+### Methylation sites finder
+Service that takes a text string of any length and returns a list of methylation sites names (loci) containing that search criteria within the Illumina 'Infinium MethylationEPIC 2.0' array.  
+- URL: `/methylations-finder`
+- Method: GET
+- Required query params:
+    - `query`: Methylation search string.  
+- Optional query params:
+    - `limit`: number of elements returned by the service. 50 by default and maximum 3000.   
+- Functions:
+    - Ordering fields: ordering is not available for this service
+    - Filtering fields: filtering is not available for this service
+    - Searching fields: searching is not available for this service
+    - Pagination: no
+- Success Response:
+    - Code: 200
+    - Content: a list of methylation sites from the Illumina 'Infinium MethylationEPIC 2.0' array matching the search criteria.
+- Error Response: -
+
+### Methylation sites
+Searches a list of methylation site names or IDs from different Illumina array versions and returns the name for the 'Infinium MethylationEPIC 2.0' array.  
+- URL: `/methylation-sites`
+- Method: POST
+- Required body params:  
+  A body in Json format with the following content  
+      - `methylation_names`: list of names or identifiers that you want to get your current name from Illumina 'Infinium MethylationEPIC 2.0' array.  
+- Functions:
+    - Ordering fields: ordering is not available for this service
+    - Filtering fields: filtering is not available for this service
+    - Searching fields: searching is not available for this service
+    - Pagination: no
+- Success Response:
+    - Code: 200
+    - Content: 
+      - <methylation_names>: Returns a Json with as many keys as there are methylation names in the body. For each methylation name, the value is a list of valid methylation names to Illumina 'Infinium MethylationEPIC 2.0' array.  
+- Error Response: 
+    - Code: 400
+    - Content:
+      - `detail`: a text with information about the error.  
 
 ### Diseases
 

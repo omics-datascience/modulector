@@ -49,16 +49,12 @@ def get_methylation_epic_site(input_id: str) -> list:
     return list(res)
 
 
-def get_mirna_code(input_id: str) -> list:
-    res_from_mirbaseidmirna = MirbaseIdMirna.objects.filter(Q(mirbase_accession_id=input_id) |
-                                                            Q(mature_mirna=input_id)).values_list('mature_mirna',
-                                                                                                  flat=True)
-    res = list(res_from_mirbaseidmirna)
-    res_from_mirna = Mirna.objects.filter(mirna_code=input_id).first()
-    if res_from_mirna:
-        if res_from_mirna.mirna_code not in res:
-            res.append(res_from_mirna.mirna_code)
-    return res
+def get_mirna_code(input_id: str):
+    res = MirbaseIdMirna.objects.filter(Q(mirbase_accession_id=input_id) | Q(mature_mirna=input_id)).first()
+    if res:
+        return res.mirbase_accession_id
+    else:
+        return None
 
 
 class MirnaTargetInteractions(viewsets.ReadOnlyModelViewSet):
@@ -135,11 +131,11 @@ class MirnaCodes(APIView):
     def post(request):
         data = request.data
         if "mirnas_ids" not in data:
-            return Response("'mirnas_ids' is mandatory", status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "'mirnas_ids' is mandatory"}, status=status.HTTP_400_BAD_REQUEST)
 
         mirnas_ids = data["mirnas_ids"]
         if type(mirnas_ids) != list:
-            return Response("'mirnas_ids' must be of list type", status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "'mirnas_ids' must be of list type"}, status=status.HTTP_400_BAD_REQUEST)
 
         res = {}
         for mirna_id in mirnas_ids:
@@ -277,16 +273,16 @@ class MethylationSites(APIView):
     @staticmethod
     def post(request):
         data = request.data
-        if "genes_ids" not in data:
-            return Response("'genes_ids' is mandatory", status=status.HTTP_400_BAD_REQUEST)
+        if "methylation_names" not in data:
+            return Response({"detail": "'methylation_names' is mandatory"}, status=status.HTTP_400_BAD_REQUEST)
 
-        genes_ids = data["genes_ids"]
-        if type(genes_ids) != list:
-            return Response("'genes_ids' must be of list type", status=status.HTTP_400_BAD_REQUEST)
+        methylation_names = data["methylation_names"]
+        if type(methylation_names) != list:
+            return Response({"detail": "'methylation_names' must be of list type"}, status=status.HTTP_400_BAD_REQUEST)
 
         res = {}
-        for gene_id in genes_ids:
-            res[gene_id] = get_methylation_epic_site(gene_id)
+        for methylation_name in methylation_names:
+            res[methylation_name] = get_methylation_epic_site(methylation_name)
 
         return Response(res)
 
