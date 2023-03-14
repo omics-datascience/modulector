@@ -147,16 +147,34 @@ That command will restore the database using a compressed dump as source.
 
 
 ### Regenerating the data manually
+1. Download the files for the mirDIP database (version 5.2) and the Illumina 'Infinium MethylationEPIC 2.0' array. The files can be freely downloaded from their respective web pages.  
+   **For the mirDIP database**:
+   - Go to the [MirDIP download web page](https://ophid.utoronto.ca/mirDIP/download.jsp) and download the file called *"mirDIPweb/mirDIP Unidirectional search ver. 5.2"*.
+   - Unzip the file.
+   - Find the file called *"mirDIP_Unidirectional_search_v.5.txt"* and move it into the **"modulector/files/"** directory.  
 
-<!-- TODO: Mauri has to complete with all the steps to run the migrations:
-1. Start the DB container
-1. put the files in an specific folder
-1. run `python3 manage.py migrate` to run all the migrations (**NOTE:** this can take a long time to finish)-->
-
+   **For the EPIC Methylation array**:
+   - Go to the [Illumina product files web page](https://support.illumina.com/downloads/infinium-methylationepic-v2-0-product-files.html) and download the ZIP file called "*Infinium MethylationEPIC v2.0 Product Files (ZIP Format)*".
+   - Unzip the file.
+   - Within the unzipped files you will find one called "*EPIC-8v2-0_A1.csv*". Move this file to the directory **"modulor/files/"**.  
+   
+   **NOTE:** The total weight of both files is about 5 GB.
+1. Start up a PostgreSQL service. You can use the same service listed in the docker-compose.dev.yml file.
+1. Run the migrations. Use `python3 manage.py migrate` to run all the migrations (**NOTE:** this can take a long time to finish)
 
 ## Update databases
+Modulector currently works with the mirDIP (version 5.2) and miRBase (version 22.1) databases for miRNA data, and with information from the Illumina 'Infinium MethylationEPIC 2.0' array  for information about methylation sites.  
+If new versions are released for these databases and you want to update them, follow these steps:  
 
-<!-- TODO: Mauri has to complete with all the steps to run update all the used databases  -->
+ - For **mirDIP** and for the **Illumina EPIC array** you must follow the same steps described in the "Regenerating the data manually" section, replacing the named files with the most recent versions that have been published on their sites .
+ - For **miRBase**, follow the instructions below:
+   1. Go to the "Downloads" section on the website.
+   1. Download the files named "hairpin.fa" and "mature.fa" from the latest version of the database.
+   1. Replace the files inside the **modulor/files/** directory with the ones downloaded in the previous point.
+   1. Start up a PostgreSQL service. You can use the same service listed in the docker-compose.dev.yml file.
+   1. Run the migrations. Use `python3 manage.py migrate` to run all the migrations (**NOTE:** this can take a long time to finish)
+
+**Note:** These updates will work correctly as long as they maintain the format of the data in the source files
 
 ## Configure your API key
 
