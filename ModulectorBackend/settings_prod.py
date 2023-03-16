@@ -27,15 +27,25 @@ REST_FRAMEWORK = {
 # 'web' is the name of the docker-compose service which serves Django
 custom_allowed_hosts: Optional[str] = os.getenv('CUSTOM_ALLOWED_HOSTS')
 if custom_allowed_hosts is None:
-    ALLOWED_HOSTS = ['web','.localhost', '127.0.0.1', '[::1]']
+    ALLOWED_HOSTS = ['web', '.localhost', '127.0.0.1', '[::1]']
 else:
     # Gets all the hosts declared by the user (separated by commas)
     allowed_host_list = custom_allowed_hosts.split(',')
     allowed_host_list_stripped = [x.strip() for x in allowed_host_list]
     ALLOWED_HOSTS = allowed_host_list_stripped
 
+# From Django 4 this needs to be set to prevent issue with NGINX
+csrf_trusted_origins_env = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+CSRF_TRUSTED_ORIGINS = csrf_trusted_origins_env.split(',')
+
 # Security settings
-# SESSION_COOKIE_SECURE = True  # TODO: set when configured a SSL Cert.
-# CSRF_COOKIE_SECURE = True  # TODO: set when configured a SSL Cert.
+ENABLE_SECURITY: bool = os.getenv('ENABLE_SECURITY', 'false') == 'true'
+SESSION_COOKIE_SECURE = ENABLE_SECURITY
+CSRF_COOKIE_SECURE = ENABLE_SECURITY
 SECURE_REFERRER_POLICY = 'same-origin'
+
+# This prevents issues with FileField/ImageField URLs
+if ENABLE_SECURITY:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 

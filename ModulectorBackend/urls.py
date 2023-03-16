@@ -17,19 +17,22 @@ from django.contrib import admin
 from django.urls import path
 
 from modulector import views
+from modulector.views import MethylationSites
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('mirna/', views.MirnaList.as_view({'get': 'list'})),
-    path('process/', views.Process.as_view()),
-    path('mirna-target-interactions/', views.MirnaTargetInteractions.as_view({'get': 'list'})),
-    path('mirna-interactions/', views.MirnaInteractions.as_view()),
-    path('mirna-aliases/', views.MirnaAliasesList.as_view()),
-    path('diseases/', views.MirnaDiseaseList.as_view()),
-    path('drugs/', views.MirnaDrugsList.as_view()),
-    path('gene-aliases/', views.GeneAliasesList.as_view()),
+    path('mirna/', views.MirnaList.as_view({'get': 'list'}), name='mirna'),
+    path('mirna-target-interactions/', views.MirnaTargetInteractions.as_view({'get': 'list'}),
+         name='mirna_target_interactions'),
+    path('mirna-interactions/', views.MirnaInteractions.as_view(), name='mirna_interactions'),
+    path('mirna-aliases/', views.MirnaAliasesList.as_view(), name='mirna_aliases'),
+    path('mirna-codes/', views.MirnaCodes.as_view(), name='mirna_codes'),
+    path('mirna-codes-finder/', views.MirnaCodesFinder.as_view(), name='mirna_codes_finder'),
+    path('diseases/', views.MirnaDiseaseList.as_view(), name='diseases'),
+    path('drugs/', views.MirnaDrugsList.as_view(), name='drugs'),
     path('subscribe-pubmeds/', views.SubscribeUserToPubmed.as_view()),
     path('unsubscribe-pubmeds/', views.UnsubscribeUserToPubmed.as_view()),
-
+    path('methylation-sites-finder/', views.MethylationSitesFinder.as_view(), name='methylation_sites_finder'),
+    path('methylation-sites/', MethylationSites.as_view(), name='methylation_sites'),
     path('', views.index)
 ]

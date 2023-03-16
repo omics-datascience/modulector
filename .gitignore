@@ -144,5 +144,8 @@ src/api_service/experiments/venv
 docker-compose.yml
 /secretkey.txt
 /modulector/database_versions/
-/modulector/files/
+modulector/files/EPIC-8v2-0_A1.csv
+modulector/files/mirDIP_Unidirectional_search_v.5.txt
 *.sql.gz
+docker-compose.mauri_dev.yml
+modulector/files/tmp_db.csv

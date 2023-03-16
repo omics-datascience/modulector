@@ -12,6 +12,39 @@ class DatasetSeparator(models.TextChoices):
     WHITE_SPACE = ' ', 'White space'
 
 
+# Modelos para Methylation
+class MethylationEPIC(models.Model):
+    ilmnid = models.CharField(max_length=25, blank=False, null=False)
+    name = models.CharField(max_length=15, blank=False, null=False)
+    strand_fr = models.CharField(max_length=1)
+    chr = models.CharField(max_length=5)
+    mapinfo = models.BigIntegerField()
+    methyl450_loci = models.CharField(max_length=21)
+    methyl27_loci = models.CharField(max_length=21)
+    epicv1_loci = models.CharField(max_length=21)
+
+
+class MethylationUCSC_CPGIsland(models.Model):
+    ucsc_cpg_island_name = models.CharField(max_length=30)
+    relation_to_ucsc_cpg_island = models.CharField(max_length=8)
+    methylation_epic_v2_ilmnid = models.ForeignKey(MethylationEPIC, on_delete=models.CASCADE)
+
+
+class MethylationUCSCRefGene(models.Model):
+    ucsc_refgene_group = models.CharField(max_length=12)
+    ucsc_refgene_name = models.CharField(max_length=30)
+    ucsc_refgene_accession = models.CharField(max_length=20)
+    methylation_epic_v2_ilmnid = models.ForeignKey(MethylationEPIC, on_delete=models.CASCADE)
+
+
+class MethylationGencode(models.Model):
+    gencode_group = models.CharField(max_length=12)
+    gencode_name = models.CharField(max_length=30)
+    gencode_accession = models.CharField(max_length=20)
+    methylation_epic_v2_ilmnid = models.ForeignKey(MethylationEPIC, on_delete=models.CASCADE)
+
+
+# Fin Modelos para Methylation
 class MirbaseIdMirna(models.Model):
     mirbase_accession_id = models.CharField(max_length=20)
     mature_mirna = models.CharField(max_length=30)
