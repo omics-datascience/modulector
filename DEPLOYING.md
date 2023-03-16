@@ -34,8 +34,8 @@ Below are the steps to perform a production deploy.
         - `HEALTH_ALERT_URL` : if you want to receive an alert when healthchecks failed, you can set this variable to a webhook endpoint that will receive a POST request and a JSON body with the field **content** that contains the fail message.
 1. Go back to the project's root folder and run the following commands:
     - Docker Compose:
-        - Start: `docker-compose up -d`. The service will available in `127.0.0.1`.
-        - Stop: `docker-compose down`
+        - Start: `docker compose up -d`. The service will available in `127.0.0.1`.
+        - Stop: `docker compose down`
     - [Docker Swarm](https://docs.docker.com/engine/swarm/):
         - Start: `docker stack deploy --compose-file docker-compose.yml modulector`
         - Stop: `docker stack rm modulector`
@@ -47,8 +47,8 @@ Below are the steps to perform a production deploy.
 
 ### Start delays
 
-Due the database restoration in the first start, the container modulectordb may take a while to be up an ready. We can follow the status of the startup process in the logs by doing: `docker-compose logs --follow`.
-Sometimes this delay makes django server throws database connection errors. If it is still down and not automatically fixed when database finally's up, we can restart the services by doing: `docker-compose up -d`.
+Due to the database restoration in the first start, the container modulectordb may take a while to be up an ready. We can follow the status of the startup process in the logs by doing: `docker compose logs --follow`.
+Sometimes this delay makes django server throws database connection errors. If it is still down and not automatically fixed when database is finally up, we can restart the services by doing: `docker compose up -d`.
 
 
 ## Enable SSL/HTTPS
@@ -95,16 +95,16 @@ python3 manage.py check --deploy --settings ModulectorBackend.settings_prod
 
 ## Restart/stop the services
 
-If the configuration of the `docker-compose.yml` file has been changed, you can apply the changes without stopping the services, just running the `docker-compose restart` command.
+If the configuration of the `docker-compose.yml` file has been changed, you can apply the changes without stopping the services, just running the `docker compose restart` command.
 
-If you want to stop all services, you can execute the command `docker-compose down`.
+If you want to stop all services, you can execute the command `docker compose down`.
 
 
 ## See container status
 
 To check the different services' status you can run:
 
-`docker-compose logs <service's name>`
+`docker service logs <service's name>`
 
 Where  *\<service's name\>* could be `nginx`, `web` or `db`.
 
@@ -147,6 +147,7 @@ That command will restore the database using a compressed dump as source.
 
 
 ### Regenerating the data manually
+
 1. Download the files for the mirDIP database (version 5.2) and the Illumina 'Infinium MethylationEPIC 2.0' array. The files can be freely downloaded from their respective web pages.  
    **For the mirDIP database**:
    - Go to the [MirDIP download web page](https://ophid.utoronto.ca/mirDIP/download.jsp) and download the file called *"mirDIPweb/mirDIP Unidirectional search ver. 5.2"*.
@@ -162,19 +163,22 @@ That command will restore the database using a compressed dump as source.
 1. Start up a PostgreSQL service. You can use the same service listed in the docker-compose.dev.yml file.
 1. Run the migrations. Use `python3 manage.py migrate` to run all the migrations (**NOTE:** this can take a long time to finish)
 
+
 ## Update databases
+
 Modulector currently works with the mirDIP (version 5.2) and miRBase (version 22.1) databases for miRNA data, and with information from the Illumina 'Infinium MethylationEPIC 2.0' array  for information about methylation sites.  
 If new versions are released for these databases and you want to update them, follow these steps:  
 
- - For **mirDIP** and for the **Illumina EPIC array** you must follow the same steps described in the "Regenerating the data manually" section, replacing the named files with the most recent versions that have been published on their sites .
+ - For **mirDIP** and **Illumina EPIC array** you must follow the same steps described in the [Regenerating the data manually](#regenerating-the-data-manually) section, replacing the named files with the most recent versions that have been published on their sites .
  - For **miRBase**, follow the instructions below:
-   1. Go to the "Downloads" section on the website.
-   1. Download the files named "hairpin.fa" and "mature.fa" from the latest version of the database.
-   1. Replace the files inside the **modulor/files/** directory with the ones downloaded in the previous point.
-   1. Start up a PostgreSQL service. You can use the same service listed in the docker-compose.dev.yml file.
-   1. Run the migrations. Use `python3 manage.py migrate` to run all the migrations (**NOTE:** this can take a long time to finish)
+   1. Go to the [_Download_ section on the website][mirbase-download-page].
+   1. Download the files named _hairpin.fa_ and _mature.fa_ from the latest version of the database.
+   1. Replace the files inside the _modulector/files/_ directory with the ones downloaded in the previous step.
+   1. Start up a PostgreSQL service. You can use the same service listed in the _docker-compose.dev.yml_ file.
+   1. Run the command `python3 manage.py migrate` to apply all the migrations (**NOTE:** this can take a long time to finish).
 
-**Note:** These updates will work correctly as long as they maintain the format of the data in the source files
+**Note:** These updates will work correctly as long as they maintain the format of the data in the source files.
+
 
 ## Configure your API key
 
@@ -186,3 +190,4 @@ For cron jobs we use the following [library](https://github.com/kraiz/django-cro
 
 
 [modulector-db-docker]: https://hub.docker.com/r/omicsdatascience/modulector-db
+[mirbase-download-page]: https://www.mirbase.org/ftp.shtml
