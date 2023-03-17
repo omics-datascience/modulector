@@ -3,20 +3,16 @@ version: '3'
 services:
     # PostgreSQL
     db:
-      image: omicsdatascience/modulector-db:2.0
+      image: omicsdatascience/modulector-db:2.0.0
+      # Uncomment this to add your custom config
       # volumes:
-        # If you want to use a optimized postgres config, please uncomment the next line
-        # with your path to postgres.conf file
-        # - [your-local-path-to-postgresql.conf]:/var/lib/postgresql-static/postgresql.conf
-        #
-        # For example:
-        # - ./db/postgres.conf:/var/lib/postgresql-static/postgresql.conf
+      #     - ./config/postgres/postgres.conf:/etc/postgresql/postgresql.conf
 
     # Django Proxy Server
     nginx:
         image: nginx:1.23.3
         ports:
-            - 80:8000
+            - "80:8000"
         volumes:
             - ./:/src
             - ./config/nginx/conf.d:/etc/nginx/conf.d
@@ -26,7 +22,7 @@ services:
 
     # Django Backend Server
     web:
-        image: omicsdatascience/modulector:2.0
+        image: omicsdatascience/modulector:2.0.0
         depends_on:
             - db
         environment:
