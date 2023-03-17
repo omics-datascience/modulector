@@ -161,7 +161,7 @@ That command will restore the database using a compressed dump as source.
    
    **NOTE:** The total weight of both files is about 5 GB.
 1. Start up a PostgreSQL service. You can use the same service listed in the docker-compose.dev.yml file.
-1. Run the migrations. Use `python3 manage.py migrate` to run all the migrations (**NOTE:** this can take a long time to finish)
+1. Run `python3 manage.py migrate` to apply all the migrations (**NOTE:** this can take a long time to finish).
 
 
 ## Update databases
