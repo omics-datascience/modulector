@@ -18,7 +18,6 @@ ADD $DB_URL $DB_TARGET
 # Adds some permissions
 RUN chown -R postgres:postgres $PGDATA $DB_TARGET
 
-
 # Initializes Postgres service to prevent some issues during importing.
 # More info in https://stackoverflow.com/a/74876862/7058363
 # and https://stackoverflow.com/a/48245676/7058363
@@ -33,3 +32,6 @@ RUN pg_ctl -D $PGDATA start &&  \
 # Finally, deletes dump file
 USER root
 RUN rm $DB_TARGET
+
+# Adds user to pg_hba.conf
+RUN echo "host    $POSTGRES_DB    $POSTGRES_USER    all    trust" >> $PGDATA/pg_hba.conf
