@@ -23,7 +23,7 @@ Below are the steps to perform a production deploy.
         - `MEDIA_ROOT`: absolute path where will be stored the uploaded files. By default `<project root>/uploads`.
         - `MEDIA_URL`: URL of the `MEDIA_ROOT` folder. By default `<url>/media/`.
         - `CUSTOM_ALLOWED_HOSTS`: list of allowed hosts (separated by commas) to access to Modulector (
-          ex. `192.168.11.1,10.10.10.2,localhost`). If it is not defined, `web` (which is the alias of the Modulector host running in Docker) is used.
+        - `PROCESS_POOL_WORKERS`: some request uses parallelized queries using ProcessPoolExecutor to improve performance. This parameter indicates the number of workers to be used. By default `4`.
     - Postgres:
         - `POSTGRES_USERNAME` : Database username. By default the docker image uses `modulector`.
         - `POSTGRES_PASSWORD` : Database username's password. By default the docker image uses `modulector`.

@@ -118,6 +118,11 @@ CACHES = {
         'LOCATION': 'unique-snowflake',
     }
 }
+
+# According to documentation (https://docs.djangoproject.com/en/4.2/ref/databases/#connection-management)
+# this is more robust than the default
+CONN_HEALTH_CHECKS = True
+
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
@@ -166,3 +171,6 @@ EMAIL_PORT = '25'
 EMAIL_HOST_PASSWORD = ''
 EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = False
+
+# Number of processes in the ProcessPoolExecutor
+PROCESS_POOL_WORKERS: int = int(os.getenv('PROCESS_POOL_WORKERS', 4))

@@ -1,4 +1,5 @@
 import re
+from concurrent.futures import ProcessPoolExecutor
 from typing import List, Optional
 from django.conf import settings
 from django.db.models.query_utils import Q
@@ -23,6 +24,22 @@ DEFAULT_PAGE_SIZE: int = 50
 
 # Maximum page size for requests
 MAX_PAGE_SIZE: int = 3000
+
+# Number of processes to use in Pool
+PROCESS_POOL_WORKERS = settings.PROCESS_POOL_WORKERS
+
+
+def get_methylation_epic_sites(input_id: str) -> List[str]:
+    """
+    Gets methylation sites from any type of Loci id.
+    :param input_id: String to query in the DB.
+    :return: List of Methylation sites.
+    """
+    res = MethylationEPIC.objects.filter(Q(ilmnid=input_id) | Q(name=input_id) |
+                                         Q(methyl450_loci=input_id) | Q(methyl27_loci=input_id) |
+                                         Q(epicv1_loci=input_id)).values_list('name', flat=True)
+
+    return list(res)
 
 
 def get_limit_parameter(value: Optional[str]) -> int:
@@ -266,20 +283,8 @@ class UnsubscribeUserToPubmed(APIView):
 class MethylationSites(APIView):
     """Service that searches a list of methylation site identifiers from different Illumina array versions and
     returns the identifiers for the most recent version of the array."""
-
     @staticmethod
-    def __get_methylation_epic_sites(input_id: str) -> List[str]:
-        """
-        Gets methylation sites from any type of Loci id
-        :param input_id: String to query in the DB
-        :return: List of Methylation sites
-        """
-        res = MethylationEPIC.objects.filter(Q(ilmnid=input_id) | Q(name=input_id) |
-                                             Q(methyl450_loci=input_id) | Q(methyl27_loci=input_id) |
-                                             Q(epicv1_loci=input_id)).values_list('name', flat=True)
-        return list(res)
-
-    def post(self, request):
+    def post(request):
         data = request.data
         if "methylation_sites" not in data:
             return Response({"detail": "'methylation_sites' is mandatory"}, status=status.HTTP_400_BAD_REQUEST)
@@ -289,8 +294,17 @@ class MethylationSites(APIView):
             return Response({"detail": "'methylation_sites' must be of list type"}, status=status.HTTP_400_BAD_REQUEST)
 
         res = {}
-        for methylation_name in methylation_sites:
-            res[methylation_name] = self.__get_methylation_epic_sites(methylation_name)
+        with ProcessPoolExecutor(max_workers=PROCESS_POOL_WORKERS) as executor:
+            for methylation_name, result in zip(methylation_sites, executor.map(
+                    get_methylation_epic_sites, methylation_sites
+            )):
+                res[methylation_name] = result
+
+        # Old solution
+        # res = {
+        #     methylation_name: self.__get_methylation_epic_sites(methylation_name)
+        #     for methylation_name in methylation_sites
+        # }
 
         return Response(res)
 
