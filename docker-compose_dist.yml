@@ -22,7 +22,7 @@ services:
 
     # Django Backend Server
     web:
-        image: omicsdatascience/modulector:2.0.0
+        image: omicsdatascience/modulector:2.0.1
         depends_on:
             - db
         environment:

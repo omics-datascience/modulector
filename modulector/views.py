@@ -293,18 +293,16 @@ class MethylationSites(APIView):
         if type(methylation_sites) != list:
             return Response({"detail": "'methylation_sites' must be of list type"}, status=status.HTTP_400_BAD_REQUEST)
 
-        res = {}
+        # Generates a dict with the methylation sites as keys and the result of the query as values.
+        # NOTE: it uses ProcessPoolExecutor to parallelize the queries and not a ThreadPoolExecutor because
+        # the latter has a bug closing Django connections (see https://stackoverflow.com/q/57211476/7058363)
         with ProcessPoolExecutor(max_workers=PROCESS_POOL_WORKERS) as executor:
-            for methylation_name, result in zip(methylation_sites, executor.map(
-                    get_methylation_epic_sites, methylation_sites
-            )):
-                res[methylation_name] = result
-
-        # Old solution
-        # res = {
-        #     methylation_name: self.__get_methylation_epic_sites(methylation_name)
-        #     for methylation_name in methylation_sites
-        # }
+            res = {
+                methylation_name: result
+                for methylation_name, result in zip(methylation_sites, executor.map(
+                        get_methylation_epic_sites, methylation_sites
+                ))
+            }
 
         return Response(res)
 
