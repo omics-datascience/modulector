@@ -14,9 +14,7 @@ services:
         ports:
             - "80:8000"
         volumes:
-            - ./:/src
             - ./config/nginx/conf.d:/etc/nginx/conf.d
-            - ./static:/static
         depends_on:
             - web
 
