@@ -1,4 +1,4 @@
-FROM python:3.8-buster
+FROM python:3.11-bullseye
 
 # Default value for deploying with modulector-db image
 ENV POSTGRES_USERNAME "modulector"
@@ -11,16 +11,17 @@ RUN mkdir /src
 WORKDIR /src/
 ENV BASEDIR=/src
 
+# Install app python requirements
+ADD config/requirements.txt /config/
+RUN pip3 install -r /config/requirements.txt
+
 # Copy all source data
 COPY . .
-
-# Install app python requirements
-RUN pip3 install -r config/requirements.txt
 
 RUN echo 0 > tools/healthcheck/tries.txt
 HEALTHCHECK CMD python tools/healthcheck/check.py
 CMD ["/bin/bash","-c","tools/run.sh"]
 
-# modulector port
+# Modulector port
 EXPOSE 8000
 

@@ -14,14 +14,13 @@ The entire contributing process consists in the following steps:
 ## Requirements
 
 1. The entire deploy was configured to be simple from the tool Docker Compose. So you need to install:
-    - [docker](https://docs.docker.com/desktop/#download-and-install)
-    - [docker-compose](https://docs.docker.com/compose/install/)
+    - [Docker](https://docs.docker.com/desktop/#download-and-install)
+    - [Docker Compose](https://docs.docker.com/compose/install/)
 
 
 ## Pre-requisites
 
 - Python 3.8+
-- Node JS (we tested with version `12.11.1`)
 
 
 ## Installation
@@ -30,48 +29,46 @@ The entire contributing process consists in the following steps:
     1. `python3 -m venv venv`
     1. `source venv/bin/activate` (this command must be run every time you want to start the Django server, otherwise we won't have the dependencies available)
     1. `pip install -r config/requirements.txt`
-1. Install Node's dependencies:
-    1. `cd frontend/static/frontend`
-    1. `npm i`
-    1. `npm run dev` (should be done the first time as the transpiled files are not pushed to the server)
+1. Database download:  
+For reasons of size there are 2 databases that are not in the Modulector repository and you have to download them manually. The following databases must be downloaded:  
+    1. mirDIP version 5.2. Download [mirDIP_Unidirectional_search_v.5.txt](https://ophid.utoronto.ca//mirDIPweb/mirDIP_Unidirectional_search_v_5_2.zip) file.  
+    1. [EPIC-8v2-0_A1.csv](https://support.illumina.com/content/dam/illumina-support/documents/downloads/productfiles/methylationepic/MethylationEPIC_v2%20Files.zip) file of the Infinium MethylationEPIC array version 2.0.  
+Once the two files are downloaded, unzip and move them into the `modulector/files/` directory. 
+Note: there may be more than one file inside the ZIP. Be sure to move only the two files mentioned above.
 1. Apply migrations and create super user:
     1. `python3 manage.py makemigrations`
     1. `python3 manage.py migrate`
     1. `python3 manage.py createsuperuser` (now you can access to \<URL:port\>/admin)
-   
- 
+1. You can import [the data manually](DEPLOYING.md#import) or just use the official [modulector-db][modulector-db-img] (you need to uncomment the service in the `docker-compose.dev.yml` file, commenting the existing `db` service. These changes need a restart of the services running `docker compose up -d`).
+
+
 ## Developing
 
+1. Start up the DB (PostgreSQL) service running: `docker compose -f docker-compose.dev.yml up -d`
+    - This will start the DBMS service and an Adminer instance in the URL `http://127.0.0.1:8080` where you can enter the db and see its structure.
+    - To stop all the service just run `docker compose -f docker-compose.dev.yml down`
 1. Start Django's development server:
     1. In the project's root folder and with the virtualenv active, run: `python3 manage.py runserver`. The site will be available in __http://127.0.0.1:8000/__.
-1. Start up the DB (MySQL) service running: `docker-compose -f docker-compose.dev.yml up -d`
-    - This will start the DBMS service and an Adminer instance in the URL `http://127.0.0.1:8080` where you can enter the db and see its structure.
-    - To stop all the service just run `docker-compose -f docker-compose.dev.yml down`
-1. (Optional) In case you want to change some frontend stuff:
-    1. `cd frontend/static/frontend`
-    1. Run the corresponding command:
-        - `npm run dev`: transpiles the sources in development mode.
-        - `npm run watch`: transpiles the sources in development mode with the `--watch` flag.
-        - `npm run prod`: transpiles the sources in production mode.
-1. If you need to test the email server:
-    1. We use a local smtp server called postfix, you can find a guide on how to set it up [here](https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-postfix-as-a-send-only-smtp-server-on-ubuntu-18-04-es)
+
 
 ## Workflow
 
-We use gitlab environment git workflow. The default branch is `dev` and the publishing branch is `prod`. The working branchs are created from `dev`and must respect the following steps and actions:
+We use gitlab environment git workflow. The default branch is `dev` and the publishing branch is `prod`. The working branches are created from `dev` and must respect the following steps and actions:
 
 1. A new branch is created from `dev`.
-1. After finish working with it a PR to `dev` must be created.
-1. Action/Workflow for PR is executed.
+1. After finish working with it, a PR to `dev` must be created.
+1. Automatic Action/Workflow for PR is executed.
 1. The new branch is merged to `dev`.
-1. Action/Worflow for Push into `dev` is executed.
-1. When is ready to publish a new version of `dev` a PR to `prod` is created.
+1. Automatic Action/Workflow for _Push_ events into `dev` is executed.
+1. When is ready to publish a new version of `dev`, a PR to `prod` is created.
 1. These Action/Workflow are executed:
     1. PR.
-    1. Version Checker (to avoid overwrite any image on docker).
+    1. Version checker (to avoid overwrite an existing image on Docker Hub repository).
 1. `dev` is merged into `prod`.
-1. Action/Workflow for Push into `prod` is executed (It has docker building and publishing)
-1. A new docker image for modulector has been uploaded to docker registry.
+1. Automatic Action/Workflow for _Push_ events into `prod` is executed to build a new Docker image for Modulector and publish it.
 
-[**more information**](https://docs.google.com/presentation/d/1c1PXM89HLXJyF-zHAEpW_bcxb0iE_Fv2XEpEXYV2Tj4/edit?usp=sharing)
 
+[**More information**](https://docs.google.com/presentation/d/1c1PXM89HLXJyF-zHAEpW_bcxb0iE_Fv2XEpEXYV2Tj4/edit?usp=sharing)
+
+
+[modulector-db-img]: https://hub.docker.com/r/omicsdatascience/modulector-db
