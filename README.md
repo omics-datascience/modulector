@@ -24,14 +24,15 @@ Modulector is a performing open platform that provides information about miRNAs 
 
 ## Usage
 
-<!-- TODO: update Multiomics link when it is online -->
-Modulector can be used through the graphical interfaces provided in Multiomics or it can be hosted on your own server (read [DEPLOYING.md](DEPLOYING.md) for more information about the latter option). We strongly recommend use this software through Multiomics application.
+Modulector can be used through the graphical interfaces provided in [Multiomix][multiomix-site], or it can be hosted on your own server (read [DEPLOYING.md](DEPLOYING.md) for more information). We strongly recommend use this software through Multiomix application.
 
-All services are available through a web API accessible from a browser or any other web client. All the responses are in *JSON* format. In addition to the information provided, sorting, filtering, searching and paging functions are also available. How to use these functions is explained below:
+All services are available through a web API accessible from a browser or any other web client. All the responses are in JSON format. In addition to the information provided, sorting, filtering, searching and paging functions are also available. How to use these functions is explained below:
+
 
 ### General
 
 All functions are used as a parameter in the URL. So if you want to access `https://modulector.multiomix.org/service/` by sending parameters to it, just add the following suffix to the end of the URL: `?parameter1=value&parameter2=value&parameter3=value`. The `?` indicates that the parameter section begins, these will be of the form `parameterName=parameterValue` and are separated, in case you need to send more than one, by a `&`.
+
 
 ### Sorting
 
@@ -41,17 +42,20 @@ For example, if you want to consume the [miRNA interactions](#mirna-interactions
 
 `https://modulector.multiomix.org/mirna-interactions/?ordering=-score,gene`
 
+
 ### Filters
 
 To filter it is enough to specify the field and the value by which you want to filter. For example, if you want to consume the [miRNA aliases](#mirna-aliases) service keeping only the aliases of `MIMAT0000062` you could access the following resource:
 
 `https://modulector.multiomix.org/mirna-aliases/?mirbase_accession_id=MIMAT0000062`
 
+
 ### Search
 
 The search is done on the basis of a single parameter called `search` which must contain the value to be searched for. Unlike the filter, the search can be performed on multiple fields at once and is performed by *containing* the search term in the field and is case insensitive (while the filter is by exact value). The fields considered in the search are fixed and will be specified for each service later. For example, the [miRNA interactions](#mirna-interactions) service allows a search by the `gene` field, then the following query could be performed:
 
 `https://modulector.multiomix.org/mirna-aliases/?mirna=hsa-miR-577&search=FO`
+
 
 ### Pagination
 
@@ -66,6 +70,7 @@ All the paginated responses contain the following fields:
 - `next`: link to the next page.
 - `previous`: link to the previous page.
 - `results`: array of elements (the structure of each element depends on the service and is explained in detail in the [services](#services) section).
+
 
 ### Combining functions
 
@@ -83,16 +88,13 @@ All of the above parameters can be used together! For example, if we wanted to c
 Receives a miRNA ID (mirbase MIMAT ID or previous ID) and returns a paginated vector. Each vector entry represents a miRNA-Gene interaction.
 
 - URL: `/mirna-interactions`
-
 - Required query params:
     - `mirna`: miRNA (miRNA code or Accession ID) to get its interactions with different targets
-
 - Functions:
     - Ordering fields: `gene` and `score`
     - Filtering fields: filtering is not available for this service
     - Searching fields: `gene`
     - Pagination: yes
-
 - Success Response:
     - Code: 200
     - Content:
@@ -108,22 +110,20 @@ Receives a miRNA ID (mirbase MIMAT ID or previous ID) and returns a paginated ve
     - Code: 200
     - Content: empty paginated response (`count` = 0)
 
+
 ### MiRNA target interactions
 
 Receives a miRNA ID (mirbase MIMAT ID or previous ID) and a gene returns the information about its interaction, including related publications and the interaction score.
 
 - URL: `/mirna-target-interactions`
-
 - Required query params:
     - `mirna`: miRNA identifier (miRNA code or Accession ID)
     - `gene`: gene symbol
-
 - Functions:
     - Ordering fields: ordering is not available for this service
     - Filtering fields: filtering is not available for this service
     - Searching fields: searching is not available for this service
     - Pagination: no
-
 - Success Response:
     - Code: 200
     - Content:
@@ -139,21 +139,19 @@ Receives a miRNA ID (mirbase MIMAT ID or previous ID) and a gene returns the inf
     - Code: 404
     - Content: -
 
+
 ### MiRNA details
 
 Returns extra information of a miRNA.
 
 - URL: `/mirna`
-
 - Required query params:
     - `mirna`: miRNA identifier (miRNA code or Accession ID)
-
 - Functions:
     - Ordering fields: ordering is not available for this service
     - Filtering fields: filtering is not available for this service
     - Searching fields: searching is not available for this service
     - Pagination: no
-
 - Success Response:
     - Code: 200
     - Content:
@@ -165,20 +163,18 @@ Returns extra information of a miRNA.
     - Code: 404
     - Content: -
 
+
 ### MiRNA aliases
 
 Returns a paginated response with aliases of a miRNA.
 
 - URL: `/mirna-aliases`
-
 - Required query params: -
-
 - Functions:
     - Ordering fields: `mature_mirna`
     - Filtering fields: `mature_mirna` and `mirbase_accession_id`
     - Searching fields: searching is not available for this service
     - Pagination: yes
-
 - Success Response:
     - Code: 200
     - Content:
@@ -186,7 +182,9 @@ Returns a paginated response with aliases of a miRNA.
         - `mature_mirna`: previous ID (according to mirBase).
 - Error Response: -
 
+
 ### MiRNA codes finder
+
 Service that takes a string of any length and returns a list of miRNAs that contain that search criteria.
 
 - URL: `/mirna-codes-finder`
@@ -205,13 +203,15 @@ Service that takes a string of any length and returns a list of miRNAs that cont
     - Content: a list of miRNAs (IDs or accession IDs from miRbase DB) matching the search criteria.
 - Error Response: -
 
+
 ### miRNA codes
-Searches for codes from a list of miRNA identifiers and returns the approved access identifier according to miRbase DB.  
+
+Searches for codes from a list of miRNA identifiers and returns the approved access identifier according to miRbase DB.
+
 - URL: `/mirna-codes` 
 - Method: POST
-- Required body params:  
-  A body in Json format with the following content  
-      - `mirna_codes`: list of identifiers that you want to get your accession ID from miRbase DB.  
+- Required body params (in JSON format):  
+    - `mirna_codes`: list of identifiers that you want to get your accession ID from miRbase DB.  
 - Functions:
     - Ordering fields: ordering is not available for this service
     - Filtering fields: filtering is not available for this service
@@ -220,14 +220,17 @@ Searches for codes from a list of miRNA identifiers and returns the approved acc
 - Success Response:
     - Code: 200
     - Content: 
-      - <mirna_codes>: Returns a Json with as many keys as there are miRNAs in the body. For each miRNA, the value is a valid miRNA accession ID or NULL.  
+        - `mirna_codes`: a JSON object with as many keys as miRNAs in the body of the request. For each miRNA, the value is a valid miRNA accession ID or `null`.  
 - Error Response: 
     - Code: 400
     - Content:
-      - `detail`: a text with information about the error.  
+        - `detail`: a text with information about the error.  
+
 
 ### Methylation sites finder
-Service that takes a text string of any length and returns a list of methylation sites names (loci) containing that search criteria within the Illumina 'Infinium MethylationEPIC 2.0' array.  
+
+Service that takes a text string of any length and returns a list of methylation sites names (loci) containing that search criteria within the Illumina _Infinium MethylationEPIC 2.0_ array.
+
 - URL: `/methylations-finder`
 - Method: GET
 - Required query params:
@@ -244,13 +247,15 @@ Service that takes a text string of any length and returns a list of methylation
     - Content: a list of methylation sites from the Illumina 'Infinium MethylationEPIC 2.0' array matching the search criteria.
 - Error Response: -
 
+
 ### Methylation sites
-Searches a list of methylation site names or IDs from different Illumina array versions and returns the name for the 'Infinium MethylationEPIC 2.0' array.  
+
+Searches a list of methylation site names or IDs from different Illumina array versions and returns the name for the _Infinium MethylationEPIC 2.0_ array.
+
 - URL: `/methylation-sites`
 - Method: POST
-- Required body params:  
-  A body in Json format with the following content  
-      - `methylation_sites`: list of names or identifiers that you want to get your current name from Illumina 'Infinium MethylationEPIC 2.0' array.  
+- Required body params (in JSON format):
+    - `methylation_sites`: list of names or identifiers that you want to get your current name from Illumina 'Infinium MethylationEPIC 2.0' array.  
 - Functions:
     - Ordering fields: ordering is not available for this service
     - Filtering fields: filtering is not available for this service
@@ -259,27 +264,25 @@ Searches a list of methylation site names or IDs from different Illumina array v
 - Success Response:
     - Code: 200
     - Content: 
-      - <methylation_sites>: Returns a Json with as many keys as there are methylation names in the body. For each methylation name, the value is a list of valid methylation names to Illumina 'Infinium MethylationEPIC 2.0' array.  
+        - `methylation_sites`: a JSON object with as many keys as methylation names in the body of the request. For each methylation name, the value is a list of valid methylation names to Illumina _Infinium MethylationEPIC 2.0_ array.
 - Error Response: 
     - Code: 400
     - Content:
-      - `detail`: a text with information about the error.  
+        - `detail`: a text with information about the error.  
+
 
 ### Diseases
 
 Returns a paginated response of diseases related to a miRNA.
 
 - URL: `/diseases`
-
 - Required query params:
     - `mirna`: miRNA (miRNA code or Accession ID) to get its interactions with different targets. If it is not specified, the service returns all the elements in a paginated response.
-
 - Functions:
     - Ordering fields: `disease`
     - Filtering fields: filtering is not available for this service
     - Searching fields: `disease`
     - Pagination: yes
-
 - Success Response:
     - Code: 200
     - Content:
@@ -293,22 +296,20 @@ Returns a paginated response of diseases related to a miRNA.
     - Content: empty paginated response (number of elements = 0)
 - Additional details: **we capitalize the R present in the mirna for each record, because they are mature, however the file does not format it correctly and in the website they show up capitalized**
 
+
 ### Drugs
 
 Returns a paginated response of experimentally validated small molecules (or drugs) effects on miRNA expression.
 
 - URL: `/drugs`
-
 - Required query params:
-    - `mirna`: miRNA (miRNA code or Accession ID) to get its interactions with different targets. If it is not       specified, the service returns all the elements in a paginated response.
-
+    - `mirna`: miRNA (miRNA code or Accession ID) to get its interactions with different targets. If it is not specified, the service returns all the elements in a paginated response.
 - Functions:
     - Ordering fields: `condition`, `detection_method`, `small_molecule`, `expression_pattern`, `reference`
       and `support`
     - Filtering fields: `fda_approved` (possible values: `true` or `false`)
     - Searching fields: `condition`, `small_molecule` and `expression_pattern`
     - Pagination: yes
-
 - Success Response:
     - Code: 200
     - Content:
@@ -324,8 +325,8 @@ Returns a paginated response of experimentally validated small molecules (or dru
 - Error Response:
     - Code: 200
     - Content: empty paginated response (number of elements = 0)
-
 - Additional details: **we are concatenating the 'hsa' prefix for all the drugs records because the file that we are using does not have it and to maintain consistency with the format for mature miRNAs**
+
 
 ### Subscribe to PUBMEDS news
 
@@ -338,8 +339,6 @@ Subscribes an email to our email service that sends news about new pubmeds assoc
     - `email`: valid email addres to send the information to
 - Optional query params:
     - `gene`: this param allows the user to filter with the mirna and the gene
-    
-
 - Success Response:
     - Code: 200
     - Content:
@@ -347,16 +346,14 @@ Subscribes an email to our email service that sends news about new pubmeds assoc
 - Error Response:
     - Code: 400
 
+
 ### Unsubscribe from PUBMEDS news
 
 Subscribes an email to our email service that sends news about new pubmeds associated to a mirna and/or gene
 
 - URL: `/unsubscribe-pubmeds/`
-
 - Required query params:
     - `token`: token that references the subscription
-    
-
 - Success Response:
     - Code: 200
 - Error Response:
@@ -384,12 +381,17 @@ If you use any part of our code, or the tool itself is useful for your research,
 
 All the contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
 
+
 ## Sonarcloud
 
 We are using sonarcloud to analize repository code. We are not strictly following all the sonarCloud recomendations but we think that some recomendatios will help us to increase quality.
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=omics-datascience_modulector&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=omics-datascience_modulector)
 
+
 ## License
 
 This repository is distributed under the terms of the MIT license.
+
+
+[multiomix-site]: https://multiomix.org/

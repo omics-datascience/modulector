@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 
 # Modulector version
-VERSION: str = '1.4.4'
+VERSION: str = '2.0.1'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -118,6 +118,11 @@ CACHES = {
         'LOCATION': 'unique-snowflake',
     }
 }
+
+# According to documentation (https://docs.djangoproject.com/en/4.2/ref/databases/#connection-management)
+# this is more robust than the default
+CONN_HEALTH_CHECKS = True
+
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
@@ -166,3 +171,6 @@ EMAIL_PORT = '25'
 EMAIL_HOST_PASSWORD = ''
 EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = False
+
+# Number of processes in the ProcessPoolExecutor
+PROCESS_POOL_WORKERS: int = int(os.getenv('PROCESS_POOL_WORKERS', 4))

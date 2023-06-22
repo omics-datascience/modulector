@@ -23,7 +23,7 @@ Below are the steps to perform a production deploy.
         - `MEDIA_ROOT`: absolute path where will be stored the uploaded files. By default `<project root>/uploads`.
         - `MEDIA_URL`: URL of the `MEDIA_ROOT` folder. By default `<url>/media/`.
         - `CUSTOM_ALLOWED_HOSTS`: list of allowed hosts (separated by commas) to access to Modulector (
-          ex. `192.168.11.1,10.10.10.2,localhost`). If it is not defined, `web` (which is the alias of the Modulector host running in Docker) is used.
+        - `PROCESS_POOL_WORKERS`: some request uses parallelized queries using ProcessPoolExecutor to improve performance. This parameter indicates the number of workers to be used. By default `4`.
     - Postgres:
         - `POSTGRES_USERNAME` : Database username. By default the docker image uses `modulector`.
         - `POSTGRES_PASSWORD` : Database username's password. By default the docker image uses `modulector`.
@@ -140,7 +140,7 @@ You can just use the [modulector-db][modulector-db-docker] and avoid all kind of
         1. Log into Postgres: `psql -U [username]`
         1. (**Danger, will drop all the data**) Remove the `modulector` database: `DROP DATABASE modulector;`
         1.  Create an empty database: `CREATE DATABASE modulector;`
-1. Download `.sql.gz` from [Modulector releases pages](https://github.com/multiomics-datascience/modulector-backend/releases) or use your own export file.
+1. Download `.sql.gz` from [Modulector releases pages](https://github.com/omics-datascience/modulector/releases) or use your own export file.
 1. Restore the db: `zcat modulector.sql.gz | docker exec -i [name of the DB container] psql modulector -U modulector`
 
 That command will restore the database using a compressed dump as source.
@@ -150,18 +150,19 @@ That command will restore the database using a compressed dump as source.
 
 1. Download the files for the mirDIP database (version 5.2) and the Illumina 'Infinium MethylationEPIC 2.0' array. The files can be freely downloaded from their respective web pages.  
    **For the mirDIP database**:
-   - Go to the [MirDIP download web page](https://ophid.utoronto.ca/mirDIP/download.jsp) and download the file called *"mirDIPweb/mirDIP Unidirectional search ver. 5.2"*.
-   - Unzip the file.
-   - Find the file called *"mirDIP_Unidirectional_search_v.5.txt"* and move it into the **"modulector/files/"** directory.  
+      - Go to the [MirDIP download web page](https://ophid.utoronto.ca/mirDIP/download.jsp) and download the file called *"mirDIPweb/mirDIP Unidirectional search ver. 5.2"*.
+      - Unzip the file.
+      - Find the file called *"mirDIP_Unidirectional_search_v.5.txt"* and move it into the **"modulector/files/"** directory.  
 
    **For the EPIC Methylation array**:
-   - Go to the [Illumina product files web page](https://support.illumina.com/downloads/infinium-methylationepic-v2-0-product-files.html) and download the ZIP file called "*Infinium MethylationEPIC v2.0 Product Files (ZIP Format)*".
-   - Unzip the file.
-   - Within the unzipped files you will find one called "*EPIC-8v2-0_A1.csv*". Move this file to the directory **"modulor/files/"**.  
-   
-   **NOTE:** The total weight of both files is about 5 GB.
-1. Start up a PostgreSQL service. You can use the same service listed in the docker-compose.dev.yml file.
-1. Run the migrations. Use `python3 manage.py migrate` to run all the migrations (**NOTE:** this can take a long time to finish)
+      - Go to the [Illumina product files web page](https://support.illumina.com/downloads/infinium-methylationepic-v2-0-product-files.html) and download the ZIP file called "*Infinium MethylationEPIC v2.0 Product Files (ZIP Format)*".
+      - Unzip the file.
+      - Within the unzipped files you will find one called "*EPIC-8v2-0_A1.csv*". Move this file to the directory **"modulor/files/"**. 
+      - **NOTE:** the total weight of both files is about 5 GB.
+
+   **For the mirBase database**: this database is embedded as it weighs only a few MBs. Its data is processed in Django migrations during the execution of the `python3 manage.py migrate` command. So, you don't have to do manual steps to incorporate mirBase data inside Modulector.
+1. Start up a PostgreSQL service. You can use the same service listed in the _docker-compose.dev.yml_ file.
+1. Run `python3 manage.py migrate` to apply all the migrations (**NOTE:** this can take a long time to finish).
 
 
 ## Update databases
