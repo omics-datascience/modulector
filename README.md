@@ -239,7 +239,7 @@ Searches for codes from a list of miRNA identifiers and returns the approved acc
 
 Service that takes a text string of any length and returns a list of methylation sites names (loci) containing that search criteria within the Illumina _Infinium MethylationEPIC 2.0_ array.
 
-- URL: `/methylations-finder`
+- URL: `/methylation-sites-finder`
 - Method: GET
 - Required query params:
     - `query`: Methylation search string.  
