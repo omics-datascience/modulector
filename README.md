@@ -19,7 +19,7 @@ Modulector is a performing open platform that provides information about miRNAs 
     - [miRNA codes](#mirna-codes)
     - [Methylation sites finder](#methylation-sites-finder)
     - [Methylation sites](#methylation-sites)
-    - [Genes of Methylation sites](#genes-of-methylation-sites)
+    - [Genes of methylation sites](#genes-of-methylation-sites)
     - [Diseases](#diseases)
     - [Drugs](#drugs)
     - [Subscribe to PUBMEDS news](#subscribe-to-pubmeds-news)
@@ -278,13 +278,15 @@ Searches a list of methylation site names or IDs from different Illumina array v
     - Content:
         - `detail`: a text with information about the error.  
 
-### Genes of Methylation sites
+
+### Genes of methylation sites
+
 A service that searches from a list of CpG methylation site identifiers from different versions of Illumina arrays and returns the gene(s) to which they belong.  
+
 - URL: `/methylation-sites-genes`
 - Method: POST
-- Required body params:  
-  A body in Json format with the following content  
-      - `methylation_sites`: list of Illumina array methylation site names or identifiers for which you want to know the gene(s).  
+- Required body params (in JSON format):
+    - `methylation_sites`: list of Illumina array methylation site names or identifiers for which you want to know the gene(s).  
 - Functions:
     - Ordering fields: ordering is not available for this service
     - Filtering fields: filtering is not available for this service
@@ -298,6 +300,7 @@ A service that searches from a list of CpG methylation site identifiers from dif
     - Code: 400
     - Content:
       - `detail`: a text with information about the error.  
+
 
 ### Diseases
 

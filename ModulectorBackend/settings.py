@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 
 # Modulector version
-VERSION: str = '2.0.1'
+VERSION: str = '2.0.2'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -168,7 +168,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # This email configuration is what postfix uses, for production, use your own
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = '25'
-EMAIL_HOST_PASSWORD = ''
 EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = False
 
