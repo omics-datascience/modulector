@@ -1,4 +1,5 @@
-FROM python:3.11-bullseye
+
+FROM python:3.11-slim-bullseye
 
 # Default value for deploying with modulector-db image
 ENV POSTGRES_USERNAME "modulector"
