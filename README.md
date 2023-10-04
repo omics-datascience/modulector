@@ -2,24 +2,32 @@
 
 Modulector is a performing open platform that provides information about miRNAs and genes based on a compilation of information from different databases. It offers data about:
 
-- [Usage](#usage)
-- [API](#services)
-    - [miRNA interactions](#mirna-interactions)
-    - [miRNA-target interactions](#mirna-target-interactions)
-    - [miRNA details](#mirna-details)
-    - [miRNA aliases](#mirna-aliases)
-    - [miRNA codes finder](#mirna-codes-finder)
+- [Modulector](#modulector)
+  - [Usage](#usage)
+    - [General](#general)
+    - [Sorting](#sorting)
+    - [Filters](#filters)
+    - [Search](#search)
+    - [Pagination](#pagination)
+    - [Combining functions](#combining-functions)
+  - [Services](#services)
+    - [MiRNA interactions](#mirna-interactions)
+    - [MiRNA target interactions](#mirna-target-interactions)
+    - [MiRNA details](#mirna-details)
+    - [MiRNA aliases](#mirna-aliases)
+    - [MiRNA codes finder](#mirna-codes-finder)
     - [miRNA codes](#mirna-codes)
     - [Methylation sites finder](#methylation-sites-finder)
     - [Methylation sites](#methylation-sites)
+    - [Genes of methylation sites](#genes-of-methylation-sites)
     - [Diseases](#diseases)
     - [Drugs](#drugs)
-    - [Subscribe to PUBMEDS](#subscribe-to-pubmeds-news)
-    - [Unsubscribe to PUBMEDS](#unsubscribe-from-pubmeds-news)
-- [Considerations](#considerations)
-- [Contributing](#contributing)
-- [SonarCloud](#license)
-- [License](#license)
+    - [Subscribe to PUBMEDS news](#subscribe-to-pubmeds-news)
+    - [Unsubscribe from PUBMEDS news](#unsubscribe-from-pubmeds-news)
+  - [Considerations](#considerations)
+  - [Contributing](#contributing)
+  - [Sonarcloud](#sonarcloud)
+  - [License](#license)
 
 
 ## Usage
@@ -231,7 +239,7 @@ Searches for codes from a list of miRNA identifiers and returns the approved acc
 
 Service that takes a text string of any length and returns a list of methylation sites names (loci) containing that search criteria within the Illumina _Infinium MethylationEPIC 2.0_ array.
 
-- URL: `/methylations-finder`
+- URL: `/methylation-sites-finder`
 - Method: GET
 - Required query params:
     - `query`: Methylation search string.  
@@ -269,6 +277,29 @@ Searches a list of methylation site names or IDs from different Illumina array v
     - Code: 400
     - Content:
         - `detail`: a text with information about the error.  
+
+
+### Genes of methylation sites
+
+A service that searches from a list of CpG methylation site identifiers from different versions of Illumina arrays and returns the gene(s) to which they belong.  
+
+- URL: `/methylation-sites-genes`
+- Method: POST
+- Required body params (in JSON format):
+    - `methylation_sites`: list of Illumina array methylation site names or identifiers for which you want to know the gene(s).  
+- Functions:
+    - Ordering fields: ordering is not available for this service
+    - Filtering fields: filtering is not available for this service
+    - Searching fields: searching is not available for this service
+    - Pagination: no
+- Success Response:
+    - Code: 200
+    - Content: 
+      - <methylation_sites>: Returns a Json with as many keys as there are methylation names/ids in the body. For each methylation name/ID, the value is a list of genes that the name/id methylates.  
+- Error Response: 
+    - Code: 400
+    - Content:
+      - `detail`: a text with information about the error.  
 
 
 ### Diseases

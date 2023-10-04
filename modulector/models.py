@@ -14,34 +14,39 @@ class DatasetSeparator(models.TextChoices):
 
 # Modelos para Methylation
 class MethylationEPIC(models.Model):
-    ilmnid = models.CharField(max_length=25, blank=False, null=False)
-    name = models.CharField(max_length=15, blank=False, null=False)
+    ilmnid = models.CharField(
+        max_length=25, blank=False, null=False, db_index=True)
+    name = models.CharField(max_length=15, blank=False,
+                            null=False, db_index=True)
     strand_fr = models.CharField(max_length=1)
     chr = models.CharField(max_length=5)
     mapinfo = models.BigIntegerField()
-    methyl450_loci = models.CharField(max_length=21)
-    methyl27_loci = models.CharField(max_length=21)
-    epicv1_loci = models.CharField(max_length=21)
+    methyl450_loci = models.CharField(max_length=21, db_index=True)
+    methyl27_loci = models.CharField(max_length=21, db_index=True)
+    epicv1_loci = models.CharField(max_length=21, db_index=True)
 
 
 class MethylationUCSC_CPGIsland(models.Model):
     ucsc_cpg_island_name = models.CharField(max_length=30)
     relation_to_ucsc_cpg_island = models.CharField(max_length=8)
-    methylation_epic_v2_ilmnid = models.ForeignKey(MethylationEPIC, on_delete=models.CASCADE)
+    methylation_epic_v2_ilmnid = models.ForeignKey(
+        MethylationEPIC, on_delete=models.CASCADE)
 
 
 class MethylationUCSCRefGene(models.Model):
     ucsc_refgene_group = models.CharField(max_length=12)
     ucsc_refgene_name = models.CharField(max_length=30)
     ucsc_refgene_accession = models.CharField(max_length=20)
-    methylation_epic_v2_ilmnid = models.ForeignKey(MethylationEPIC, on_delete=models.CASCADE)
+    methylation_epic_v2_ilmnid = models.ForeignKey(
+        MethylationEPIC, on_delete=models.CASCADE)
 
 
 class MethylationGencode(models.Model):
     gencode_group = models.CharField(max_length=12)
     gencode_name = models.CharField(max_length=30)
     gencode_accession = models.CharField(max_length=20)
-    methylation_epic_v2_ilmnid = models.ForeignKey(MethylationEPIC, on_delete=models.CASCADE)
+    methylation_epic_v2_ilmnid = models.ForeignKey(
+        MethylationEPIC, on_delete=models.CASCADE)
 
 
 # Fin Modelos para Methylation
@@ -85,11 +90,13 @@ class MirnaSource(models.Model):
     score_interpretation = models.TextField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     synchronization_date = models.DateTimeField()
-    file_separator = models.CharField(max_length=1, choices=DatasetSeparator.choices, default=DatasetSeparator.TAB)
+    file_separator = models.CharField(
+        max_length=1, choices=DatasetSeparator.choices, default=DatasetSeparator.TAB)
 
 
 class MirnaColumns(models.Model):
-    mirna_source = models.ForeignKey(MirnaSource, related_name="mirnacolumns", on_delete=models.CASCADE)
+    mirna_source = models.ForeignKey(
+        MirnaSource, related_name="mirnacolumns", on_delete=models.CASCADE)
     position = models.BigIntegerField(blank=True, null=True)
     column_name = models.CharField(max_length=100, blank=True, null=True)
     field_to_map = models.CharField(max_length=50, blank=True, null=True)
@@ -125,7 +132,8 @@ class MirnaDisease(models.Model):
     category = models.CharField(max_length=200, blank=False)
     mirna = models.CharField(max_length=50, blank=False)
     disease = models.CharField(max_length=200, blank=False)
-    pubmed_id = models.DecimalField(max_digits=10, decimal_places=0, null=False)
+    pubmed_id = models.DecimalField(
+        max_digits=10, decimal_places=0, null=False)
     description = models.TextField(blank=False)
 
     class Meta:
@@ -139,7 +147,8 @@ class MirnaDrug(models.Model):
     fda_approved = models.BooleanField()
     detection_method = models.CharField(max_length=100)
     condition = models.TextField(blank=False)
-    pubmed_id = models.DecimalField(max_digits=10, decimal_places=0, null=False)
+    pubmed_id = models.DecimalField(
+        max_digits=10, decimal_places=0, null=False)
     reference = models.TextField(blank=False)
     support = models.TextField(blank=False)
     expression_pattern = models.CharField(max_length=30)
