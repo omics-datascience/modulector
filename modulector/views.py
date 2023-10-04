@@ -10,7 +10,7 @@ from rest_framework import status, generics, filters, viewsets
 from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from modulector.models import MirnaXGene, Mirna, MirbaseIdMirna, MirnaDisease, MirnaDrug, GeneAliases, MethylationEPIC
+from modulector.models import MethylationUCSCRefGene, MirnaXGene, Mirna, MirbaseIdMirna, MirnaDisease, MirnaDrug, GeneAliases, MethylationEPIC
 from modulector.pagination import StandardResultsSetPagination
 from modulector.serializers import MirnaXGenSerializer, MirnaSerializer, \
     MirnaAliasesSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer, get_mirna_from_accession, \
@@ -68,13 +68,16 @@ class MirnaTargetInteractions(viewsets.ReadOnlyModelViewSet):
     @staticmethod
     def __get_gene_aliases(gene: str) -> List[str]:
         """Retrieves the aliases for a gene based on the gene provided"""
-        match_gene = GeneAliases.objects.filter(Q(alias=gene) | Q(gene_symbol=gene)).first()
+        match_gene = GeneAliases.objects.filter(
+            Q(alias=gene) | Q(gene_symbol=gene)).first()
         if match_gene is None:
             return []
 
         gene_symbol = match_gene.gene_symbol
-        aliases = list(GeneAliases.objects.filter(gene_symbol=gene_symbol).values_list('alias', flat=True).distinct())
-        aliases.append(gene)  # Adds the parameter to not omit it in the future search
+        aliases = list(GeneAliases.objects.filter(
+            gene_symbol=gene_symbol).values_list('alias', flat=True).distinct())
+        # Adds the parameter to not omit it in the future search
+        aliases.append(gene)
         return aliases
 
     def list(self, request, *args, **kwargs):
@@ -89,7 +92,8 @@ class MirnaTargetInteractions(viewsets.ReadOnlyModelViewSet):
 
         # Gets miRNA aliases
         mirna_aliases = get_mirna_aliases(mirna)
-        instance = generics.get_object_or_404(MirnaXGene, mirna__mirna_code__in=mirna_aliases, gene__in=gene_aliases)
+        instance = generics.get_object_or_404(
+            MirnaXGene, mirna__mirna_code__in=mirna_aliases, gene__in=gene_aliases)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
@@ -136,7 +140,8 @@ class MirnaCodes(APIView):
         :param mirna_code: miRNA Previous ID or Accession ID.
         :return: The associated Accession ID.
         """
-        res = MirbaseIdMirna.objects.filter(Q(mirbase_accession_id=mirna_code) | Q(mature_mirna=mirna_code)).first()
+        res = MirbaseIdMirna.objects.filter(
+            Q(mirbase_accession_id=mirna_code) | Q(mature_mirna=mirna_code)).first()
         if res:
             return res.mirbase_accession_id
         else:
@@ -170,20 +175,21 @@ class MirnaCodesFinder(APIView):
         limit = self.request.GET.get('limit')
         limit = get_limit_parameter(limit)
 
-        res_mirna = Mirna.objects.filter(mirna_code__istartswith=query)[:limit].values_list('mirna_code', flat=True)
+        res_mirna = Mirna.objects.filter(mirna_code__istartswith=query)[
+            :limit].values_list('mirna_code', flat=True)
         res.extend(res_mirna)
         res_mirna_count = len(res_mirna)
         if res_mirna_count < limit:
             num_of_reg = limit - res_mirna_count
             res_mirbaseidmirna_id = MirbaseIdMirna.objects.filter(mature_mirna__istartswith=query)[
-                                    :num_of_reg].values_list('mature_mirna', flat=True)
+                :num_of_reg].values_list('mature_mirna', flat=True)
             res.extend(res_mirbaseidmirna_id)
             res = list(set(res))  # Removes duplicates
             res_mirna_count = len(res_mirbaseidmirna_id)
             if res_mirna_count < limit:
                 num_of_reg = limit - res_mirna_count
                 res_mirbaseidmirna_acc = MirbaseIdMirna.objects.filter(mirbase_accession_id__istartswith=query)[
-                                         :num_of_reg].values_list('mirbase_accession_id', flat=True)
+                    :num_of_reg].values_list('mirbase_accession_id', flat=True)
                 res.extend(res_mirbaseidmirna_acc)
                 res = list(set(res))  # remove duplicates
 
@@ -243,7 +249,8 @@ class MirnaDrugsList(generics.ListAPIView):
     """Drugs endpoint"""
     serializer_class = MirnaDrugsSerializer
     pagination_class = StandardResultsSetPagination
-    filter_backends = [filters.OrderingFilter, filters.SearchFilter, DjangoFilterBackend]
+    filter_backends = [filters.OrderingFilter,
+                       filters.SearchFilter, DjangoFilterBackend]
     ordering_fields = ['condition', 'detection_method', 'small_molecule', 'expression_pattern', 'reference',
                        'support']
     ordering = ['id']
@@ -268,7 +275,8 @@ class SubscribeUserToPubmed(APIView):
         email = request.GET.get("email")
         mirna = request.GET.get("mirna")
         gene = request.GET.get("gene")
-        token = subscription_service.subscribe_user(email=email, mirna=mirna, gene=gene)
+        token = subscription_service.subscribe_user(
+            email=email, mirna=mirna, gene=gene)
         return Response({'token': token}, status=status.HTTP_200_OK)
 
 
@@ -300,7 +308,7 @@ class MethylationSites(APIView):
             res = {
                 methylation_name: result
                 for methylation_name, result in zip(methylation_sites, executor.map(
-                        get_methylation_epic_sites, methylation_sites
+                    get_methylation_epic_sites, methylation_sites
                 ))
             }
 
@@ -319,8 +327,64 @@ class MethylationSitesFinder(APIView):
         limit = self.request.GET.get('limit')
         limit = get_limit_parameter(limit)
 
-        res = MethylationEPIC.objects.filter(name__istartswith=query)[:limit].values_list('name', flat=True)
+        res = MethylationEPIC.objects.filter(name__istartswith=query)[
+            :limit].values_list('name', flat=True)
         return Response(list(res))
+
+
+class MethylationSitesToGenes(APIView):
+    """A service that searches a list of CpG methylation site identifiers from different 
+    versions of Illumina arrays and returns the gene(s) they belong to."""
+
+    @staticmethod
+    def __get_methylation_epic_sites(input_name: str) -> List[str]:
+        """
+        Gets methylation sites from any type of Loci id
+        :param input_name: String to query in the DB (site name)
+        :return: List of ID of Methylation sites from EPIC v2 database
+        """
+        res = MethylationEPIC.objects.filter(Q(ilmnid=input_name) | Q(name=input_name) |
+                                             Q(methyl450_loci=input_name) | Q(methyl27_loci=input_name) |
+                                             Q(epicv1_loci=input_name)).values_list('id', flat=True)
+        return list(res)
+
+    @staticmethod
+    def __get_genes_from_methylation_epic_site(input_id: str) -> List[str]:
+        """
+        Gets genes from a specific methylation CpG site
+        :param input_id: String to query in the DB (CpG ID)
+        :return: Gene for the given input
+        """
+        gene = MethylationUCSCRefGene.objects.filter(
+            Q(methylation_epic_v2_ilmnid=input_id)).values_list('ucsc_refgene_name', flat=True)
+        return list(gene)
+
+    def post(self, request):
+        data = request.data
+        if "methylation_sites" not in data:
+            return Response({"detail": "'methylation_sites' is mandatory"}, status=status.HTTP_400_BAD_REQUEST)
+
+        methylation_sites = data["methylation_sites"]
+        if type(methylation_sites) != list:
+            return Response({"detail": "'methylation_sites' must be of list type"}, status=status.HTTP_400_BAD_REQUEST)
+
+        res = {}
+        for methylation_name in methylation_sites:
+            res[methylation_name] = []
+            # For each CpG methylation site passed as a parameter... I look for its Identifier in the version of the EPIC v2 array:
+            epics_ids = self.__get_methylation_epic_sites(methylation_name)
+            for site_id in epics_ids:
+                # For each identifier in the EPIC v2 array, I search for the genes involved:
+                genes_list = self.__get_genes_from_methylation_epic_site(
+                    site_id)
+
+                [res[methylation_name].append(
+                    gen) for gen in genes_list if gen not in res[methylation_name]]
+
+            if len(res[methylation_name]) == 0:
+                del res[methylation_name]
+
+        return Response(res)
 
 
 def index(request):
