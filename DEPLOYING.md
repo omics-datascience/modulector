@@ -12,6 +12,10 @@ Below are the steps to perform a production deploy.
 
 ## Instructions
 
+1. Create MongoDB Docker volumes:
+    ```bash
+    docker volume create --name=modulector_postgres_data
+    ```
 1. Make a copy of `docker-compose_dist.yml` with the name `docker-compose.yml`.
 1. Set the environment variables that are empty with data. They are listed below by category:
     - Django:
@@ -29,7 +33,7 @@ Below are the steps to perform a production deploy.
         - `POSTGRES_PASSWORD` : Database username's password. By default the docker image uses `modulector`.
         - `POSTGRES_PORT` : Database server listen port. By default the docker image uses `5432`.
         - `POSTGRES_DB` : Database name to be used. By default the docker image uses `modulector`.
-    - Healthchecks and alerts:
+    - Health-checks and alerts:
         - `HEALTH_URL` : indicates the url that will be requested on Docker healthchecks. By default it is http://localhost:8000/drugs/. The healthcheck makes a GET request on it. Any HTTP code value greatear or equals than 400 is considered an error.
         - `HEALTH_ALERT_URL` : if you want to receive an alert when healthchecks failed, you can set this variable to a webhook endpoint that will receive a POST request and a JSON body with the field **content** that contains the fail message.
 1. Go back to the project's root folder and run the following commands:
@@ -39,6 +43,7 @@ Below are the steps to perform a production deploy.
     - [Docker Swarm](https://docs.docker.com/engine/swarm/):
         - Start: `docker stack deploy --compose-file docker-compose.yml modulector`
         - Stop: `docker stack rm modulector`
+1. Import all the data following the instructions detailed in the [Import section](#import).
 1. (Optional) Create a super user to access to the admin panel (`<URL>/admin`).
     1. Enter the running container: `docker container exec -it <backend_container_name> bash`. The name is usually `modulector_web_1` but you can check it with `docker container ps`.
     1. Run: `python3 manage.py createsuperuser`
@@ -125,25 +130,20 @@ That command will create a compressed file with the database dump inside.
 You can use set Modulector DB in three ways.
 
 
-### Using official Docker image (recommended)
+### Importing an existing database dump (recommended)
 
-You can just use the [modulector-db][modulector-db-docker] and avoid all kind of importations steps. This is the default setting in `docker-compose_dist.yml`.
-
-
-### Importing an existing database dump
-
-1. Comment the service in your `docker-compose.yml` that uses the `omicsdatascience/modulector-db` image.
+1. Check that the service in your `docker-compose.yml` that uses the `omicsdatascience/modulector-db` image is commented and uncomment the service that uses `postgres` image.
 1. Start up a PostgreSQL service. You can use the same service listed in the `docker-compose.dev.yml` file. 
-1. **Optional but recommended (You can omit these steps if it's the first time you are deploying Modulector)**: due to major changes, it's probably that an import thrown several errors when importing. To prevent that you could do the following steps before doing the importation:
-    1. Drop all the tables from the DB:
-        1. Log into docker container: `docker container exec -it [name of the DB container] bash`
-        1. Log into Postgres: `psql -U [username]`
-        1. (**Danger, will drop all the data**) Remove the `modulector` database: `DROP DATABASE modulector;`
-        1.  Create an empty database: `CREATE DATABASE modulector;`
+1. **Optional but recommended (you can omit these steps if it's the first time you are deploying Modulector)**: due to major changes, it's probably that an import thrown several errors when importing. To prevent that you could do the following steps before doing the importation:
+    1. Drop all the tables from the DB: `docker exec -i [name of the DB container] psql modulector -U modulector -c "DROP DATABASE modulector"`
+    1. Create an empty database: `docker exec -i [name of the DB container] psql modulector -U modulector -c "CREATE DATABASE modulector"`
 1. Download `.sql.gz` from [Modulector releases pages](https://github.com/omics-datascience/modulector/releases) or use your own export file.
-1. Restore the db: `zcat modulector.sql.gz | docker exec -i [name of the DB container] psql modulector -U modulector`
+1. Restore the db: `zcat modulector.sql.gz | docker exec -i [name of the DB container] psql modulector -U modulector`. This command will restore the database using a compressed dump as source, **keep in mind that could take several minutes to finish the process**.
 
-That command will restore the database using a compressed dump as source.
+
+### Using official Docker image
+
+You can just use the [modulector-db][modulector-db-docker] and avoid all kind of importations steps. This is the default setting in `docker-compose_dist.yml`. This is a good method if you want to avoid having to set the database from scratch. But keep in mind that **initialization times can take many minutes, so it is NOT recommended for use in production**, in the latter case it is recommended to use the method described above.
 
 
 ### Regenerating the data manually
