@@ -2,27 +2,27 @@ version: '3'
 
 services:
     # PostgreSQL
-    db:
+    db_modulector:
       image: omicsdatascience/modulector-db:2.0.0
       # Uncomment this to add your custom config
       # volumes:
       #     - ./config/postgres/postgres.conf:/etc/postgresql/postgresql.conf
 
     # Django Proxy Server
-    nginx:
+    nginx_modulector:
         image: nginx:1.23.3
         ports:
             - "80:8000"
         volumes:
             - ./config/nginx/conf.d:/etc/nginx/conf.d
         depends_on:
-            - web
+            - web_modulector
 
     # Django Backend Server
-    web:
+    web_modulector:
         image: omicsdatascience/modulector:2.0.3
         depends_on:
-            - db
+            - db_modulector
         environment:
             # Django
             DJANGO_SETTINGS_MODULE: 'ModulectorBackend.settings_prod'
