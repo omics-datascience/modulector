@@ -1,18 +1,39 @@
 version: '3'
 
 services:
-    # PostgreSQL
+    # PostgreSQL (empty DB)
     db_modulector:
-      image: omicsdatascience/modulector-db:2.0.0
-      # Uncomment this to add your custom config
-      # volumes:
-      #     - ./config/postgres/postgres.conf:/etc/postgresql/postgresql.conf
+        image: postgres:16
+        restart: always
+        ports:
+            - '5433:5432'
+        # Uncomment this to add your custom config
+        # command: postgres -c 'config_file=/etc/postgresql/postgresql.conf'
+        environment:
+            # IMPORTANT: these three params must be the same than POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_DB
+            # below in 'web' service respectively
+            POSTGRES_USER: 'modulector'
+            POSTGRES_PASSWORD: 'modulector'
+            POSTGRES_DB: 'modulector'
+        volumes:
+            - postgres_data:/var/lib/postgresql/data/
+            # Uncomment this to add your custom config
+            # - ./config/postgres/postgres.conf:/etc/postgresql/postgresql.conf
+
+    # Uncomment this if you want to use the DB image (start with a filled DB the startup time is very slow)
+    #PostgreSQL
+    #db_modulector:
+    #    image: omicsdatascience/modulector-db:2.0.0
+    #    # Uncomment this to add your custom config
+    #    volumes:
+    #       #    - ./config/postgres/postgres.conf:/etc/postgresql/postgresql.conf
 
     # Django Proxy Server
     nginx_modulector:
         image: nginx:1.23.3
+        restart: always
         ports:
-            - "80:8000"
+            - '80:8000'
         volumes:
             - ./config/nginx/conf.d:/etc/nginx/conf.d
         depends_on:
@@ -21,6 +42,7 @@ services:
     # Django Backend Server
     web_modulector:
         image: omicsdatascience/modulector:2.0.3
+        restart: always
         depends_on:
             - db_modulector
         environment:
@@ -32,3 +54,8 @@ services:
             # Hosts separated by comma ('http://', 'https://' prefixes are mandatory)
             # Example: CSRF_TRUSTED_ORIGINS: 'http://127.0.0.1', 'http://127.0.0.1,https://127.0.0.1:8000', etc
             CSRF_TRUSTED_ORIGINS: ''
+
+volumes:
+    postgres_data:
+        external:
+            name: 'modulector_postgres_data'
