@@ -26,7 +26,7 @@ Below are the steps to perform a production deploy.
         - `SECRET_KEY`: Django's secret key. If not specified, one is generated with [generate-secret-key application](https://github.com/MickaelBergem/django-generate-secret-key) automatically.
         - `MEDIA_ROOT`: absolute path where will be stored the uploaded files. By default `<project root>/uploads`.
         - `MEDIA_URL`: URL of the `MEDIA_ROOT` folder. By default `<url>/media/`.
-        - `CUSTOM_ALLOWED_HOSTS`: list of allowed hosts (separated by commas) to access to Modulector (
+        - `ALLOWED_HOSTS`: list of allowed hosts (separated by commas) to access to Modulector. Default `web,localhost,127.0.0.1,::1'`
         - `PROCESS_POOL_WORKERS`: some request uses parallelized queries using ProcessPoolExecutor to improve performance. This parameter indicates the number of workers to be used. By default `4`.
     - Postgres:
         - `POSTGRES_USERNAME` : Database username. By default the docker image uses `modulector`.
@@ -34,8 +34,8 @@ Below are the steps to perform a production deploy.
         - `POSTGRES_PORT` : Database server listen port. By default the docker image uses `5432`.
         - `POSTGRES_DB` : Database name to be used. By default the docker image uses `modulector`.
     - Health-checks and alerts:
-        - `HEALTH_URL` : indicates the url that will be requested on Docker healthchecks. By default it is http://localhost:8000/drugs/. The healthcheck makes a GET request on it. Any HTTP code value greatear or equals than 400 is considered an error.
-        - `HEALTH_ALERT_URL` : if you want to receive an alert when healthchecks failed, you can set this variable to a webhook endpoint that will receive a POST request and a JSON body with the field **content** that contains the fail message.
+        - `HEALTH_URL` : indicates the url that will be requested on Docker health-checks. By default it is http://localhost:8000/drugs/. The healthcheck makes a GET request on it. Any HTTP code value greater or equals than 400 is considered an error.
+        - `HEALTH_ALERT_URL` : if you want to receive an alert when health-checks failed, you can set this variable to a webhook endpoint that will receive a POST request and a JSON body with the field **content** that contains the fail message.
 1. Go back to the project's root folder and run the following commands:
     - Docker Compose:
         - Start: `docker compose up -d`. The service will available in `127.0.0.1`.
@@ -52,7 +52,7 @@ Below are the steps to perform a production deploy.
 
 ### Start delays
 
-Due to the database restoration in the first start, the container modulectordb may take a while to be up an ready. We can follow the status of the startup process in the logs by doing: `docker compose logs --follow`.
+Due to the database restoration in the first start, the container `db_modulector` may take a while to be up an ready. We can follow the status of the startup process in the logs by doing: `docker compose logs --follow`.
 Sometimes this delay makes django server throws database connection errors. If it is still down and not automatically fixed when database is finally up, we can restart the services by doing: `docker compose up -d`.
 
 
@@ -69,7 +69,7 @@ To enable HTTPS, follow the steps below:
 ```yaml
 ...
 nginx:
-    image: nginx:1.19.3
+    image: nginx:1.23.3
     ports:
         - 80:8000
         - 443:443
