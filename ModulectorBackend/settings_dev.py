@@ -27,7 +27,7 @@ SECRET_KEY = 'm)95!xjla3k1h)1#ya_rp^7#7^l_laaa6x$ik2_vx#gc0ll=e('
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['.localhost', '127.0.0.1', '[::1]','*']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '::1', '*']
 
 # Modulector unsubscribe endpoint
 UNSUBSCRIBE_URL = 'http://localhost:8000/unsubscribe-pubmeds/?token='

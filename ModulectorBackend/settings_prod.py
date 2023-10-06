@@ -25,12 +25,17 @@ REST_FRAMEWORK = {
 
 
 # 'web' is the name of the docker-compose service which serves Django
-custom_allowed_hosts: Optional[str] = os.getenv('CUSTOM_ALLOWED_HOSTS')
+custom_allowed_hosts: Optional[str] = os.getenv('ALLOWED_HOSTS')
 if custom_allowed_hosts is None:
-    ALLOWED_HOSTS = ['web', '.localhost', '127.0.0.1', '[::1]']
+    ALLOWED_HOSTS = ['web', 'localhost', '127.0.0.1', '::1']
 else:
     # Gets all the hosts declared by the user (separated by commas)
     allowed_host_list = custom_allowed_hosts.split(',')
+
+    # Adds localhost to the list if it's not already there as it's needed for the health check
+    if 'localhost' not in allowed_host_list:
+        allowed_host_list.append('localhost')
+
     allowed_host_list_stripped = [x.strip() for x in allowed_host_list]
     ALLOWED_HOSTS = allowed_host_list_stripped
 
