@@ -114,6 +114,46 @@ Receives a miRNA ID (mirbase MIMAT ID or previous ID) and returns a paginated ve
         - `pubmeds`: array of pubmed for the miRNA-gene interaction (according to mirTaRBase).
         - `sources`: miRNA-Gene interaction sources which publish this interaction. mirDIP score is based on the scores of those sources. This field is an array that contains the interaction score source names.
         - `score_class`: `L` (Low), `M` (Medium), `H` (High) or `V` (Very high)
+    - Example:
+        - URL: http://localhost:8000/mirna-interactions?mirna=hsa-miR-891a-5p&search=EGFR
+        - Response:
+            ```json
+            {
+                "count":1,
+                "next":null,
+                "previous":null,
+                "results":[
+                    {
+                        "id":629118277,
+                        "mirna":"hsa-miR-891a-5p",
+                        "gene":"EGFR",
+                        "score":0.0684,
+                        "source_name":"mirdip",
+                        "pubmeds":[
+                            "https://pubmed.ncbi.nlm.nih.gov/5362487",
+                            "https://pubmed.ncbi.nlm.nih.gov/10120249",
+                            "https://pubmed.ncbi.nlm.nih.gov/8948606",
+                            "https://pubmed.ncbi.nlm.nih.gov/5642539",
+                            "https://pubmed.ncbi.nlm.nih.gov/9361765",
+                            "https://pubmed.ncbi.nlm.nih.gov/4895700",
+                            "https://pubmed.ncbi.nlm.nih.gov/5877664",
+                            "https://pubmed.ncbi.nlm.nih.gov/9421182",
+                            "https://pubmed.ncbi.nlm.nih.gov/6998431",
+                            "https://pubmed.ncbi.nlm.nih.gov/7053609",
+                            "https://pubmed.ncbi.nlm.nih.gov/8544338",
+                            "https://pubmed.ncbi.nlm.nih.gov/9253007",
+                            "https://pubmed.ncbi.nlm.nih.gov/10008540"
+                        ],
+                        "sources":[
+                            "MirAncesTar",
+                            "mirmap_May_2021",
+                            "MiRNATIP"
+                        ],
+                        "score_class":"M"
+                    }
+                ]
+            }
+            ```  
 - Error Response:
     - Code: 200
     - Content: empty paginated response (`count` = 0)
@@ -143,6 +183,27 @@ Receives a miRNA ID (mirbase MIMAT ID or previous ID) and a gene returns the inf
         - `pubmeds`: array of pubmed for the miRNA-gene interaction (according to mirTaRBase).
         - `sources`: miRNA-Gene interaction sources which publish this interaction. mirDIP score is based on the scores of those sources. This field is an array that contains the interaction score source names.
         - `score_class`: `L` (Low), `M` (Medium), `H` (High) or `V` (Very high)
+    - Example:
+        - URL: http://localhost:8000/mirna-target-interactions?mirna=hsa-miR-3605-3p&gene=MAU2
+        - Response:
+            ```json
+            {
+                "id":635935124,
+                "mirna":"hsa-miR-3605-3p",
+                "gene":"MAU2",
+                "score":0.0575,
+                "source_name":"mirdip",
+                "pubmeds":[
+                    
+                ],
+                "sources":[
+                    "MirAncesTar",
+                    "MiRNATIP",
+                    "RNA22"
+                ],
+                "score_class":"L"
+            }
+            ```  
 - Error Response:
     - Code: 404
     - Content: -
@@ -167,6 +228,26 @@ Returns extra information of a miRNA.
         - `mirna_sequence`: miRNA nucleotide sequence.
         - `mirbase_accession_id`: miRNA accession ID (MIMAT).
         - `links` array of URLs with extra information about this miRNA.
+    - Example:
+        - URL: http://localhost:8000/mirna?mirna=hsa-miR-548ai
+        - Response:
+            ```json
+            {
+                "aliases":[
+                    "hsa-miR-548ai",
+                    "MIMAT0018989",
+                    "hsa-miR-548ai"
+                ],
+                "mirna_sequence":"AAAGGUAAUUGCAGUUUUUCCC",
+                "mirbase_accession_id":"MIMAT0018989",
+                "links":[
+                    {
+                        "source":"mirbase",
+                        "url":"http://www.mirbase.org/cgi-bin/mirna_entry.pl?acc=MIMAT0018989"
+                    }
+                ]
+            }
+            ```  
 - Error Response:
     - Code: 404
     - Content: -
@@ -188,6 +269,22 @@ Returns a paginated response with aliases of a miRNA.
     - Content:
         - `mirbase_accession_id`: miRNA mirBase accession ID (MIMAT).
         - `mature_mirna`: previous ID (according to mirBase).
+    - Example:
+        - URL: http://localhost:8000/mirna-aliases?mirbase_accession_id=MIMAT0000062
+        - Response:
+            ```json
+            {
+                "count":1,
+                "next":null,
+                "previous":null,
+                "results":[
+                    {
+                        "mirbase_accession_id":"MIMAT0000062",
+                        "mature_mirna":"hsa-let-7a-5p"
+                    }
+                ]
+            }
+            ```  
 - Error Response: -
 
 
@@ -209,6 +306,19 @@ Service that takes a string of any length and returns a list of miRNAs that cont
 - Success Response:
     - Code: 200
     - Content: a list of miRNAs (IDs or accession IDs from miRbase DB) matching the search criteria.
+    - Example:
+        - URL: http://localhost:8000/mirna-codes-finder?query=hsa-let-7a
+        - Response:
+            ```json
+            [
+                "hsa-let-7a-3",
+                "hsa-let-7a-2",
+                "hsa-let-7a-3p",
+                "hsa-let-7a-2-3p",
+                "hsa-let-7a-1",
+                "hsa-let-7a-5p"
+            ]
+            ```  
 - Error Response: -
 
 
@@ -229,6 +339,28 @@ Searches for codes from a list of miRNA identifiers and returns the approved acc
     - Code: 200
     - Content: 
         - `mirna_codes`: a JSON object with as many keys as miRNAs in the body of the request. For each miRNA, the value is a valid miRNA accession ID or `null`.  
+    - Example:
+        - URL: http://localhost:8000/mirna-codes/
+        - body: 
+            `{
+                "mirna_codes":[
+                    "name_01",
+                    "Hsa-Mir-935-v2_5p*",
+                    "MIMAT0000066",
+                    "MI0026417",
+                    "hsa-let-7e-5p"
+                ]
+            }`
+        - Response:
+            ```json
+            {
+                "name_01":null,
+                "Hsa-Mir-935-v2_5p*":null,
+                "MIMAT0000066":"MIMAT0000066",
+                "MI0026417":"MI0026417",
+                "hsa-let-7e-5p":"MIMAT0000066"
+            }
+            ```  
 - Error Response: 
     - Code: 400
     - Content:
@@ -253,6 +385,18 @@ Service that takes a text string of any length and returns a list of methylation
 - Success Response:
     - Code: 200
     - Content: a list of methylation sites from the Illumina 'Infinium MethylationEPIC 2.0' array matching the search criteria.
+    - Example:
+        - URL: http://localhost:8000/methylation-sites-finder?query=cg25&limit=5
+        - Response:
+            ```json
+            [
+                "cg25324105",
+                "cg25383568",
+                "cg25455143",
+                "cg25459778",
+                "cg25487775"
+            ]
+            ```  
 - Error Response: -
 
 
@@ -273,6 +417,26 @@ Searches a list of methylation site names or IDs from different Illumina array v
     - Code: 200
     - Content: 
         - `methylation_sites`: a JSON object with as many keys as methylation names in the body of the request. For each methylation name, the value is a list of valid methylation names to Illumina _Infinium MethylationEPIC 2.0_ array.
+    - Example:
+        - URL: http://localhost:8000/methylation-sites/
+        - body: 
+            `{
+                "methylation_sites":[
+                    "cg17771854_BC11",
+                    "cg01615704_TC11"
+                ]
+            }`
+        - Response:
+            ```json
+            {
+                "cg17771854_BC11":[
+                    "cg17771854"
+                ],
+                "cg01615704_TC11":[
+                    "cg01615704"
+                ]
+            }
+            ```  
 - Error Response: 
     - Code: 400
     - Content:
@@ -295,7 +459,30 @@ A service that searches from a list of CpG methylation site identifiers from dif
 - Success Response:
     - Code: 200
     - Content: 
-      - <methylation_sites>: Returns a Json with as many keys as there are methylation names/ids in the body. For each methylation name/ID, the value is a list of genes that the name/id methylates.  
+      - Returns a Json with as many keys as there are methylation names/ids in the body. For each methylation name/ID, the value is a list of genes that the name/id methylates.  
+    - Example:
+        - URL: http://localhost:8000/methylation-sites-genes/
+        - body: 
+            `{
+                "methylation_sites":[
+                    "cg17771854_BC11",
+                    "cg22461615_TC11",
+                    "name_007"
+                ]
+            }`
+        - Response:
+            ```json
+            {
+                "cg17771854_BC11":[
+                    "IPO13"
+                ],
+                "cg22461615_TC11":[
+                    "THAP9",
+                    "THAP9-AS1",
+                    "SEC31A"
+                ]
+            }
+            ```  
 - Error Response: 
     - Code: 400
     - Content:
@@ -307,6 +494,7 @@ A service that searches from a list of CpG methylation site identifiers from dif
 Returns a paginated response of diseases related to a miRNA.
 
 - URL: `/diseases`
+- Method: GET
 - Required query params:
     - `mirna`: miRNA (miRNA code or Accession ID) to get its interactions with different targets. If it is not specified, the service returns all the elements in a paginated response.
 - Functions:
@@ -322,6 +510,25 @@ Returns a paginated response of diseases related to a miRNA.
         - `disease`: disease name.
         - `pubmed`: Pubmed URL.
         - `description`: description about why this miRNA is related to this disease.
+    - Example:
+        - URL: http://localhost:8000/diseases?mirna=hsa-miR-9500
+        - Response:
+            ```json
+            {
+                "count":1,
+                "next":null,
+                "previous":null,
+                "results":[
+                    {
+                        "id":3540992,
+                        "category":"target gene",
+                        "disease":"Liver Neoplasms",
+                        "pubmed":"https://pubmed.ncbi.nlm.nih.gov/24658401",
+                        "description":"The novel miR-9500 regulates the proliferation and migration of human lung cancer cells by targeting Akt1."
+                    }
+                ]
+            }
+            ```  
 - Error Response:
     - Code: 200
     - Content: empty paginated response (number of elements = 0)
@@ -333,6 +540,7 @@ Returns a paginated response of diseases related to a miRNA.
 Returns a paginated response of experimentally validated small molecules (or drugs) effects on miRNA expression.
 
 - URL: `/drugs`
+- Method: GET
 - Required query params:
     - `mirna`: miRNA (miRNA code or Accession ID) to get its interactions with different targets. If it is not specified, the service returns all the elements in a paginated response.
 - Functions:
@@ -353,6 +561,29 @@ Returns a paginated response of experimentally validated small molecules (or dru
         - `reference`: reference title.
         - `expression_pattern`: expression pattern of miRNA.
         - `support`: support information for this effect.
+    - Example:
+        - URL: http://localhost:8000/drugs?mirna=miR-126*
+        - Response:
+            ```json
+            {
+                "count":1,
+                "next":null,
+                "previous":null,
+                "results":[
+                    {
+                        "id":275028,
+                        "small_molecule":"17beta-estradiol (E2)",
+                        "fda_approved":true,
+                        "detection_method":"Microarray",
+                        "condition":"MCF-7AKT breast cancer cells",
+                        "pubmed":"https://pubmed.ncbi.nlm.nih.gov/19528081",
+                        "reference":"Estradiol-regulated microRNAs control estradiol response in breast cancer cells.",
+                        "expression_pattern":"down-regulated",
+                        "support":"To investigate this possibility, we determined microRNA-expression patterns in MCF-7p and MCF-7AKT cells with and without E2 treatment for 4 h. We observed 21 E2-inducible and 7 E2-repressible microRNAs in MCF-7p cells (statistical cutoff P-value <0.05 and fold change >1.5 or <0.7) (Table 1)."
+                    }
+                ]
+            }
+            ```  
 - Error Response:
     - Code: 200
     - Content: empty paginated response (number of elements = 0)
