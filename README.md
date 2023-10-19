@@ -342,7 +342,8 @@ Searches for codes from a list of miRNA identifiers and returns the approved acc
     - Example:
         - URL: http://localhost:8000/mirna-codes/
         - body: 
-            `{
+            ```json
+            {
                 "mirna_codes":[
                     "name_01",
                     "Hsa-Mir-935-v2_5p*",
@@ -350,7 +351,8 @@ Searches for codes from a list of miRNA identifiers and returns the approved acc
                     "MI0026417",
                     "hsa-let-7e-5p"
                 ]
-            }`
+            }
+            ```
         - Response:
             ```json
             {
@@ -420,12 +422,14 @@ Searches a list of methylation site names or IDs from different Illumina array v
     - Example:
         - URL: http://localhost:8000/methylation-sites/
         - body: 
-            `{
+            ```json
+            {
                 "methylation_sites":[
                     "cg17771854_BC11",
                     "cg01615704_TC11"
                 ]
-            }`
+            }
+            ```
         - Response:
             ```json
             {
@@ -463,13 +467,15 @@ A service that searches from a list of CpG methylation site identifiers from dif
     - Example:
         - URL: http://localhost:8000/methylation-sites-genes/
         - body: 
-            `{
+            ```json
+            {
                 "methylation_sites":[
                     "cg17771854_BC11",
                     "cg22461615_TC11",
                     "name_007"
                 ]
-            }`
+            }
+            ```
         - Response:
             ```json
             {
