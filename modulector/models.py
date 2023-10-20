@@ -14,6 +14,7 @@ class DatasetSeparator(models.TextChoices):
 
 # Modelos para Methylation
 class MethylationEPIC(models.Model):
+    id = models.IntegerField(primary_key=True, blank=False, null=False, db_index=True)
     ilmnid = models.CharField(
         max_length=25, blank=False, null=False, db_index=True)
     name = models.CharField(max_length=15, blank=False,

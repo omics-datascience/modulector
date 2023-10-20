@@ -34,6 +34,7 @@ urlpatterns = [
     path('drugs/', views.MirnaDrugsList.as_view(), name='drugs'),
     path('subscribe-pubmeds/', views.SubscribeUserToPubmed.as_view()),
     path('unsubscribe-pubmeds/', views.UnsubscribeUserToPubmed.as_view()),
+    path('methylation/', views.MethylationDetails.as_view(), name='methylation'),
     path('methylation-sites-finder/', views.MethylationSitesFinder.as_view(),
          name='methylation_sites_finder'),
     path('methylation-sites/', views.MethylationSites.as_view(),

@@ -10,7 +10,7 @@ from rest_framework import status, generics, filters, viewsets
 from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from modulector.models import MethylationUCSCRefGene, MirnaXGene, Mirna, MirbaseIdMirna, MirnaDisease, MirnaDrug, GeneAliases, MethylationEPIC
+from modulector.models import MethylationUCSC_CPGIsland, MethylationUCSCRefGene, MirnaXGene, Mirna, MirbaseIdMirna, MirnaDisease, MirnaDrug, GeneAliases, MethylationEPIC
 from modulector.pagination import StandardResultsSetPagination
 from modulector.serializers import MirnaXGenSerializer, MirnaSerializer, \
     MirnaAliasesSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer, get_mirna_from_accession, \
@@ -29,7 +29,7 @@ MAX_PAGE_SIZE: int = 3000
 PROCESS_POOL_WORKERS = settings.PROCESS_POOL_WORKERS
 
 
-def get_methylation_epic_sites(input_id: str) -> List[str]:
+def get_methylation_epic_sites_names(input_id: str) -> List[str]:
     """
     Gets methylation sites from any type of Loci id.
     :param input_id: String to query in the DB.
@@ -57,6 +57,27 @@ def get_limit_parameter(value: Optional[str]) -> int:
     except ValueError:
         # Returns default in case of non-numeric parameter
         return DEFAULT_PAGE_SIZE
+
+def get_methylation_epic_sites_ids(input_name: str) -> List[str]:
+        """
+        Gets methylation sites from any type of Loci id
+        :param input_name: String to query in the DB (site name)
+        :return: List of ID of Methylation sites from EPIC v2 database
+        """
+        res = MethylationEPIC.objects.filter(Q(ilmnid=input_name) | Q(name=input_name) |
+                                             Q(methyl450_loci=input_name) | Q(methyl27_loci=input_name) |
+                                             Q(epicv1_loci=input_name)).values_list('id', flat=True)
+        return list(res)
+    
+def get_genes_from_methylation_epic_site(input_id: str) -> List[str]:
+    """
+    Gets genes from a specific methylation CpG site
+    :param input_id: String to query in the DB (CpG ID)
+    :return: Gene for the given input
+    """
+    gene = MethylationUCSCRefGene.objects.filter(
+        Q(methylation_epic_v2_ilmnid=input_id)).values_list('ucsc_refgene_name', flat=True)
+    return list(gene)
 
 
 class MirnaTargetInteractions(viewsets.ReadOnlyModelViewSet):
@@ -308,7 +329,7 @@ class MethylationSites(APIView):
             res = {
                 methylation_name: result
                 for methylation_name, result in zip(methylation_sites, executor.map(
-                    get_methylation_epic_sites, methylation_sites
+                    get_methylation_epic_sites_names, methylation_sites
                 ))
             }
 
@@ -336,29 +357,6 @@ class MethylationSitesToGenes(APIView):
     """A service that searches a list of CpG methylation site identifiers from different 
     versions of Illumina arrays and returns the gene(s) they belong to."""
 
-    @staticmethod
-    def __get_methylation_epic_sites(input_name: str) -> List[str]:
-        """
-        Gets methylation sites from any type of Loci id
-        :param input_name: String to query in the DB (site name)
-        :return: List of ID of Methylation sites from EPIC v2 database
-        """
-        res = MethylationEPIC.objects.filter(Q(ilmnid=input_name) | Q(name=input_name) |
-                                             Q(methyl450_loci=input_name) | Q(methyl27_loci=input_name) |
-                                             Q(epicv1_loci=input_name)).values_list('id', flat=True)
-        return list(res)
-
-    @staticmethod
-    def __get_genes_from_methylation_epic_site(input_id: str) -> List[str]:
-        """
-        Gets genes from a specific methylation CpG site
-        :param input_id: String to query in the DB (CpG ID)
-        :return: Gene for the given input
-        """
-        gene = MethylationUCSCRefGene.objects.filter(
-            Q(methylation_epic_v2_ilmnid=input_id)).values_list('ucsc_refgene_name', flat=True)
-        return list(gene)
-
     def post(self, request):
         data = request.data
         if "methylation_sites" not in data:
@@ -372,12 +370,12 @@ class MethylationSitesToGenes(APIView):
         for methylation_name in methylation_sites:
             res[methylation_name] = []
             # For each CpG methylation site passed as a parameter... I look for its Identifier in the version of the EPIC v2 array:
-            epics_ids = self.__get_methylation_epic_sites(methylation_name)
+            epics_ids = get_methylation_epic_sites_ids(methylation_name)
             for site_id in epics_ids:
                 # For each identifier in the EPIC v2 array, I search for the genes involved:
-                genes_list = self.__get_genes_from_methylation_epic_site(
+                genes_list = get_genes_from_methylation_epic_site(
                     site_id)
-
+                
                 [res[methylation_name].append(
                     gen) for gen in genes_list if gen not in res[methylation_name]]
 
@@ -385,6 +383,66 @@ class MethylationSitesToGenes(APIView):
                 del res[methylation_name]
 
         return Response(res)
+
+class MethylationDetails(APIView):
+    """Service that obtains information about a specific CpG methylation site from
+    the 'Infinium MethylationEPIC V2.0' array."""
+
+    def get(self, _request):
+        methylation_site = self.request.GET.get('methylation_site')
+        if not methylation_site:
+            return Response(status=404, data={"'methylation_site' is mandatory"})
+
+        res = {}
+        # search for id in array
+        epic_data = MethylationEPIC.objects.filter(Q(name=methylation_site)).first()
+        
+        if epic_data:
+            # load name to response
+            res["name"] = epic_data.name
+
+            # load chomosomic data
+            if epic_data.strand_fr == "F":
+                res["chromosome_position"] = epic_data.chr +":"+ str(epic_data.mapinfo) + " [+]"
+            elif epic_data.strand_fr == "R":
+                res["chromosome_position"] = epic_data.chr +":"+ str(epic_data.mapinfo) + " [-]"
+
+            # load aliases to response
+            res["aliases"] = []
+            if epic_data.methyl27_loci and epic_data.methyl27_loci != epic_data.name:
+                res["aliases"].append(epic_data.methyl27_loci)
+            if epic_data.methyl450_loci and epic_data.methyl450_loci != epic_data.name:
+                res["aliases"].append(epic_data.methyl450_loci)
+            if epic_data.epicv1_loci and epic_data.epicv1_loci != epic_data.name:
+                res["aliases"].append(epic_data.epicv1_loci)  
+            if epic_data.ilmnid and epic_data.ilmnid != epic_data.name:
+                res["aliases"].append(epic_data.ilmnid)
+            
+            # search and loads genes
+            genes_list_with_dup = get_genes_from_methylation_epic_site(epic_data.id)
+            # remove duplicates
+            gene_list = []
+            [gene_list.append(x) for x in genes_list_with_dup if x not in gene_list]
+            res["genes"] = gene_list
+
+            # searches and loads for islands relations
+            islands_data = MethylationUCSC_CPGIsland.objects.filter(Q(methylation_epic_v2_ilmnid=epic_data.id))
+            res["ucsc_cpg_islands"] = []
+            for island in islands_data:
+                res["ucsc_cpg_islands"].append({"cpg_island": island.ucsc_cpg_island_name, "relation": island.relation_to_ucsc_cpg_island})
+
+            # searches and loads for genes relations
+            genes_data = MethylationUCSCRefGene.objects.filter(Q(methylation_epic_v2_ilmnid=epic_data.id))
+            res["relation_to_genes"] = {}
+            for gene in genes_data:
+                if gene.ucsc_refgene_name not in res["relation_to_genes"]:
+                    res["relation_to_genes"][gene.ucsc_refgene_name]=[]
+                if gene.ucsc_refgene_group not in res["relation_to_genes"][gene.ucsc_refgene_name]:
+                    res["relation_to_genes"][gene.ucsc_refgene_name].append(gene.ucsc_refgene_group)
+           
+            return Response(res)
+        else:
+            return Response(status=400, data={ methylation_site + " is not a valid methylation site"})
 
 
 def index(request):
