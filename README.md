@@ -20,6 +20,7 @@ Modulector is a performing open platform that provides information about miRNAs 
     - [Methylation sites finder](#methylation-sites-finder)
     - [Methylation sites](#methylation-sites)
     - [Genes of methylation sites](#genes-of-methylation-sites)
+    - [Methylation site details](#methylation-site-details)
     - [Diseases](#diseases)
     - [Drugs](#drugs)
     - [Subscribe to PUBMEDS news](#subscribe-to-pubmeds-news)
@@ -493,6 +494,64 @@ A service that searches from a list of CpG methylation site identifiers from dif
     - Code: 400
     - Content:
       - `detail`: a text with information about the error.  
+
+
+### Methylation site details
+
+Returns information of a methylation site.
+
+- URL: `/methylation`
+- Required query params:
+    - `methylation_site`: methylation_site name from Illumina _Infinium MethylationEPIC 2.0_ array
+- Functions:
+    - Ordering fields: ordering is not available for this service
+    - Filtering fields: filtering is not available for this service
+    - Searching fields: searching is not available for this service
+    - Pagination: no
+- Success Response:
+    - Code: 200
+    - Content:
+        - `name`: name of methylation site.
+        - `aliases`: list of other names for the same methylation site on other illumina arrays (EPIC v2, EPIC v1, Methyl450 and Methyl27).
+        - `chromosome_position`: information about the chromosome, position and strand on which the site is located.
+        - `ucsc_cpg_islands`: List of islands related to the methylation site according to the UCSC database. Each element in the view is a json with the following content:  
+            - `cpg_island`: chromosomal coordinates where the island is located.
+            - `relation`: Relation of the site to the CpG island. The values it can take are: *Island*=within boundaries of a CpG Island, *N_Shore*=0-2kb 5' of Island, *N_Shelf*=2kb-4kb 5' of Island, *S_Shore*=0-2kb 3' of Island, *S_Shelf*=2kb-4kb 3' of Island.
+        - `genes`: The value is a json where each key is a gene that is related to the methylation site. The values for each gene is a list that contains the region of the gene where the methylation site is located. These regions, according to the NCBI RefSeq database, can be: *5UTR*=5' untranslated region between the TSS and ATG start site, *3UTR*=3' untranslated region between stop codon and poly A signal, *exon_#*, *TSS200*=1-200 bp 5' the TSS, *TS1500*=200-1500 bp 5' of the TSS.
+    - Example:
+        - URL: http://localhost:8000/methylation?methylation_site=cg22461615
+        - Response:
+            ```json
+            {
+                "name":"cg22461615",
+                "chromosome_position":"chr4:82900764 [+]",
+                "aliases":[
+                    "cg22461615_TC11"
+                ],
+                "ucsc_cpg_islands":[
+                    {
+                        "cpg_island":"chr4:82900535-82900912",
+                        "relation":"Island"
+                    }
+                ],
+                "genes":{
+                    "THAP9":[
+                        "5UTR",
+                        "exon_1"
+                    ],
+                    "THAP9-AS1":[
+                        "exon_1"
+                    ],
+                    "SEC31A":[
+                        "TSS200"
+                    ]
+                }
+            }
+            ```  
+    *NOTE*: Multiple values of the same gene name indicate splice variants.  
+- Error Response:
+    - Code: 400
+    - Content: error explanation text  
 
 
 ### Diseases

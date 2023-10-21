@@ -393,7 +393,7 @@ class MethylationDetails(APIView):
     def get(self, _request):
         methylation_site = self.request.GET.get('methylation_site')
         if not methylation_site:
-            return Response(status=404, data={"'methylation_site' is mandatory"})
+            return Response(status=400, data={"'methylation_site' is mandatory"})
 
         res = {}
         # search for id in array
