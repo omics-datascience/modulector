@@ -94,15 +94,19 @@ All of the above parameters can be used together! For example, if we wanted to c
 
 ### MiRNA interactions
 
-Receives a miRNA ID (mirbase MIMAT ID or previous ID) and returns a paginated vector. Each vector entry represents a miRNA-Gene interaction.
+Receives a miRNA and/or a gene symbol and returns a paginated vector. Each vector entry represents a miRNA-Gene interaction.  
+If no gene symbol is entered, all mirna interactions are returned. If a mirna is not entered, all gene interactions are returned. If both are entered, the interaction of mirna with the gene is returned.
 
 - URL: `/mirna-interactions`
-- Required query params:
-    - `mirna`: miRNA (miRNA code or Accession ID) to get its interactions with different targets
+- Query params:
+    - `mirna`: miRNA (Accession ID or name in mirBase) to get its interactions with different genes targets.
+    - `gene`: gene symbol to get its interactions with different miRNAs targets.
+    - `score`: numerical score to filter the interactions (only interactions with a score greater than or equal to the parameter value are returned). 
+*NOTE*: mirna or gene are required
 - Functions:
     - Ordering fields: `gene` and `score`
     - Filtering fields: filtering is not available for this service
-    - Searching fields: `gene`
+    - Searching fields: `gene` 
     - Pagination: yes
 - Success Response:
     - Code: 200
@@ -116,7 +120,7 @@ Receives a miRNA ID (mirbase MIMAT ID or previous ID) and returns a paginated ve
         - `sources`: miRNA-Gene interaction sources which publish this interaction. mirDIP score is based on the scores of those sources. This field is an array that contains the interaction score source names.
         - `score_class`: `L` (Low), `M` (Medium), `H` (High) or `V` (Very high)
     - Example:
-        - URL: http://localhost:8000/mirna-interactions?mirna=hsa-miR-891a-5p&search=EGFR
+        - URL: http://localhost:8000/mirna-interactions?mirna=hsa-miR-891a-5p&gene=EGFR
         - Response:
             ```json
             {
@@ -156,8 +160,8 @@ Receives a miRNA ID (mirbase MIMAT ID or previous ID) and returns a paginated ve
             }
             ```  
 - Error Response:
-    - Code: 200
-    - Content: empty paginated response (`count` = 0)
+    - Code: 400
+    - Content: `detail`: error description
 
 
 ### MiRNA target interactions

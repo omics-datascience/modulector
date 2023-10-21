@@ -108,14 +108,50 @@ class MirnaInteractions(generics.ListAPIView):
     search_fields = ['gene']
     handler400 = 'rest_framework.exceptions.bad_request'
 
+    @staticmethod
+    def __get_gene_aliases(gene: str) -> List[str]:
+        """Retrieves the aliases for a gene based on the gene provided"""
+        match_gene = GeneAliases.objects.filter(
+            Q(alias=gene) | Q(gene_symbol=gene)).first()
+        if match_gene is None:
+            return []
+
+        gene_symbol = match_gene.gene_symbol
+        aliases = list(GeneAliases.objects.filter(
+            gene_symbol=gene_symbol).values_list('alias', flat=True).distinct())
+        # Adds the parameter to not omit it in the future search
+        aliases.append(gene)
+        return aliases
+
     def get_queryset(self):
         mirna = self.request.GET.get("mirna")
+        gene = self.request.GET.get("gene")
+        score = self.request.GET.get("score")
 
-        if not mirna:
-            raise ParseError(detail="mirna is obligatory")
+        if score:
+            try:
+                score = float(score)
+                if not 0 <= score <= 1:
+                    raise ParseError(detail="the 'score' value must be between 0 and 1")
+            except ValueError:
+                raise ParseError(detail="'score' must be a numerical value between 0 and 1")
 
-        mirna_aliases = get_mirna_aliases(mirna)
-        return MirnaXGene.objects.filter(mirna__mirna_code__in=mirna_aliases)
+        if not mirna and not gene:
+            raise ParseError(detail="'mirna' or 'gene' are mandatory")
+        elif mirna and not gene: # only mirna
+            mirna_aliases = get_mirna_aliases(mirna)
+            data =  MirnaXGene.objects.filter(mirna__mirna_code__in=mirna_aliases)
+        elif not mirna and gene: # only gene
+            gene_aliases = self.__get_gene_aliases(gene)
+            data = MirnaXGene.objects.filter(gene__in=gene_aliases)
+        else: # mirna and gene
+            # Gets gene aliases
+            gene_aliases = self.__get_gene_aliases(gene)
+            # Gets miRNA aliases
+            mirna_aliases = get_mirna_aliases(mirna)
+            data = MirnaXGene.objects.filter(mirna__mirna_code__in=mirna_aliases, gene__in=gene_aliases)
+
+        return data.filter(score__gte=score) if score else data
 
 
 class MirnaAliasesList(generics.ListAPIView):
