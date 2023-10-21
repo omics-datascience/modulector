@@ -101,7 +101,7 @@ If no gene symbol is entered, all mirna interactions are returned. If a mirna is
 - Query params:
     - `mirna`: miRNA (Accession ID or name in mirBase) to get its interactions with different genes targets.
     - `gene`: gene symbol to get its interactions with different miRNAs targets.
-    - `score`: numerical score to filter the interactions (only interactions with a score greater than or equal to the parameter value are returned). 
+    - `score`: numerical score to filter the interactions (only interactions with a score greater than or equal to the parameter value are returned).  
 *NOTE*: mirna or gene are required
 - Functions:
     - Ordering fields: `gene` and `score`
