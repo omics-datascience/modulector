@@ -58,27 +58,6 @@ def get_limit_parameter(value: Optional[str]) -> int:
         # Returns default in case of non-numeric parameter
         return DEFAULT_PAGE_SIZE
 
-def get_methylation_epic_sites_ids(input_name: str) -> List[str]:
-        """
-        Gets methylation sites from any type of Loci id
-        :param input_name: String to query in the DB (site name)
-        :return: List of ID of Methylation sites from EPIC v2 database
-        """
-        res = MethylationEPIC.objects.filter(Q(ilmnid=input_name) | Q(name=input_name) |
-                                             Q(methyl450_loci=input_name) | Q(methyl27_loci=input_name) |
-                                             Q(epicv1_loci=input_name)).values_list('id', flat=True)
-        return list(res)
-    
-def get_genes_from_methylation_epic_site(input_id: str) -> List[str]:
-    """
-    Gets genes from a specific methylation CpG site
-    :param input_id: String to query in the DB (CpG ID)
-    :return: Gene for the given input
-    """
-    gene = MethylationUCSCRefGene.objects.filter(
-        Q(methylation_epic_v2_ilmnid=input_id)).values_list('ucsc_refgene_name', flat=True)
-    return list(gene)
-
 
 class MirnaTargetInteractions(viewsets.ReadOnlyModelViewSet):
     """Returns a single instance with data about an interaction between a miRNA and a gene
@@ -357,6 +336,29 @@ class MethylationSitesToGenes(APIView):
     """A service that searches a list of CpG methylation site identifiers from different 
     versions of Illumina arrays and returns the gene(s) they belong to."""
 
+    @staticmethod
+    def __get_methylation_epic_sites_ids(input_name: str) -> List[str]:
+        """
+        Gets methylation sites from any type of Loci id
+        :param input_name: String to query in the DB (site name)
+        :return: List of ID of Methylation sites from EPIC v2 database
+        """
+        res = MethylationEPIC.objects.filter(Q(ilmnid=input_name) | Q(name=input_name) |
+                                             Q(methyl450_loci=input_name) | Q(methyl27_loci=input_name) |
+                                             Q(epicv1_loci=input_name)).values_list('id', flat=True)
+        return list(res)
+    
+    @staticmethod
+    def __get_genes_from_methylation_epic_site(input_id: str) -> List[str]:
+        """
+        Gets genes from a specific methylation CpG site
+        :param input_id: String to query in the DB (CpG ID)
+        :return: Gene for the given input
+        """
+        gene = MethylationUCSCRefGene.objects.filter(
+            Q(methylation_epic_v2_ilmnid=input_id)).values_list('ucsc_refgene_name', flat=True)
+        return list(gene)
+
     def post(self, request):
         data = request.data
         if "methylation_sites" not in data:
@@ -370,10 +372,10 @@ class MethylationSitesToGenes(APIView):
         for methylation_name in methylation_sites:
             res[methylation_name] = []
             # For each CpG methylation site passed as a parameter... I look for its Identifier in the version of the EPIC v2 array:
-            epics_ids = get_methylation_epic_sites_ids(methylation_name)
+            epics_ids = self.__get_methylation_epic_sites_ids(methylation_name)
             for site_id in epics_ids:
                 # For each identifier in the EPIC v2 array, I search for the genes involved:
-                genes_list = get_genes_from_methylation_epic_site(
+                genes_list = self.__get_genes_from_methylation_epic_site(
                     site_id)
                 
                 [res[methylation_name].append(
@@ -417,13 +419,6 @@ class MethylationDetails(APIView):
                 res["aliases"].append(epic_data.epicv1_loci)  
             if epic_data.ilmnid and epic_data.ilmnid != epic_data.name:
                 res["aliases"].append(epic_data.ilmnid)
-            
-            # search and loads genes
-            genes_list_with_dup = get_genes_from_methylation_epic_site(epic_data.id)
-            # remove duplicates
-            gene_list = []
-            [gene_list.append(x) for x in genes_list_with_dup if x not in gene_list]
-            res["genes"] = gene_list
 
             # searches and loads for islands relations
             islands_data = MethylationUCSC_CPGIsland.objects.filter(Q(methylation_epic_v2_ilmnid=epic_data.id))
@@ -433,12 +428,12 @@ class MethylationDetails(APIView):
 
             # searches and loads for genes relations
             genes_data = MethylationUCSCRefGene.objects.filter(Q(methylation_epic_v2_ilmnid=epic_data.id))
-            res["relation_to_genes"] = {}
+            res["genes"] = {}
             for gene in genes_data:
-                if gene.ucsc_refgene_name not in res["relation_to_genes"]:
-                    res["relation_to_genes"][gene.ucsc_refgene_name]=[]
-                if gene.ucsc_refgene_group not in res["relation_to_genes"][gene.ucsc_refgene_name]:
-                    res["relation_to_genes"][gene.ucsc_refgene_name].append(gene.ucsc_refgene_group)
+                if gene.ucsc_refgene_name not in res["genes"]:
+                    res["genes"][gene.ucsc_refgene_name]=[]
+                if gene.ucsc_refgene_group not in res["genes"][gene.ucsc_refgene_name]:
+                    res["genes"][gene.ucsc_refgene_name].append(gene.ucsc_refgene_group)
            
             return Response(res)
         else:
