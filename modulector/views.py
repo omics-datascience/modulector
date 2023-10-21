@@ -132,24 +132,28 @@ class MirnaInteractions(generics.ListAPIView):
             try:
                 score = float(score)
                 if not 0 <= score <= 1:
-                    raise ParseError(detail="the 'score' value must be between 0 and 1")
+                    raise ParseError(
+                        detail="the 'score' value must be between 0 and 1")
             except ValueError:
-                raise ParseError(detail="'score' must be a numerical value between 0 and 1")
+                raise ParseError(
+                    detail="'score' must be a numerical value between 0 and 1")
 
         if not mirna and not gene:
             raise ParseError(detail="'mirna' or 'gene' are mandatory")
-        elif mirna and not gene: # only mirna
+        elif mirna and not gene:  # only mirna
             mirna_aliases = get_mirna_aliases(mirna)
-            data =  MirnaXGene.objects.filter(mirna__mirna_code__in=mirna_aliases)
-        elif not mirna and gene: # only gene
+            data = MirnaXGene.objects.filter(
+                mirna__mirna_code__in=mirna_aliases)
+        elif not mirna and gene:  # only gene
             gene_aliases = self.__get_gene_aliases(gene)
             data = MirnaXGene.objects.filter(gene__in=gene_aliases)
-        else: # mirna and gene
+        else:  # mirna and gene
             # Gets gene aliases
             gene_aliases = self.__get_gene_aliases(gene)
             # Gets miRNA aliases
             mirna_aliases = get_mirna_aliases(mirna)
-            data = MirnaXGene.objects.filter(mirna__mirna_code__in=mirna_aliases, gene__in=gene_aliases)
+            data = MirnaXGene.objects.filter(
+                mirna__mirna_code__in=mirna_aliases, gene__in=gene_aliases)
 
         return data.filter(score__gte=score) if score else data
 
@@ -189,7 +193,7 @@ class MirnaCodes(APIView):
             return Response({"detail": "'mirna_codes' is mandatory"}, status=status.HTTP_400_BAD_REQUEST)
 
         mirna_codes = data["mirna_codes"]
-        if type(mirna_codes) != list:
+        if not isinstance(mirna_codes, list):
             return Response({"detail": "'mirna_codes' must be of list type"}, status=status.HTTP_400_BAD_REQUEST)
 
         res = {}
@@ -334,11 +338,11 @@ class MethylationSites(APIView):
             return Response({"detail": "'methylation_sites' is mandatory"}, status=status.HTTP_400_BAD_REQUEST)
 
         methylation_sites = data["methylation_sites"]
-        if type(methylation_sites) != list:
+        if not isinstance(methylation_sites, list):
             return Response({"detail": "'methylation_sites' must be of list type"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Generates a dict with the methylation sites as keys and the result of the query as values.
-        # NOTE: it uses ProcessPoolExecutor to parallelize the queries and not a ThreadPoolExecutor because
+        # note: it uses ProcessPoolExecutor to parallelize the queries and not a ThreadPoolExecutor because
         # the latter has a bug closing Django connections (see https://stackoverflow.com/q/57211476/7058363)
         with ProcessPoolExecutor(max_workers=PROCESS_POOL_WORKERS) as executor:
             res = {
@@ -369,7 +373,7 @@ class MethylationSitesFinder(APIView):
 
 
 class MethylationSitesToGenes(APIView):
-    """A service that searches a list of CpG methylation site identifiers from different 
+    """A service that searches a list of CpG methylation site identifiers from different
     versions of Illumina arrays and returns the gene(s) they belong to."""
 
     @staticmethod
@@ -383,7 +387,7 @@ class MethylationSitesToGenes(APIView):
                                              Q(methyl450_loci=input_name) | Q(methyl27_loci=input_name) |
                                              Q(epicv1_loci=input_name)).values_list('id', flat=True)
         return list(res)
-    
+
     @staticmethod
     def __get_genes_from_methylation_epic_site(input_id: str) -> List[str]:
         """
@@ -401,7 +405,7 @@ class MethylationSitesToGenes(APIView):
             return Response({"detail": "'methylation_sites' is mandatory"}, status=status.HTTP_400_BAD_REQUEST)
 
         methylation_sites = data["methylation_sites"]
-        if type(methylation_sites) != list:
+        if not isinstance(methylation_sites, list):
             return Response({"detail": "'methylation_sites' must be of list type"}, status=status.HTTP_400_BAD_REQUEST)
 
         res = {}
@@ -413,7 +417,7 @@ class MethylationSitesToGenes(APIView):
                 # For each identifier in the EPIC v2 array, I search for the genes involved:
                 genes_list = self.__get_genes_from_methylation_epic_site(
                     site_id)
-                
+
                 [res[methylation_name].append(
                     gen) for gen in genes_list if gen not in res[methylation_name]]
 
@@ -421,6 +425,7 @@ class MethylationSitesToGenes(APIView):
                 del res[methylation_name]
 
         return Response(res)
+
 
 class MethylationDetails(APIView):
     """Service that obtains information about a specific CpG methylation site from
@@ -433,17 +438,20 @@ class MethylationDetails(APIView):
 
         res = {}
         # search for id in array
-        epic_data = MethylationEPIC.objects.filter(Q(name=methylation_site)).first()
-        
+        epic_data = MethylationEPIC.objects.filter(
+            Q(name=methylation_site)).first()
+
         if epic_data:
             # load name to response
             res["name"] = epic_data.name
 
             # load chomosomic data
             if epic_data.strand_fr == "F":
-                res["chromosome_position"] = epic_data.chr +":"+ str(epic_data.mapinfo) + " [+]"
+                res["chromosome_position"] = epic_data.chr + \
+                    ":" + str(epic_data.mapinfo) + " [+]"
             elif epic_data.strand_fr == "R":
-                res["chromosome_position"] = epic_data.chr +":"+ str(epic_data.mapinfo) + " [-]"
+                res["chromosome_position"] = epic_data.chr + \
+                    ":" + str(epic_data.mapinfo) + " [-]"
 
             # load aliases to response
             res["aliases"] = []
@@ -452,28 +460,32 @@ class MethylationDetails(APIView):
             if epic_data.methyl450_loci and epic_data.methyl450_loci != epic_data.name:
                 res["aliases"].append(epic_data.methyl450_loci)
             if epic_data.epicv1_loci and epic_data.epicv1_loci != epic_data.name:
-                res["aliases"].append(epic_data.epicv1_loci)  
+                res["aliases"].append(epic_data.epicv1_loci)
             if epic_data.ilmnid and epic_data.ilmnid != epic_data.name:
                 res["aliases"].append(epic_data.ilmnid)
 
             # searches and loads for islands relations
-            islands_data = MethylationUCSC_CPGIsland.objects.filter(Q(methylation_epic_v2_ilmnid=epic_data.id))
+            islands_data = MethylationUCSC_CPGIsland.objects.filter(
+                Q(methylation_epic_v2_ilmnid=epic_data.id))
             res["ucsc_cpg_islands"] = []
             for island in islands_data:
-                res["ucsc_cpg_islands"].append({"cpg_island": island.ucsc_cpg_island_name, "relation": island.relation_to_ucsc_cpg_island})
+                res["ucsc_cpg_islands"].append(
+                    {"cpg_island": island.ucsc_cpg_island_name, "relation": island.relation_to_ucsc_cpg_island})
 
             # searches and loads for genes relations
-            genes_data = MethylationUCSCRefGene.objects.filter(Q(methylation_epic_v2_ilmnid=epic_data.id))
+            genes_data = MethylationUCSCRefGene.objects.filter(
+                Q(methylation_epic_v2_ilmnid=epic_data.id))
             res["genes"] = {}
             for gene in genes_data:
                 if gene.ucsc_refgene_name not in res["genes"]:
-                    res["genes"][gene.ucsc_refgene_name]=[]
+                    res["genes"][gene.ucsc_refgene_name] = []
                 if gene.ucsc_refgene_group not in res["genes"][gene.ucsc_refgene_name]:
-                    res["genes"][gene.ucsc_refgene_name].append(gene.ucsc_refgene_group)
-           
+                    res["genes"][gene.ucsc_refgene_name].append(
+                        gene.ucsc_refgene_group)
+
             return Response(res)
         else:
-            return Response(status=400, data={ methylation_site + " is not a valid methylation site"})
+            return Response(status=400, data={methylation_site + " is not a valid methylation site"})
 
 
 def index(request):
