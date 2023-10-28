@@ -59,58 +59,58 @@ def get_limit_parameter(value: Optional[str]) -> int:
         return DEFAULT_PAGE_SIZE
 
 
-class MirnaTargetInteractions(viewsets.ReadOnlyModelViewSet):
-    """Returns a single instance with data about an interaction between a miRNA and a gene
-    (mirna-target-interactions endpoint)"""
-    serializer_class = MirnaXGenSerializer
-    handler400 = 'rest_framework.exceptions.bad_request'
+# class MirnaTargetInteractions(viewsets.ReadOnlyModelViewSet):
+#     """Returns a single instance with data about an interaction between a miRNA and a gene
+#     (mirna-target-interactions endpoint)"""
+#     serializer_class = MirnaXGenSerializer
+#     handler400 = 'rest_framework.exceptions.bad_request'
 
-    @staticmethod
-    def __get_gene_aliases(gene: str) -> List[str]:
-        """Retrieves the aliases for a gene based on the gene provided"""
-        match_gene = GeneAliases.objects.filter(
-            Q(alias=gene) | Q(gene_symbol=gene)).first()
-        if match_gene is None:
-            return []
+#     @staticmethod
+#     def __get_gene_aliases(gene: str) -> List[str]:
+#         """Retrieves the aliases for a gene based on the gene provided"""
+#         match_gene = GeneAliases.objects.filter(
+#             Q(alias=gene) | Q(gene_symbol=gene)).first()
+#         if match_gene is None:
+#             return []
 
-        gene_symbol = match_gene.gene_symbol
-        aliases = list(GeneAliases.objects.filter(
-            gene_symbol=gene_symbol).values_list('alias', flat=True).distinct())
-        # Adds the parameter to not omit it in the future search
-        aliases.append(gene)
-        return aliases
+#         gene_symbol = match_gene.gene_symbol
+#         aliases = list(GeneAliases.objects.filter(
+#             gene_symbol=gene_symbol).values_list('alias', flat=True).distinct())
+#         # Adds the parameter to not omit it in the future search
+#         aliases.append(gene)
+#         return aliases
 
-    def list(self, request, *args, **kwargs):
-        mirna = self.request.GET.get("mirna")
-        gene = self.request.GET.get("gene")
+#     def list(self, request, *args, **kwargs):
+#         mirna = self.request.GET.get("mirna")
+#         gene = self.request.GET.get("gene")
 
-        if not mirna or not gene:
-            raise ParseError(detail="mirna and gene are obligatory")
+#         if not mirna or not gene:
+#             raise ParseError(detail="mirna and gene are obligatory")
 
-        # Gets gene aliases
-        gene_aliases = self.__get_gene_aliases(gene)
+#         # Gets gene aliases
+#         gene_aliases = self.__get_gene_aliases(gene)
 
-        # Gets miRNA aliases
-        mirna_aliases = get_mirna_aliases(mirna)
-        instance = generics.get_object_or_404(
-            MirnaXGene, mirna__mirna_code__in=mirna_aliases, gene__in=gene_aliases)
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
+#         # Gets miRNA aliases
+#         mirna_aliases = get_mirna_aliases(mirna)
+#         instance = generics.get_object_or_404(
+#             MirnaXGene, mirna__mirna_code__in=mirna_aliases, gene__in=gene_aliases)
+#         serializer = self.get_serializer(instance)
+#         return Response(serializer.data)
 
 
-class MirnaInteractions(generics.ListAPIView):
+class MirnaTargetInteractions(generics.ListAPIView):
     """Returns a paginated response with all the interactions of a specific miRNA (mirna-interactions endpoint)"""
     serializer_class = MirnaXGenSerializer
     pagination_class = StandardResultsSetPagination
-    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
+    filter_backends = [filters.OrderingFilter]
     ordering_fields = ['gene', 'score']
     ordering = ['id']
-    search_fields = ['gene']
     handler400 = 'rest_framework.exceptions.bad_request'
 
     @staticmethod
     def __get_gene_aliases(gene: str) -> List[str]:
         """Retrieves the aliases for a gene based on the gene provided"""
+        print()
         match_gene = GeneAliases.objects.filter(
             Q(alias=gene) | Q(gene_symbol=gene)).first()
         if match_gene is None:

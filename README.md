@@ -11,7 +11,6 @@ Modulector is a performing open platform that provides information about miRNAs 
     - [Pagination](#pagination)
     - [Combining functions](#combining-functions)
   - [Services](#services)
-    - [MiRNA interactions](#mirna-interactions)
     - [MiRNA target interactions](#mirna-target-interactions)
     - [MiRNA details](#mirna-details)
     - [MiRNA aliases](#mirna-aliases)
@@ -92,16 +91,16 @@ All of the above parameters can be used together! For example, if we wanted to c
 
 ## Services
 
-### MiRNA interactions
+### MiRNA target interactions
 
 Receives a miRNA and/or a gene symbol and returns a paginated vector. Each vector entry represents a miRNA-Gene interaction.  
 If no gene symbol is entered, all mirna interactions are returned. If a mirna is not entered, all gene interactions are returned. If both are entered, the interaction of mirna with the gene is returned.
 
-- URL: `/mirna-interactions`
+- URL: `/mirna-target-interactions`
 - Query params:
     - `mirna`: miRNA (Accession ID or name in mirBase) to get its interactions with different genes targets.
     - `gene`: gene symbol to get its interactions with different miRNAs targets.
-    - `score`: numerical score to filter the interactions (only interactions with a score greater than or equal to the parameter value are returned).  
+    - `score`: numerical score to filter the interactions (only interactions with a score greater than or equal to the parameter value are returned). The value of this score is provided by the mirDip database.  
 *NOTE*: mirna or gene are required
 - Functions:
     - Ordering fields: `gene` and `score`
@@ -116,11 +115,11 @@ If no gene symbol is entered, all mirna interactions are returned. If a mirna is
         - `gene`: target gene.
         - `score`: interaction score (according mirDIP).
         - `source_name`: database from which the interaction was extracted.
-        - `pubmeds`: array of pubmed for the miRNA-gene interaction (according to mirTaRBase).
+        - `pubmeds`: array of pubmed for the miRNA-gene interaction (according to mirTaRBase). 
         - `sources`: miRNA-Gene interaction sources which publish this interaction. mirDIP score is based on the scores of those sources. This field is an array that contains the interaction score source names.
         - `score_class`: `L` (Low), `M` (Medium), `H` (High) or `V` (Very high)
     - Example:
-        - URL: http://localhost:8000/mirna-interactions?mirna=hsa-miR-891a-5p&gene=EGFR
+        - URL: http://localhost:8000/mirna-target-interactions?mirna=hsa-miR-891a-5p&gene=EGFR
         - Response:
             ```json
             {
@@ -162,56 +161,6 @@ If no gene symbol is entered, all mirna interactions are returned. If a mirna is
 - Error Response:
     - Code: 400
     - Content: `detail`: error description
-
-
-### MiRNA target interactions
-
-Receives a miRNA ID (mirbase MIMAT ID or previous ID) and a gene returns the information about its interaction, including related publications and the interaction score.
-
-- URL: `/mirna-target-interactions`
-- Required query params:
-    - `mirna`: miRNA identifier (miRNA code or Accession ID)
-    - `gene`: gene symbol
-- Functions:
-    - Ordering fields: ordering is not available for this service
-    - Filtering fields: filtering is not available for this service
-    - Searching fields: searching is not available for this service
-    - Pagination: no
-- Success Response:
-    - Code: 200
-    - Content:
-        - `id`: internal ID of the interaction.
-        - `mirna`: miRNA ID (mirbase MIMAT id or previous ID). The received one as query param.
-        - `gene`: target gene.
-        - `score`: interaction score (according mirDIP).
-        - `source_name`: database from which the interaction was extracted.
-        - `pubmeds`: array of pubmed for the miRNA-gene interaction (according to mirTaRBase).
-        - `sources`: miRNA-Gene interaction sources which publish this interaction. mirDIP score is based on the scores of those sources. This field is an array that contains the interaction score source names.
-        - `score_class`: `L` (Low), `M` (Medium), `H` (High) or `V` (Very high)
-    - Example:
-        - URL: http://localhost:8000/mirna-target-interactions?mirna=hsa-miR-3605-3p&gene=MAU2
-        - Response:
-            ```json
-            {
-                "id":635935124,
-                "mirna":"hsa-miR-3605-3p",
-                "gene":"MAU2",
-                "score":0.0575,
-                "source_name":"mirdip",
-                "pubmeds":[
-                    
-                ],
-                "sources":[
-                    "MirAncesTar",
-                    "MiRNATIP",
-                    "RNA22"
-                ],
-                "score_class":"L"
-            }
-            ```  
-- Error Response:
-    - Code: 404
-    - Content: -
 
 
 ### MiRNA details
