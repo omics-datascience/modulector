@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 
 # Modulector version
-VERSION: str = '2.0.3'
+VERSION: str = '2.1.0'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -53,7 +53,8 @@ INSTALLED_APPS = [
 ]
 
 CRONJOBS = [
-    ('0 0 * * SAT', 'modulector.pubmed_job.execute', '>> ' + BASE_DIR + '/jobs_log.log')
+    ('0 0 * * SAT', 'modulector.pubmed_job.execute',
+     '>> ' + BASE_DIR + '/jobs_log.log')
 ]
 CRONTAB_LOCK_JOBS = True
 ALLOW_PARALLEL_RUNS = False
@@ -80,8 +81,7 @@ ROOT_URLCONF = 'ModulectorBackend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
-        ,
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
