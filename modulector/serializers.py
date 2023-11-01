@@ -13,7 +13,8 @@ from modulector.utils import link_builder
 class MirnaColumnsSerializer(serializers.ModelSerializer):
     class Meta:
         model = MirnaColumns
-        fields = ['id', 'position', 'column_name', 'field_to_map', 'mirna_source_id']
+        fields = ['id', 'position', 'column_name',
+                  'field_to_map', 'mirna_source_id']
 
 
 class MirnaSourceSerializer(serializers.ModelSerializer):
@@ -37,25 +38,30 @@ class MirnaSourceSerializer(serializers.ModelSerializer):
 
 
 class MirnaXGenSerializer(serializers.ModelSerializer):
-    source_name = serializers.CharField(read_only=True, source='mirna_source.name')
+    source_name = serializers.CharField(
+        read_only=True, source='mirna_source.name')
     mirna = serializers.CharField(read_only=True, source='mirna.mirna_code')
-    score = serializers.FloatField(read_only=True)
     pubmeds = serializers.SerializerMethodField(method_name='get_pubmeds')
     sources = serializers.SerializerMethodField(method_name='get_sources')
 
     class Meta:
         model = MirnaXGene
-        fields = ['id', 'mirna', 'gene', 'score', 'source_name', 'pubmeds', 'sources', 'score_class']
+        fields = ['id', 'mirna', 'gene', 'score',
+                  'source_name', 'pubmeds', 'sources', 'score_class']
 
-    @staticmethod
-    def get_pubmeds(mirna_gene_interaction: MirnaXGene) -> Set[str]:
+    def get_pubmeds(self, mirna_gene_interaction: MirnaXGene) -> Set[str]:
         """
         Gets a list of related Pubmed URLs to a miRNA-Gene interaction
         :param mirna_gene_interaction: miRNA-Gene interaction
         :return: List of Pubmed URLs
         """
         pubmed_urls: Set[str] = set()
-        pubmed_urls.update(list(mirna_gene_interaction.pubmed.values_list('pubmed_url', flat=True)))
+
+        if not self.context["include_pubmeds"]:
+            return pubmed_urls
+
+        pubmed_urls.update(
+            list(mirna_gene_interaction.pubmed.values_list('pubmed_url', flat=True)))
         mirna = mirna_gene_interaction.mirna.mirna_code
         gene = mirna_gene_interaction.gene
         term = pubmed_service.build_search_term(mirna, gene)
@@ -94,7 +100,8 @@ class MirnaAliasesSerializer(serializers.ModelSerializer):
 
 
 class MirnaSerializer(serializers.ModelSerializer):
-    mirbase_accession_id = serializers.CharField(read_only=True, source='mirbase_accession_id.mirbase_accession_id')
+    mirbase_accession_id = serializers.CharField(
+        read_only=True, source='mirbase_accession_id.mirbase_accession_id')
     links = serializers.SerializerMethodField(method_name='get_links')
     aliases = serializers.SerializerMethodField(method_name='get_aliases')
 

@@ -101,6 +101,7 @@ If no gene symbol is entered, all mirna interactions are returned. If a mirna is
     - `mirna`: miRNA (Accession ID or name in mirBase) to get its interactions with different genes targets.
     - `gene`: gene symbol to get its interactions with different miRNAs targets.
     - `score`: numerical score to filter the interactions (only interactions with a score greater than or equal to the parameter value are returned). The value of this score is provided by the mirDip database.  
+    - `include_pubmeds`: if its value is 'true', the endpoint also returns a list of links to Pubmed where the mirnas are related to the genes (this may affect Modulector's response time). Default is 'false'.
 *NOTE*: mirna or gene are required
 - Functions:
     - Ordering fields: `gene` and `score`
@@ -119,7 +120,7 @@ If no gene symbol is entered, all mirna interactions are returned. If a mirna is
         - `sources`: miRNA-Gene interaction sources which publish this interaction. mirDIP score is based on the scores of those sources. This field is an array that contains the interaction score source names.
         - `score_class`: `L` (Low), `M` (Medium), `H` (High) or `V` (Very high)
     - Example:
-        - URL: http://localhost:8000/mirna-target-interactions?mirna=hsa-miR-891a-5p&gene=EGFR
+        - URL: http://localhost:8000/mirna-target-interactions?mirna=hsa-miR-891a-5p&gene=EGFR&include_pubmeds=true
         - Response:
             ```json
             {
@@ -139,14 +140,7 @@ If no gene symbol is entered, all mirna interactions are returned. If a mirna is
                             "https://pubmed.ncbi.nlm.nih.gov/8948606",
                             "https://pubmed.ncbi.nlm.nih.gov/5642539",
                             "https://pubmed.ncbi.nlm.nih.gov/9361765",
-                            "https://pubmed.ncbi.nlm.nih.gov/4895700",
-                            "https://pubmed.ncbi.nlm.nih.gov/5877664",
-                            "https://pubmed.ncbi.nlm.nih.gov/9421182",
-                            "https://pubmed.ncbi.nlm.nih.gov/6998431",
-                            "https://pubmed.ncbi.nlm.nih.gov/7053609",
-                            "https://pubmed.ncbi.nlm.nih.gov/8544338",
-                            "https://pubmed.ncbi.nlm.nih.gov/9253007",
-                            "https://pubmed.ncbi.nlm.nih.gov/10008540"
+                            "https://pubmed.ncbi.nlm.nih.gov/4895700"
                         ],
                         "sources":[
                             "MirAncesTar",
