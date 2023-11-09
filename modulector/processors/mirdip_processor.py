@@ -20,7 +20,7 @@ logger.setLevel(logging.INFO)
 
 parent_dir = pathlib.Path(__file__).parent.absolute().parent
 
-mirna_dict = dict()
+mirna_dict = {}
 
 
 def process():

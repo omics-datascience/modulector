@@ -40,7 +40,7 @@ def process():
     mirna_table = Mirna._meta.db_table
     update_template = "UPDATE {} set mirna_sequence= '{}' where mirna_code in {}"
 
-    mimat_map = dict()
+    mimat_map = {}
     # loading files
     #data = pd.read_excel(io=file_path, usecols=[0, 1, 2], names=['mimat', 'mirna', 'sequence'])
     data = pd.read_csv(file_path, usecols=[0, 1, 2], names=['mimat', 'mirna', 'sequence'])

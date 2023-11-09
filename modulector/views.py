@@ -1,16 +1,17 @@
 import re
 from concurrent.futures import ProcessPoolExecutor
-from typing import List, Optional
+from typing import List, Optional, Final
 from django.conf import settings
 from django.db.models.query_utils import Q
-from django.http import Http404
+from django.http import Http404, HttpRequest
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, generics, filters, viewsets
 from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from modulector.models import MethylationUCSC_CPGIsland, MethylationUCSCRefGene, MirnaXGene, Mirna, MirbaseIdMirna, MirnaDisease, MirnaDrug, GeneAliases, MethylationEPIC
+from modulector.models import MethylationUCSC_CPGIsland, MethylationUCSCRefGene, MirnaXGene, Mirna, MirbaseIdMirna, \
+    MirnaDisease, MirnaDrug, GeneAliases, MethylationEPIC
 from modulector.pagination import StandardResultsSetPagination
 from modulector.serializers import MirnaXGenSerializer, MirnaSerializer, \
     MirnaAliasesSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer, get_mirna_from_accession, \
@@ -20,13 +21,13 @@ from modulector.services import subscription_service
 regex = re.compile(r'-\d[a-z]')
 
 # Default page size for requests
-DEFAULT_PAGE_SIZE: int = 50
+DEFAULT_PAGE_SIZE: Final[int] = 50
 
 # Maximum page size for requests
-MAX_PAGE_SIZE: int = 3000
+MAX_PAGE_SIZE: Final[int] = 3000
 
 # Number of processes to use in Pool
-PROCESS_POOL_WORKERS = settings.PROCESS_POOL_WORKERS
+PROCESS_POOL_WORKERS: Final[int] = settings.PROCESS_POOL_WORKERS
 
 
 def get_methylation_epic_sites_names(input_id: str) -> List[str]:
@@ -71,7 +72,6 @@ class MirnaTargetInteractions(generics.ListAPIView):
     @staticmethod
     def __get_gene_aliases(gene: str) -> List[str]:
         """Retrieves the aliases for a gene based on the gene provided"""
-        print()
         match_gene = GeneAliases.objects.filter(
             Q(alias=gene) | Q(gene_symbol=gene)).first()
         if match_gene is None:
@@ -85,9 +85,10 @@ class MirnaTargetInteractions(generics.ListAPIView):
         return aliases
 
     def get_serializer_context(self):
-        include_pubmeds = self.request.GET.get("include_pubmeds") == "true"
         context = super(MirnaTargetInteractions, self).get_serializer_context()
-        context.update({'include_pubmeds': include_pubmeds})
+
+        include_pubmeds = self.request.GET.get("include_pubmeds") == "true"
+        context['include_pubmeds'] = include_pubmeds
         return context
 
     def get_queryset(self):
@@ -378,7 +379,8 @@ class MethylationSitesToGenes(APIView):
         res = {}
         for methylation_name in methylation_sites:
             res[methylation_name] = []
-            # For each CpG methylation site passed as a parameter... I look for its Identifier in the version of the EPIC v2 array:
+            # For each CpG methylation site passed as a parameter... I look for its Identifier in the version of
+            # the EPIC v2 array:
             epics_ids = self.__get_methylation_epic_sites_ids(methylation_name)
             for site_id in epics_ids:
                 # For each identifier in the EPIC v2 array, I search for the genes involved:
@@ -409,10 +411,10 @@ class MethylationDetails(APIView):
             Q(name=methylation_site)).first()
 
         if epic_data:
-            # load name to response
+            # Loads name to response
             res["name"] = epic_data.name
 
-            # load chomosomic data
+            # Loads chromosome data
             if epic_data.strand_fr == "F":
                 res["chromosome_position"] = epic_data.chr + \
                     ":" + str(epic_data.mapinfo) + " [+]"
@@ -455,5 +457,6 @@ class MethylationDetails(APIView):
             return Response(status=400, data={methylation_site + " is not a valid methylation site"})
 
 
-def index(request):
+def index(request: HttpRequest):
+    """Returns the index.html page."""
     return render(request, 'index.html', {'version': settings.VERSION})

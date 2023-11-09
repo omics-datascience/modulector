@@ -1,11 +1,8 @@
 import logging
 from typing import List, Optional, Dict, Set
-
 from rest_framework import serializers
-
 from ModulectorBackend.settings import USE_PUBMED_API, PUBMED_API_TIMEOUT
-from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrug, \
-    GeneAliases
+from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrug
 from modulector.services import url_service, pubmed_service
 from modulector.utils import link_builder
 
@@ -28,12 +25,15 @@ class MirnaSourceSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         columns = validated_data.pop('columns')
         source = MirnaSource.objects.create(**validated_data)
+
         column_serializer = MirnaColumnsSerializer(many=True)
         for column in columns:
             column['mirna_source_id'] = source.id
+
         self.columns = column_serializer.create(columns)
         for column in self.columnsCharField:
             source.mirnacolumns.add(column)
+
         return source
 
 
@@ -62,6 +62,7 @@ class MirnaXGenSerializer(serializers.ModelSerializer):
 
         pubmed_urls.update(
             list(mirna_gene_interaction.pubmed.values_list('pubmed_url', flat=True)))
+
         mirna = mirna_gene_interaction.mirna.mirna_code
         gene = mirna_gene_interaction.gene
         term = pubmed_service.build_search_term(mirna, gene)
@@ -69,12 +70,11 @@ class MirnaXGenSerializer(serializers.ModelSerializer):
             try:
                 api_pubmeds = pubmed_service.query_parse_and_build_pumbeds(term=term, mirna=mirna,
                                                                            gene=gene, timeout=PUBMED_API_TIMEOUT)
-                for pubmed_id in api_pubmeds:
-                    url = link_builder.build_pubmed_url(pubmed_id)
-                    pubmed_urls.add(url)
+
+                pubmed_urls.update([link_builder.build_pubmed_url(pubmed_id) for pubmed_id in api_pubmeds])
             except Exception as ex:
                 # we only handle exceptions in this case
-                logging.error('Errr getting PubMeds:')
+                logging.error('Error getting PubMeds:')
                 logging.exception(ex)
                 return set()
 
@@ -112,9 +112,9 @@ class MirnaSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_links(mirna: Mirna) -> List[Dict]:
         """
-        Gets a list of sources links for a specific miRNA
-        :param mirna: miRNA object
-        :return: List of sources links
+        Gets a list of sources links for a specific miRNA.
+        :param mirna: miRNA object.
+        :return: List of sources links.
         """
         mirbase_id_obj = mirna.mirbase_accession_id
         if mirbase_id_obj is not None:
