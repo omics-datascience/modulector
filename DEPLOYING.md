@@ -127,23 +127,17 @@ That command will create a compressed file with the database dump inside.
 
 ### Import
 
-You can use set Modulector DB in three ways.
+You can use set Modulector DB in two ways.
 
 
 ### Importing an existing database dump (recommended)
 
-1. Check that the service in your `docker-compose.yml` that uses the `omicsdatascience/modulector-db` image is commented and uncomment the service that uses `postgres` image.
-1. Start up a PostgreSQL service. You can use the same service listed in the `docker-compose.dev.yml` file. 
+1. Start up a PostgreSQL service. You can use the same service listed in the `docker-compose.dev.yml` file. Run `docker compose -f docker-compose.dev.yml up -d db` to start the DB service. 
 1. **Optional but recommended (you can omit these steps if it's the first time you are deploying Modulector)**: due to major changes, it's probably that an import thrown several errors when importing. To prevent that you could do the following steps before doing the importation:
     1. Drop all the tables from the DB: `docker exec -i [name of the DB container] psql postgres -U modulector -c "DROP DATABASE modulector;"`
     1. Create an empty database: `docker exec -i [name of the DB container] psql postgres -U modulector -c "CREATE DATABASE modulector;"`
 1. Download `.sql.gz` from [Modulector releases pages](https://github.com/omics-datascience/modulector/releases) or use your own export file.
 1. Restore the db: `zcat modulector.sql.gz | docker exec -i [name of the DB container] psql modulector -U modulector`. This command will restore the database using a compressed dump as source, **keep in mind that could take several minutes to finish the process**.
-
-
-### Using official Docker image
-
-You can just use the [modulector-db][modulector-db-docker] and avoid all kind of importations steps. This is the default setting in `docker-compose_dist.yml`. This is a good method if you want to avoid having to set the database from scratch. But keep in mind that **initialization times can take many minutes, so it is NOT recommended for use in production**, in the latter case it is recommended to use the method described above.
 
 
 ### Regenerating the data manually
@@ -190,5 +184,4 @@ When we notify user about updates of pubmeds they are subscribed to we interact 
 For cron jobs we use the following [library](https://github.com/kraiz/django-crontab). In our settings file we configured our cron jobs inside the `CRONJOBS = []`
 
 
-[modulector-db-docker]: https://hub.docker.com/r/omicsdatascience/modulector-db
 [mirbase-download-page]: https://www.mirbase.org/ftp.shtml

@@ -59,7 +59,7 @@ class MirnaXGenSerializer(serializers.ModelSerializer):
         mirna = mirna_gene_interaction.mirna.mirna_code
         gene = mirna_gene_interaction.gene
         term = pubmed_service.build_search_term(mirna, gene)
-        if USE_PUBMED_API:  # we check if the api call is enabled in the settings
+        if USE_PUBMED_API:  # Checks if the api call is enabled in the settings
             try:
                 api_pubmeds = pubmed_service.query_parse_and_build_pumbeds(term=term, mirna=mirna,
                                                                            gene=gene, timeout=PUBMED_API_TIMEOUT)

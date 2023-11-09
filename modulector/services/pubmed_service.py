@@ -1,9 +1,8 @@
 import logging
 import sys
+from typing import Optional
 from xml.etree import ElementTree
-
 import requests
-
 from ModulectorBackend.settings import DEFAULT_FROM_EMAIL, NCBI_API_KEY
 from modulector.models import Pubmed
 
@@ -15,29 +14,23 @@ email = DEFAULT_FROM_EMAIL
 search_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/' \
              'esearch.fcgi?db=pmc&term={}&tool={}&email={}&api_key=' + NCBI_API_KEY
 
-pubmed_api_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id={}&retmode=json&tool={}&email={}' \
-                 '&api_key=' + NCBI_API_KEY
+pubmed_api_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id={}&retmode=json&tool={}'\
+                 '&email={}&api_key=' + NCBI_API_KEY
 
 
 # pubmed_api_url = 'http://localhost:3000/?db=pubmed&id={}&retmode=json&tool={}&email={}' \
 #                '&api_key=' + NCBI_API_KEY
 
 
-def build_search_term(mirna, gene):
-    term = ''
-    if gene:
-        term = mirna + ' AND ' + gene
-    else:
-        term = mirna
-    return term
+def build_search_term(mirna: str, gene: str) -> str:
+    """Generates an NCBI search term for a given miRNA and gene."""
+    return mirna + ' AND ' + gene if gene else mirna
 
 
-def query_parse_and_build_pumbeds(term, mirna, gene, timeout):
+def query_parse_and_build_pumbeds(term: str, mirna: str, gene: str, timeout: Optional[int]):
     try:
-        if timeout:
-            response = requests.get(search_url.format(term, tool, email), timeout=timeout)
-        else:
-            response = requests.get(search_url.format(term, tool, email))
+        response = requests.get(search_url.format(term, tool, email), timeout=timeout)
+
         if response.status_code == 200:
             pubmed_ids = set()
             xml = ElementTree.fromstring(response.text)
@@ -45,9 +38,11 @@ def query_parse_and_build_pumbeds(term, mirna, gene, timeout):
                 if child.tag == 'IdList':
                     for id_tag in list(child):
                         pubmed_ids.add(int(id_tag.text))
+
             query = Pubmed.objects.filter(mirna_code=mirna)
             if gene:
                 query = query.filter(gene=gene)
+
             result = query.values('pubmed_id')
             for value in result:
                 pubmed_ids.add(int(value['pubmed_id']))

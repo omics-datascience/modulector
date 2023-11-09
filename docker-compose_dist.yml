@@ -10,7 +10,7 @@ services:
         # Uncomment this to add your custom config
         # command: postgres -c 'config_file=/etc/postgresql/postgresql.conf'
         environment:
-            # IMPORTANT: these three params must be the same than POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_DB
+            # IMPORTANT: these three params must be the same as POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_DB
             # below in 'web' service respectively
             POSTGRES_USER: 'modulector'
             POSTGRES_PASSWORD: 'modulector'
@@ -19,14 +19,6 @@ services:
             - postgres_data:/var/lib/postgresql/data/
             # Uncomment this to add your custom config
             # - ./config/postgres/postgres.conf:/etc/postgresql/postgresql.conf
-
-    # Uncomment this if you want to use the DB image (start with a filled DB the startup time is very slow)
-    #PostgreSQL
-    #db_modulector:
-    #    image: omicsdatascience/modulector-db:2.0.0
-    #    # Uncomment this to add your custom config
-    #    volumes:
-    #       #    - ./config/postgres/postgres.conf:/etc/postgresql/postgresql.conf
 
     # Django Proxy Server
     nginx_modulector:
@@ -48,7 +40,7 @@ services:
         environment:
             # Django
             DJANGO_SETTINGS_MODULE: 'ModulectorBackend.settings_prod'
-            POSTGRES_HOST: 'db_modulector' # Name of the modulector-db service previously defined
+            POSTGRES_HOST: 'db_modulector' # Name of the modulector DB service previously defined
 
             # CSRF. Django 4.x need this.
             # Hosts separated by comma ('http://', 'https://' prefixes are mandatory)
