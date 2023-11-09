@@ -6,8 +6,8 @@ django-generate-secret-key==1.0.2
 django-stubs==4.2.6
 djangorestframework==3.14.0
 mypy==1.6.1
-pandas==2.0.2
+pandas==2.1.2
 psycopg2-binary==2.9.9
 requests==2.31.0
-fasta_reader==3.0.1
-tqdm==4.65.0
+fasta_reader==3.0.2
+tqdm==4.66.1
