@@ -14,6 +14,8 @@ class DatasetSeparator(models.TextChoices):
 
 # Modelos para Methylation
 class MethylationEPIC(models.Model):
+    id = models.IntegerField(
+        primary_key=True, blank=False, null=False, db_index=True)
     ilmnid = models.CharField(
         max_length=25, blank=False, null=False, db_index=True)
     name = models.CharField(max_length=15, blank=False,
@@ -106,9 +108,9 @@ class MirnaColumns(models.Model):
 
 
 class MirnaXGene(models.Model):
-    mirna = models.ForeignKey(Mirna, on_delete=models.CASCADE)
-    gene = models.CharField(max_length=50)
-    score = models.DecimalField(max_digits=20, decimal_places=4)
+    mirna = models.ForeignKey(Mirna, on_delete=models.CASCADE, db_index=True)
+    gene = models.CharField(max_length=50, db_index=True)
+    score = models.DecimalField(max_digits=20, decimal_places=4, db_index=True)
     mirna_source = models.ForeignKey(MirnaSource, on_delete=models.CASCADE)
     sources = models.CharField(max_length=500, null=True)
     score_class = models.CharField(max_length=3, null=True)
