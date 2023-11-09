@@ -22,7 +22,7 @@ def notify():
         tries = get_tries()
         tries = tries + 1
         headers = {'Content-Type': 'application/json'}
-        message = "Modulector: Health check failed {} times.".format(tries)
+        message = f"Modulector: Health check failed {tries} times."
         if tries == 3:
             message = message + " The container has been marked as unhealthy."
             set_tries(0)

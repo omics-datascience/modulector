@@ -76,7 +76,7 @@ def execute():
             # Retrieve all main subscriptions and iterates the items
             for sub in Subscription.objects.all():
                 subscription_items = SubscriptionItem.objects.filter(subscription=sub)
-                logger.info('Subscriptions {}'.format(subscription_items))
+                logger.info(f'Subscriptions {subscription_items}')
 
                 mail_rows = []
                 for subscription_item in subscription_items:
