@@ -25,7 +25,7 @@ def process():
 
 def load_translations():
     df = pd.read_csv(filepath_or_buffer=path, delimiter="\t")
-    symbol_dic = dict()
+    symbol_dic = {}
     for index, item in df.iterrows():
         ref_seq = item["RNA"].split(".")[0]
         symbol = item["Symbol"]

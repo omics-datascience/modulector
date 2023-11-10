@@ -29,17 +29,11 @@ The entire contributing process consists in the following steps:
     1. `python3 -m venv venv`
     1. `source venv/bin/activate` (this command must be run every time you want to start the Django server, otherwise we won't have the dependencies available)
     1. `pip install -r config/requirements.txt`
-1. Database download:  
-For reasons of size there are 2 databases that are not in the Modulector repository and you have to download them manually. The following databases must be downloaded:  
-    1. mirDIP version 5.2. Download [mirDIP_Unidirectional_search_v.5.txt](https://ophid.utoronto.ca//mirDIPweb/mirDIP_Unidirectional_search_v_5_2.zip) file.  
-    1. [EPIC-8v2-0_A1.csv](https://support.illumina.com/content/dam/illumina-support/documents/downloads/productfiles/methylationepic/MethylationEPIC_v2%20Files.zip) file of the Infinium MethylationEPIC array version 2.0.  
-Once the two files are downloaded, unzip and move them into the `modulector/files/` directory. 
-Note: there may be more than one file inside the ZIP. Be sure to move only the two files mentioned above.
-1. Apply migrations and create super user:
-    1. `python3 manage.py makemigrations`
-    1. `python3 manage.py migrate`
-    1. `python3 manage.py createsuperuser` (now you can access to \<URL:port\>/admin)
-1. You can import [the data manually](DEPLOYING.md#import) or just use the official [modulector-db][modulector-db-img] (you need to uncomment the service in the `docker-compose.dev.yml` file, commenting the existing `db` service. These changes need a restart of the services running `docker compose up -d`).
+1. Fill the DB. Follow the instructions in the [DEPLOYING document](DEPLOYING.md#import).
+   1. (Optional) create a super-user to work with the Django admin panel:
+       1. `python3 manage.py makemigrations`
+       1. `python3 manage.py migrate`
+       1. `python3 manage.py createsuperuser` (now you can access to \<URL:port\>/admin)
 
 
 ## Developing
@@ -69,6 +63,3 @@ We use gitlab environment git workflow. The default branch is `dev` and the publ
 
 
 [**More information**](https://docs.google.com/presentation/d/1c1PXM89HLXJyF-zHAEpW_bcxb0iE_Fv2XEpEXYV2Tj4/edit?usp=sharing)
-
-
-[modulector-db-img]: https://hub.docker.com/r/omicsdatascience/modulector-db

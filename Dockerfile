@@ -1,6 +1,6 @@
 FROM python:3.11-slim-bullseye
 
-# Default value for deploying with modulector-db image
+# Default value for deploying with modulector DB image
 ENV POSTGRES_USERNAME "modulector"
 ENV POSTGRES_PASSWORD "modulector"
 ENV POSTGRES_PORT 5432

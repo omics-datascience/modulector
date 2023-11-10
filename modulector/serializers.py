@@ -1,11 +1,8 @@
 import logging
 from typing import List, Optional, Dict, Set
-
 from rest_framework import serializers
-
 from ModulectorBackend.settings import USE_PUBMED_API, PUBMED_API_TIMEOUT
-from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrug, \
-    GeneAliases
+from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrug
 from modulector.services import url_service, pubmed_service
 from modulector.utils import link_builder
 
@@ -28,12 +25,15 @@ class MirnaSourceSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         columns = validated_data.pop('columns')
         source = MirnaSource.objects.create(**validated_data)
+
         column_serializer = MirnaColumnsSerializer(many=True)
         for column in columns:
             column['mirna_source_id'] = source.id
+
         self.columns = column_serializer.create(columns)
         for column in self.columnsCharField:
             source.mirnacolumns.add(column)
+
         return source
 
 
@@ -51,9 +51,9 @@ class MirnaXGenSerializer(serializers.ModelSerializer):
 
     def get_pubmeds(self, mirna_gene_interaction: MirnaXGene) -> Set[str]:
         """
-        Gets a list of related Pubmed URLs to a miRNA-Gene interaction
-        :param mirna_gene_interaction: miRNA-Gene interaction
-        :return: List of Pubmed URLs
+        Gets a list of related Pubmed URLs to a miRNA-Gene interaction.
+        :param mirna_gene_interaction: miRNA-Gene interaction.
+        :return: List of Pubmed URLs.
         """
         pubmed_urls: Set[str] = set()
 
@@ -61,20 +61,22 @@ class MirnaXGenSerializer(serializers.ModelSerializer):
             return pubmed_urls
 
         pubmed_urls.update(
-            list(mirna_gene_interaction.pubmed.values_list('pubmed_url', flat=True)))
+            list(mirna_gene_interaction.pubmed.values_list('pubmed_url', flat=True))
+        )
+
+        # If the api call is enabled, it will query the API and get the pubmeds
         mirna = mirna_gene_interaction.mirna.mirna_code
         gene = mirna_gene_interaction.gene
         term = pubmed_service.build_search_term(mirna, gene)
-        if USE_PUBMED_API:  # we check if the api call is enabled in the settings
+        if USE_PUBMED_API:  # Checks if the api call is enabled in the settings
             try:
                 api_pubmeds = pubmed_service.query_parse_and_build_pumbeds(term=term, mirna=mirna,
                                                                            gene=gene, timeout=PUBMED_API_TIMEOUT)
-                for pubmed_id in api_pubmeds:
-                    url = link_builder.build_pubmed_url(pubmed_id)
-                    pubmed_urls.add(url)
+
+                pubmed_urls.update([link_builder.build_pubmed_url(pubmed_id) for pubmed_id in api_pubmeds])
             except Exception as ex:
-                # we only handle exceptions in this case
-                logging.error('Errr getting PubMeds:')
+                # Only handles exceptions in this case
+                logging.error('Error getting PubMeds:')
                 logging.exception(ex)
                 return set()
 
@@ -112,9 +114,9 @@ class MirnaSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_links(mirna: Mirna) -> List[Dict]:
         """
-        Gets a list of sources links for a specific miRNA
-        :param mirna: miRNA object
-        :return: List of sources links
+        Gets a list of sources links for a specific miRNA.
+        :param mirna: miRNA object.
+        :return: List of sources links.
         """
         mirbase_id_obj = mirna.mirbase_accession_id
         if mirbase_id_obj is not None:
@@ -124,9 +126,9 @@ class MirnaSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_aliases(mirna: Mirna) -> List[str]:
         """
-        Gets a miRNA aliases
-        :param mirna: miRNA object to get its aliases
-        :return: List of miRNA aliases
+        Gets a miRNA aliases.
+        :param mirna: miRNA object to get its aliases.
+        :return: List of miRNA aliases.
         """
         return get_mirna_aliases(mirna.mirna_code)
 
@@ -141,9 +143,9 @@ class MirnaDiseaseSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_pubmed(disease: MirnaDisease) -> str:
         """
-        Gets a PubMed URL for a miRNA-disease association
-        :param disease: MirnaDisease object
-        :return: Pubmed URL
+        Gets a PubMed URL for a miRNA-disease association.
+        :param disease: MirnaDisease object.
+        :return: Pubmed URL.
         """
         return link_builder.build_pubmed_url(disease.pubmed_id)
 
