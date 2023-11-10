@@ -19,22 +19,22 @@ Below are the steps to perform a production deploy.
 1. Make a copy of `docker-compose_dist.yml` with the name `docker-compose.yml`.
 1. Set the environment variables that are empty with data. They are listed below by category:
     - Django:
-        - `DJANGO_SETTINGS_MODULE`: indicates the `settings.py` file to read. In production we set in `docker-compose_dist.yml` the value `ModulectorBackend.settings_prod` which contains several production properties.
+        - `DJANGO_SETTINGS_MODULE`: indicates the `settings.py` file to read. In production, we set in `docker-compose_dist.yml` the value `ModulectorBackend.settings_prod` which contains several production properties.
         - `ALLOWED_HOSTS`: list of allowed host separated by commas. Default `['web', '.localhost', '127.0.0.1', '[::1]']`.
         - `ENABLE_SECURITY`: set the string `true` to enable Django's security mechanisms. In addition to this parameter, to have a secure site you must configure the HTTPS server, for more information on the latter see the section [Enable SSL/HTTPS](#enable-sslhttps). Default `false`.
-        - `CSRF_TRUSTED_ORIGINS`: in Django >= 4.x, it's mandatory to define this in production when you are using Daphne through NGINX. The value is a single host or list of hosts separated by commas. 'http://', 'https://' prefixes are mandatory. Examples of values: 'http://127.0.0.1', 'http://127.0.0.1,https://127.0.0.1:8000', etc. You can read more [here](#csrf-trusted-issue).
+        - `CSRF_TRUSTED_ORIGINS`: in Django >= 4.x, it's mandatory to define this in production when you are using Daphne through NGINX. The value is a single host or list of hosts separated by commas. 'http://', 'https://' prefixes are mandatory. Examples of values: 'http://127.0.0.1', 'http://127.0.0.1,https://127.0.0.1:8000', etc. You can read more [here][csrf-trusted-issue].
         - `SECRET_KEY`: Django's secret key. If not specified, one is generated with [generate-secret-key application](https://github.com/MickaelBergem/django-generate-secret-key) automatically.
         - `MEDIA_ROOT`: absolute path where will be stored the uploaded files. By default `<project root>/uploads`.
         - `MEDIA_URL`: URL of the `MEDIA_ROOT` folder. By default `<url>/media/`.
         - `ALLOWED_HOSTS`: list of allowed hosts (separated by commas) to access to Modulector. Default `web,localhost,127.0.0.1,::1'`
         - `PROCESS_POOL_WORKERS`: some request uses parallelized queries using ProcessPoolExecutor to improve performance. This parameter indicates the number of workers to be used. By default `4`.
     - Postgres:
-        - `POSTGRES_USERNAME` : Database username. By default the docker image uses `modulector`.
-        - `POSTGRES_PASSWORD` : Database username's password. By default the docker image uses `modulector`.
-        - `POSTGRES_PORT` : Database server listen port. By default the docker image uses `5432`.
-        - `POSTGRES_DB` : Database name to be used. By default the docker image uses `modulector`.
+        - `POSTGRES_USERNAME` : Database username. By default, the docker image uses `modulector`.
+        - `POSTGRES_PASSWORD` : Database username's password. By default, the docker image uses `modulector`.
+        - `POSTGRES_PORT` : Database server listen port. By default, the docker image uses `5432`.
+        - `POSTGRES_DB` : Database name to be used. By default, the docker image uses `modulector`.
     - Health-checks and alerts:
-        - `HEALTH_URL` : indicates the url that will be requested on Docker health-checks. By default it is http://localhost:8000/drugs/. The healthcheck makes a GET request on it. Any HTTP code value greater or equals than 400 is considered an error.
+        - `HEALTH_URL` : indicates the url that will be requested on Docker health-checks. By default, it is http://localhost:8000/drugs/. The healthcheck makes a GET request on it. Any HTTP code value greater or equals than 400 is considered an error.
         - `HEALTH_ALERT_URL` : if you want to receive an alert when health-checks failed, you can set this variable to a webhook endpoint that will receive a POST request and a JSON body with the field **content** that contains the fail message.
 1. Go back to the project's root folder and run the following commands:
     - Docker Compose:
@@ -44,7 +44,7 @@ Below are the steps to perform a production deploy.
         - Start: `docker stack deploy --compose-file docker-compose.yml modulector`
         - Stop: `docker stack rm modulector`
 1. Import all the data following the instructions detailed in the [Import section](#import).
-1. (Optional) Create a super user to access to the admin panel (`<URL>/admin`).
+1. (Optional) Create a superuser to access to the admin panel (`<URL>/admin`).
     1. Enter the running container: `docker container exec -it <backend_container_name> bash`. The name is usually `modulector_web_1` but you can check it with `docker container ps`.
     1. Run: `python3 manage.py createsuperuser`
     1. Exit the container: `exit`
@@ -52,7 +52,7 @@ Below are the steps to perform a production deploy.
 
 ### Start delays
 
-Due to the database restoration in the first start, the container `db_modulector` may take a while to be up an ready. We can follow the status of the startup process in the logs by doing: `docker compose logs --follow`.
+Due to the database restoration in the first start, the container `db_modulector` may take a while to be up a ready. We can follow the status of the startup process in the logs by doing: `docker compose logs --follow`.
 Sometimes this delay makes django server throws database connection errors. If it is still down and not automatically fixed when database is finally up, we can restart the services by doing: `docker compose up -d`.
 
 
@@ -64,7 +64,7 @@ To enable HTTPS, follow the steps below:
 1. Copy the file `config/nginx/multiomics_intermediate_safe_dist.conf` and paste it into `config/nginx/conf.d/` with the name `multiomics_intermediate.conf`.
 1. Get the `.crt` and `.pem` files for both the certificate and the private key and put them in the `config/nginx/certificates` folder.
 1. Edit the `multiomics_intermediate.conf` file that we pasted in point 2. Uncomment the lines where both `.crt` and `.pem` files must be specified.
-1. Edit the `docker-compose.yml` file so that the `nginx` service exposes both port 8000 and 443. Also you need to add `certificates` folder to `volumes` section. It should look something like this:
+1. Edit the `docker-compose.yml` file so that the `nginx` service exposes both port 8000 and 443. Also, you need to add `certificates` folder to `volumes` section. It should look something like this:
 
 ```yaml
 ...
@@ -91,7 +91,7 @@ Django provides in its official documentation a configuration checklist that mus
 docker container exec modulector_backend python3 manage.py check --deploy --settings ModulectorBackend.settings_prod
 ```
 
-Otherwise you could set all the mandatory variables found in `settings_prod.py` and run directly without the need to pick up any service:
+Otherwise, you could set all the mandatory variables found in `settings_prod.py` and run directly without the need to pick up any service:
 
 ```
 python3 manage.py check --deploy --settings ModulectorBackend.settings_prod
@@ -151,7 +151,7 @@ You can use set Modulector DB in two ways.
    **For the EPIC Methylation array**:
       - Go to the [Illumina product files web page](https://support.illumina.com/downloads/infinium-methylationepic-v2-0-product-files.html) and download the ZIP file called "*Infinium MethylationEPIC v2.0 Product Files (ZIP Format)*".
       - Unzip the file.
-      - Within the unzipped files you will find one called "*EPIC-8v2-0_A1.csv*". Move this file to the directory **"modulor/files/"**. 
+      - Within the unzipped files you will find one called "*EPIC-8v2-0_A1.csv*". Move this file to the directory **"modulector/files/"**. 
       - **NOTE:** the total weight of both files is about 5 GB.
 
    **For the mirBase database**: this database is embedded as it weighs only a few MBs. Its data is processed in Django migrations during the execution of the `python3 manage.py migrate` command. So, you don't have to do manual steps to incorporate mirBase data inside Modulector.
@@ -162,7 +162,7 @@ You can use set Modulector DB in two ways.
 ## Update databases
 
 Modulector currently works with the mirDIP (version 5.2) and miRBase (version 22.1) databases for miRNA data, and with information from the Illumina 'Infinium MethylationEPIC 2.0' array  for information about methylation sites.  
-If new versions are released for these databases and you want to update them, follow these steps:  
+If new versions are released for these databases, and you want to update them, follow these steps:  
 
  - For **mirDIP** and **Illumina EPIC array** you must follow the same steps described in the [Regenerating the data manually](#regenerating-the-data-manually) section, replacing the named files with the most recent versions that have been published on their sites .
  - For **miRBase**, follow the instructions below:
@@ -177,7 +177,7 @@ If new versions are released for these databases and you want to update them, fo
 
 ## Configure your API key
 
-When we notify user about updates of pubmeds they are subscribed to we interact with a ncbi api that uses an API_KEY, by default, we left a random API_KEY pre configured in our settings file, you should replace it with your own.
+When we notify user about updates of pubmeds they are subscribed to we interact with a ncbi api that uses an API_KEY, by default, we left a random API_KEY pre-configured in our settings file, you should replace it with your own.
 
 
 ## Cron job configuration
@@ -185,3 +185,4 @@ For cron jobs we use the following [library](https://github.com/kraiz/django-cro
 
 
 [mirbase-download-page]: https://www.mirbase.org/ftp.shtml
+[csrf-trusted-issue]: https://docs.djangoproject.com/en/4.2/ref/csrf/

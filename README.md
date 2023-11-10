@@ -120,7 +120,7 @@ If no gene symbol is entered, all mirna interactions are returned. If a mirna is
         - `sources`: miRNA-Gene interaction sources which publish this interaction. mirDIP score is based on the scores of those sources. This field is an array that contains the interaction score source names.
         - `score_class`: `L` (Low), `M` (Medium), `H` (High) or `V` (Very high)
     - Example:
-        - URL: http://localhost:8000/mirna-target-interactions?mirna=hsa-miR-891a-5p&gene=EGFR&include_pubmeds=true
+        - URL: http://localhost:8000/mirna-target-interactions/?mirna=hsa-miR-891a-5p&gene=EGFR&include_pubmeds=true
         - Response:
             ```json
             {
@@ -177,7 +177,7 @@ Returns extra information of a miRNA.
         - `mirbase_accession_id`: miRNA accession ID (MIMAT).
         - `links` array of URLs with extra information about this miRNA.
     - Example:
-        - URL: http://localhost:8000/mirna?mirna=hsa-miR-548ai
+        - URL: http://localhost:8000/mirna/?mirna=hsa-miR-548ai
         - Response:
             ```json
             {
@@ -218,7 +218,7 @@ Returns a paginated response with aliases of a miRNA.
         - `mirbase_accession_id`: miRNA mirBase accession ID (MIMAT).
         - `mature_mirna`: previous ID (according to mirBase).
     - Example:
-        - URL: http://localhost:8000/mirna-aliases?mirbase_accession_id=MIMAT0000062
+        - URL: http://localhost:8000/mirna-aliases/?mirbase_accession_id=MIMAT0000062
         - Response:
             ```json
             {
@@ -255,7 +255,7 @@ Service that takes a string of any length and returns a list of miRNAs that cont
     - Code: 200
     - Content: a list of miRNAs (IDs or accession IDs from miRbase DB) matching the search criteria.
     - Example:
-        - URL: http://localhost:8000/mirna-codes-finder?query=hsa-let-7a
+        - URL: http://localhost:8000/mirna-codes-finder/?query=hsa-let-7a
         - Response:
             ```json
             [
@@ -336,7 +336,7 @@ Service that takes a text string of any length and returns a list of methylation
     - Code: 200
     - Content: a list of methylation sites from the Illumina 'Infinium MethylationEPIC 2.0' array matching the search criteria.
     - Example:
-        - URL: http://localhost:8000/methylation-sites-finder?query=cg25&limit=5
+        - URL: http://localhost:8000/methylation-sites-finder/?query=cg25&limit=5
         - Response:
             ```json
             [
@@ -466,7 +466,7 @@ Returns information of a methylation site.
             - `relation`: Relation of the site to the CpG island. The values it can take are: *Island*=within boundaries of a CpG Island, *N_Shore*=0-2kb 5' of Island, *N_Shelf*=2kb-4kb 5' of Island, *S_Shore*=0-2kb 3' of Island, *S_Shelf*=2kb-4kb 3' of Island.
         - `genes`: The value is a json where each key is a gene that is related to the methylation site. The values for each gene is a list that contains the region of the gene where the methylation site is located. These regions, according to the NCBI RefSeq database, can be: *5UTR*=5' untranslated region between the TSS and ATG start site, *3UTR*=3' untranslated region between stop codon and poly A signal, *exon_#*, *TSS200*=1-200 bp 5' the TSS, *TS1500*=200-1500 bp 5' of the TSS.
     - Example:
-        - URL: http://localhost:8000/methylation?methylation_site=cg22461615
+        - URL: http://localhost:8000/methylation/?methylation_site=cg22461615
         - Response:
             ```json
             {
@@ -523,7 +523,7 @@ Returns a paginated response of diseases related to a miRNA.
         - `pubmed`: Pubmed URL.
         - `description`: description about why this miRNA is related to this disease.
     - Example:
-        - URL: http://localhost:8000/diseases?mirna=hsa-miR-9500
+        - URL: http://localhost:8000/diseases/?mirna=hsa-miR-9500
         - Response:
             ```json
             {
@@ -574,7 +574,7 @@ Returns a paginated response of experimentally validated small molecules (or dru
         - `expression_pattern`: expression pattern of miRNA.
         - `support`: support information for this effect.
     - Example:
-        - URL: http://localhost:8000/drugs?mirna=miR-126*
+        - URL: http://localhost:8000/drugs/?mirna=miR-126*
         - Response:
             ```json
             {
