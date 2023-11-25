@@ -46,9 +46,9 @@ All functions are used as a parameter in the URL. So if you want to access `http
 
 In order to sort you must specify the parameter `ordering=fieldToSort`, if you want to sort descending you must add a `-` before the field name. You can specify several fields to sort separated by *commas*.
 
-For example, if you want to consume the [miRNA interactions](#mirna-interactions) service by sorting by `score` descending and by `gene` ascending you can access the URL:
+For example, if you want to consume the [miRNA-target interactions](#mirna-target-interactions) service by sorting by `score` descending and by `gene` ascending you can access the URL:
 
-`https://modulector.multiomix.org/mirna-interactions/?ordering=-score,gene`
+`https://modulector.multiomix.org/mirna-target-interactions/?ordering=-score,gene`
 
 
 ### Filters
@@ -60,9 +60,9 @@ To filter it is enough to specify the field and the value by which you want to f
 
 ### Search
 
-The search is done on the basis of a single parameter called `search` which must contain the value to be searched for. Unlike the filter, the search can be performed on multiple fields at once and is performed by *containing* the search term in the field and is case insensitive (while the filter is by exact value). The fields considered in the search are fixed and will be specified for each service later. For example, the [miRNA interactions](#mirna-interactions) service allows a search by the `gene` field, then the following query could be performed:
+The search is done on the basis of a single parameter called `search` which must contain the value to be searched for. Unlike the filter, the search can be performed on multiple fields at once and is performed by *containing* the search term in the field and is case insensitive (while the filter is by exact value). The fields considered in the search are fixed and will be specified for each service later. For example, the [drugs](#drugs) service allows a search by the `condition`, `small_molecule` and `expression_pattern` fields, then the following query could be performed:
 
-`https://modulector.multiomix.org/mirna-aliases/?mirna=hsa-miR-577&search=FO`
+`https://modulector.multiomix.org/drugs/?mirna=miR-126*search=breast`
 
 
 ### Pagination
