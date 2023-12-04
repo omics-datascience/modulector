@@ -2,31 +2,23 @@ version: '3'
 
 services:
     # PostgreSQL (empty DB)
-    # db:
-    #     image: postgres:15
-    #     container_name: modulector_dev_db
-    #     restart: always
-    #     ports:
-    #         - 5433:5432
-    #     command: postgres -c 'config_file=/etc/postgresql/postgresql.conf'
-    #     environment:
-    #         # IMPORTANT: these three params must be the same than POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_DB
-    #         # below in 'web' service respectively
-    #         POSTGRES_USER: 'modulector'
-    #         POSTGRES_PASSWORD: 'modulector'
-    #         POSTGRES_DB: 'modulector'
-    #     volumes:
-    #         - modulector_postgres_data:/var/lib/postgresql/data/
-    #         - ./config/postgres/postgres.conf:/etc/postgresql/postgresql.conf
-
     db:
-        image: omicsdatascience/modulector-db:2.0.0
+        image: postgres:16
+        container_name: modulector_dev_db
         restart: always
         ports:
-            - 5433:5432
-        # Uncomment this to add your custom config
-        # volumes:
-        #     - ./config/postgres/postgres.conf:/etc/postgresql/postgresql.conf
+            - '5432:5432'
+        command: postgres -c 'config_file=/etc/postgresql/postgresql.conf'
+        environment:
+            # IMPORTANT: these three params must be the same as POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_DB
+            # below in 'web' service respectively
+            POSTGRES_USER: 'modulector'
+            POSTGRES_PASSWORD: 'modulector'
+            POSTGRES_DB: 'modulector'
+        volumes:
+            - modulector_postgres_data:/var/lib/postgresql/data/
+            - ./config/postgres/postgres.conf:/etc/postgresql/postgresql.conf
+
 
     # Web-based DB admin interface for DB management
     adminer:
@@ -34,10 +26,10 @@ services:
         container_name: modulector_dev_adminer
         restart: always
         ports:
-            - 8080:8080
+            - '8080:8080'
 
 # Uncomment if using empty Postgres service
-# volumes:
-#     modulector_postgres_data:
-#         external:
-#             name: 'modulector-backend_modulector_postgres_data'
+volumes:
+    modulector_postgres_data:
+        external:
+            name: 'modulector_postgres_data'

@@ -1,16 +1,17 @@
 import re
 from concurrent.futures import ProcessPoolExecutor
-from typing import List, Optional
+from typing import List, Optional, Final
 from django.conf import settings
 from django.db.models.query_utils import Q
-from django.http import Http404
+from django.http import Http404, HttpRequest
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, generics, filters, viewsets
 from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from modulector.models import MethylationUCSCRefGene, MirnaXGene, Mirna, MirbaseIdMirna, MirnaDisease, MirnaDrug, GeneAliases, MethylationEPIC
+from modulector.models import MethylationUCSC_CPGIsland, MethylationUCSCRefGene, MirnaXGene, Mirna, MirbaseIdMirna, \
+    MirnaDisease, MirnaDrug, GeneAliases, MethylationEPIC
 from modulector.pagination import StandardResultsSetPagination
 from modulector.serializers import MirnaXGenSerializer, MirnaSerializer, \
     MirnaAliasesSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer, get_mirna_from_accession, \
@@ -20,16 +21,16 @@ from modulector.services import subscription_service
 regex = re.compile(r'-\d[a-z]')
 
 # Default page size for requests
-DEFAULT_PAGE_SIZE: int = 50
+DEFAULT_PAGE_SIZE: Final[int] = 50
 
 # Maximum page size for requests
-MAX_PAGE_SIZE: int = 3000
+MAX_PAGE_SIZE: Final[int] = 3000
 
 # Number of processes to use in Pool
-PROCESS_POOL_WORKERS = settings.PROCESS_POOL_WORKERS
+PROCESS_POOL_WORKERS: Final[int] = settings.PROCESS_POOL_WORKERS
 
 
-def get_methylation_epic_sites(input_id: str) -> List[str]:
+def get_methylation_epic_sites_names(input_id: str) -> List[str]:
     """
     Gets methylation sites from any type of Loci id.
     :param input_id: String to query in the DB.
@@ -59,10 +60,13 @@ def get_limit_parameter(value: Optional[str]) -> int:
         return DEFAULT_PAGE_SIZE
 
 
-class MirnaTargetInteractions(viewsets.ReadOnlyModelViewSet):
-    """Returns a single instance with data about an interaction between a miRNA and a gene
-    (mirna-target-interactions endpoint)"""
+class MirnaTargetInteractions(generics.ListAPIView):
+    """Returns a paginated response with all the interactions of a specific miRNA (mirna-interactions endpoint)"""
     serializer_class = MirnaXGenSerializer
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['gene', 'score']
+    ordering = ['id']
     handler400 = 'rest_framework.exceptions.bad_request'
 
     @staticmethod
@@ -80,42 +84,46 @@ class MirnaTargetInteractions(viewsets.ReadOnlyModelViewSet):
         aliases.append(gene)
         return aliases
 
-    def list(self, request, *args, **kwargs):
-        mirna = self.request.GET.get("mirna")
-        gene = self.request.GET.get("gene")
+    def get_serializer_context(self):
+        context = super(MirnaTargetInteractions, self).get_serializer_context()
 
-        if not mirna or not gene:
-            raise ParseError(detail="mirna and gene are obligatory")
-
-        # Gets gene aliases
-        gene_aliases = self.__get_gene_aliases(gene)
-
-        # Gets miRNA aliases
-        mirna_aliases = get_mirna_aliases(mirna)
-        instance = generics.get_object_or_404(
-            MirnaXGene, mirna__mirna_code__in=mirna_aliases, gene__in=gene_aliases)
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
-
-
-class MirnaInteractions(generics.ListAPIView):
-    """Returns a paginated response with all the interactions of a specific miRNA (mirna-interactions endpoint)"""
-    serializer_class = MirnaXGenSerializer
-    pagination_class = StandardResultsSetPagination
-    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
-    ordering_fields = ['gene', 'score']
-    ordering = ['id']
-    search_fields = ['gene']
-    handler400 = 'rest_framework.exceptions.bad_request'
+        include_pubmeds = self.request.GET.get("include_pubmeds") == "true"
+        context['include_pubmeds'] = include_pubmeds
+        return context
 
     def get_queryset(self):
         mirna = self.request.GET.get("mirna")
+        gene = self.request.GET.get("gene")
+        score = self.request.GET.get("score")
 
-        if not mirna:
-            raise ParseError(detail="mirna is obligatory")
+        if score:
+            try:
+                score = float(score)
+                if not 0 <= score <= 1:
+                    raise ParseError(
+                        detail="the 'score' value must be between 0 and 1")
+            except ValueError:
+                raise ParseError(
+                    detail="'score' must be a numerical value between 0 and 1")
 
-        mirna_aliases = get_mirna_aliases(mirna)
-        return MirnaXGene.objects.filter(mirna__mirna_code__in=mirna_aliases)
+        if not mirna and not gene:
+            raise ParseError(detail="'mirna' or 'gene' are mandatory")
+        elif mirna and not gene:  # only mirna
+            mirna_aliases = get_mirna_aliases(mirna)
+            data = MirnaXGene.objects.filter(
+                mirna__mirna_code__in=mirna_aliases)
+        elif not mirna and gene:  # only gene
+            gene_aliases = self.__get_gene_aliases(gene)
+            data = MirnaXGene.objects.filter(gene__in=gene_aliases)
+        else:  # mirna and gene
+            # Gets gene aliases
+            gene_aliases = self.__get_gene_aliases(gene)
+            # Gets miRNA aliases
+            mirna_aliases = get_mirna_aliases(mirna)
+            data = MirnaXGene.objects.filter(
+                mirna__mirna_code__in=mirna_aliases, gene__in=gene_aliases)
+
+        return data.filter(score__gte=score) if score else data
 
 
 class MirnaAliasesList(generics.ListAPIView):
@@ -153,7 +161,7 @@ class MirnaCodes(APIView):
             return Response({"detail": "'mirna_codes' is mandatory"}, status=status.HTTP_400_BAD_REQUEST)
 
         mirna_codes = data["mirna_codes"]
-        if type(mirna_codes) != list:
+        if not isinstance(mirna_codes, list):
             return Response({"detail": "'mirna_codes' must be of list type"}, status=status.HTTP_400_BAD_REQUEST)
 
         res = {}
@@ -298,17 +306,17 @@ class MethylationSites(APIView):
             return Response({"detail": "'methylation_sites' is mandatory"}, status=status.HTTP_400_BAD_REQUEST)
 
         methylation_sites = data["methylation_sites"]
-        if type(methylation_sites) != list:
+        if not isinstance(methylation_sites, list):
             return Response({"detail": "'methylation_sites' must be of list type"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Generates a dict with the methylation sites as keys and the result of the query as values.
-        # NOTE: it uses ProcessPoolExecutor to parallelize the queries and not a ThreadPoolExecutor because
+        # note: it uses ProcessPoolExecutor to parallelize the queries and not a ThreadPoolExecutor because
         # the latter has a bug closing Django connections (see https://stackoverflow.com/q/57211476/7058363)
         with ProcessPoolExecutor(max_workers=PROCESS_POOL_WORKERS) as executor:
             res = {
                 methylation_name: result
                 for methylation_name, result in zip(methylation_sites, executor.map(
-                    get_methylation_epic_sites, methylation_sites
+                    get_methylation_epic_sites_names, methylation_sites
                 ))
             }
 
@@ -333,11 +341,11 @@ class MethylationSitesFinder(APIView):
 
 
 class MethylationSitesToGenes(APIView):
-    """A service that searches a list of CpG methylation site identifiers from different 
+    """A service that searches a list of CpG methylation site identifiers from different
     versions of Illumina arrays and returns the gene(s) they belong to."""
 
     @staticmethod
-    def __get_methylation_epic_sites(input_name: str) -> List[str]:
+    def __get_methylation_epic_sites_ids(input_name: str) -> List[str]:
         """
         Gets methylation sites from any type of Loci id
         :param input_name: String to query in the DB (site name)
@@ -365,14 +373,15 @@ class MethylationSitesToGenes(APIView):
             return Response({"detail": "'methylation_sites' is mandatory"}, status=status.HTTP_400_BAD_REQUEST)
 
         methylation_sites = data["methylation_sites"]
-        if type(methylation_sites) != list:
+        if not isinstance(methylation_sites, list):
             return Response({"detail": "'methylation_sites' must be of list type"}, status=status.HTTP_400_BAD_REQUEST)
 
         res = {}
         for methylation_name in methylation_sites:
             res[methylation_name] = []
-            # For each CpG methylation site passed as a parameter... I look for its Identifier in the version of the EPIC v2 array:
-            epics_ids = self.__get_methylation_epic_sites(methylation_name)
+            # For each CpG methylation site passed as a parameter... I look for its Identifier in the version of
+            # the EPIC v2 array:
+            epics_ids = self.__get_methylation_epic_sites_ids(methylation_name)
             for site_id in epics_ids:
                 # For each identifier in the EPIC v2 array, I search for the genes involved:
                 genes_list = self.__get_genes_from_methylation_epic_site(
@@ -387,5 +396,67 @@ class MethylationSitesToGenes(APIView):
         return Response(res)
 
 
-def index(request):
+class MethylationDetails(APIView):
+    """Service that obtains information about a specific CpG methylation site from
+    the 'Infinium MethylationEPIC V2.0' array."""
+
+    def get(self, _request):
+        methylation_site = self.request.GET.get('methylation_site')
+        if not methylation_site:
+            return Response(status=400, data={"'methylation_site' is mandatory"})
+
+        res = {}
+        # search for id in array
+        epic_data = MethylationEPIC.objects.filter(
+            Q(name=methylation_site)).first()
+
+        if epic_data:
+            # Loads name to response
+            res["name"] = epic_data.name
+
+            # Loads chromosome data
+            if epic_data.strand_fr == "F":
+                res["chromosome_position"] = epic_data.chr + \
+                    ":" + str(epic_data.mapinfo) + " [+]"
+            elif epic_data.strand_fr == "R":
+                res["chromosome_position"] = epic_data.chr + \
+                    ":" + str(epic_data.mapinfo) + " [-]"
+
+            # load aliases to response
+            res["aliases"] = []
+            if epic_data.methyl27_loci and epic_data.methyl27_loci != epic_data.name:
+                res["aliases"].append(epic_data.methyl27_loci)
+            if epic_data.methyl450_loci and epic_data.methyl450_loci != epic_data.name:
+                res["aliases"].append(epic_data.methyl450_loci)
+            if epic_data.epicv1_loci and epic_data.epicv1_loci != epic_data.name:
+                res["aliases"].append(epic_data.epicv1_loci)
+            if epic_data.ilmnid and epic_data.ilmnid != epic_data.name:
+                res["aliases"].append(epic_data.ilmnid)
+
+            # searches and loads for islands relations
+            islands_data = MethylationUCSC_CPGIsland.objects.filter(
+                Q(methylation_epic_v2_ilmnid=epic_data.id))
+            res["ucsc_cpg_islands"] = []
+            for island in islands_data:
+                res["ucsc_cpg_islands"].append(
+                    {"cpg_island": island.ucsc_cpg_island_name, "relation": island.relation_to_ucsc_cpg_island})
+
+            # searches and loads for genes relations
+            genes_data = MethylationUCSCRefGene.objects.filter(
+                Q(methylation_epic_v2_ilmnid=epic_data.id))
+            res["genes"] = {}
+            for gene in genes_data:
+                if gene.ucsc_refgene_name not in res["genes"]:
+                    res["genes"][gene.ucsc_refgene_name] = []
+                if gene.ucsc_refgene_group not in res["genes"][gene.ucsc_refgene_name]:
+                    res["genes"][gene.ucsc_refgene_name].append(
+                        gene.ucsc_refgene_group)
+
+            return Response(res)
+        else:
+            return Response(status=400, data={methylation_site + " is not a valid methylation site"})
+
+
+def index(request: HttpRequest):
+    """Returns the index.html page."""
     return render(request, 'index.html', {'version': settings.VERSION})
