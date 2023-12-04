@@ -131,6 +131,7 @@ dmypy.json
 *.pyc
 .idea
 /modulector/files/mirdb_data.txt
+
 # Docker
 .vscode
 /frontend/static/frontend/node_modules
@@ -147,5 +148,4 @@ docker-compose.yml
 modulector/files/EPIC-8v2-0_A1.csv
 modulector/files/mirDIP_Unidirectional_search_v.5.txt
 *.sql.gz
-docker-compose.mauri_dev.yml
 modulector/files/tmp_db.csv

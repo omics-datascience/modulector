@@ -7,7 +7,7 @@ Below are the steps to perform a production deploy.
 
 1. The entire deploy was configured to be simple from the tool Docker Compose. So you need to install:
     - [docker](https://docs.docker.com/desktop/#download-and-install)
-    - [docker-compose](https://docs.docker.com/compose/install/)
+    - [Docker Compose](https://docs.docker.com/compose/install/)
 
 
 ## Instructions
@@ -111,7 +111,7 @@ To check the different services' status you can run:
 
 `docker service logs <service's name>`
 
-Where  *\<service's name\>* could be `nginx`, `web` or `db`.
+Where  *\<service's name\>* could be `nginx_modulector`, `modulector` or `db_modulector`.
 
 
 ## Creating Dumps and Restoring from Dumps
@@ -132,12 +132,13 @@ You can use set Modulector DB in two ways.
 
 ### Importing an existing database dump (recommended)
 
-1. Start up a PostgreSQL service. You can use the same service listed in the `docker-compose.dev.yml` file. Run `docker compose -f docker-compose.dev.yml up -d db` to start the DB service. 
+1. Start up a PostgreSQL service. You can use the same service listed in the `docker-compose.dev.yml` file. Run `docker compose -f docker-compose.dev.yml up -d db_modulector` to start the DB service. 
 1. **Optional but recommended (you can omit these steps if it's the first time you are deploying Modulector)**: due to major changes, it's probably that an import thrown several errors when importing. To prevent that you could do the following steps before doing the importation:
-    1. Drop all the tables from the DB: `docker exec -i [name of the DB container] psql postgres -U modulector -c "DROP DATABASE modulector;"`
-    1. Create an empty database: `docker exec -i [name of the DB container] psql postgres -U modulector -c "CREATE DATABASE modulector;"`
+    1. Drop all the tables from the DB: `docker exec -i [name of the DB container] psql postgres -U postgres -c "DROP DATABASE modulector;"`
+    1. Create an empty database: `docker exec -i [name of the DB container] psql postgres -U postgres -c "CREATE DATABASE modulector;"`
 1. Download `.sql.gz` from [Modulector releases pages](https://github.com/omics-datascience/modulector/releases) or use your own export file.
-1. Restore the db: `zcat modulector.sql.gz | docker exec -i [name of the DB container] psql modulector -U modulector`. This command will restore the database using a compressed dump as source, **keep in mind that could take several minutes to finish the process**.
+1. Restore the database: `zcat modulector.sql.gz | docker exec -i [name of the DB container] psql modulector -U modulector`. This command will restore the database using a compressed dump as source, **keep in mind that could take several minutes to finish the process**.
+   - **NOTE**: in case you are working on Windows, the command must be executed from [Git Bash][git-bash] or WSL.
 
 
 ### Regenerating the data manually
@@ -186,3 +187,4 @@ For cron jobs we use the following [library](https://github.com/kraiz/django-cro
 
 [mirbase-download-page]: https://www.mirbase.org/ftp.shtml
 [csrf-trusted-issue]: https://docs.djangoproject.com/en/4.2/ref/csrf/
+[git-bash]: https://git-scm.com/downloads
