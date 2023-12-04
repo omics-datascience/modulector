@@ -5,8 +5,6 @@ services:
     db_modulector:
         image: postgres:16
         restart: always
-        ports:
-            - '5433:5432'
         # Uncomment this to add your custom config
         # command: postgres -c 'config_file=/etc/postgresql/postgresql.conf'
         environment:
