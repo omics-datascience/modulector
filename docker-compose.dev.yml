@@ -2,7 +2,7 @@ version: '3'
 
 services:
     # PostgreSQL (empty DB)
-    db:
+    db_modulector:
         image: postgres:16
         container_name: modulector_dev_db
         restart: always
