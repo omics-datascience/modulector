@@ -47,7 +47,7 @@ services:
 
             # Allowed host must include the ones set in the NGINX modulector.conf file. Localhost is included for
             # health-checks
-            ALLOWED_HOSTS: 'web,modulector,localhost'
+            ALLOWED_HOSTS: 'web,web_modulector,localhost'
 
 volumes:
     postgres_data:
