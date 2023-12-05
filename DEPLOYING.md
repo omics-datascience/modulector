@@ -45,7 +45,7 @@ Below are the steps to perform a production deploy.
         - Stop: `docker stack rm modulector`
 1. Import all the data following the instructions detailed in the [Import section](#import).
 1. (Optional) Create a superuser to access to the admin panel (`<URL>/admin`).
-    1. Enter the running container: `docker container exec -it <backend_container_name> bash`. The name is usually `modulector_web_1` but you can check it with `docker container ps`.
+    1. Enter the running container: `docker container exec -it <backend_container_name> bash`. The name is usually `modulector-web_modulector-1` but you can check it with `docker container ps`.
     1. Run: `python3 manage.py createsuperuser`
     1. Exit the container: `exit`
 
@@ -111,7 +111,7 @@ To check the different services' status you can run:
 
 `docker service logs <service's name>`
 
-Where  *\<service's name\>* could be `nginx_modulector`, `modulector` or `db_modulector`.
+Where  *\<service's name\>* could be `nginx_modulector`, `web_modulector` or `db_modulector`.
 
 
 ## Creating Dumps and Restoring from Dumps
