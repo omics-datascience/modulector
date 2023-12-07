@@ -20,6 +20,11 @@ COPY . .
 
 RUN echo 0 > tools/healthcheck/tries.txt
 HEALTHCHECK CMD python tools/healthcheck/check.py
+
+# Gives execution permissions to run.sh
+RUN chmod +x tools/run.sh
+
+# Run app
 CMD ["/bin/bash","-c","tools/run.sh"]
 
 # Modulector port
