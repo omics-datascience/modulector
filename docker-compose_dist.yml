@@ -27,7 +27,7 @@ services:
         volumes:
             - ./config/nginx/conf.d:/etc/nginx/conf.d
         depends_on:
-            - modulector
+            - web_modulector
 
     # Django Backend Server
     web_modulector:
