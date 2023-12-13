@@ -2,7 +2,7 @@ name: Prod enviroment workflow to build and push docker image
 on:
   push:
     branches:
-      - "prod"
+      - "main"
 jobs:
   docker-modulector:
     runs-on: ubuntu-latest
