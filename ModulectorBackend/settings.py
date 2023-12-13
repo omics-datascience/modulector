@@ -163,6 +163,9 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = os.getenv('MEDIA_ROOT', os.path.join(BASE_DIR, ''))
 MEDIA_URL = os.getenv('MEDIA_URL', '/media/')
 
+# Test runner
+TEST_RUNNER = 'modulector.tests.runner.DjangoTestSuiteRunner'
+
 # Email Server
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # This email configuration is what postfix uses, for production, use your own

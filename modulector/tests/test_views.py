@@ -1,14 +1,9 @@
 from django.test import Client, TestCase
-from modulector.tests.data_init import load_test_data
 
 client = Client()
 
 
 class ViewTests(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        load_test_data(cls)
-
     def __check_empty_pagination(self, response):
         """Checks if fields of response are valid for an empty pagination response"""
         self.assertEqual(response.data['count'], 0)
