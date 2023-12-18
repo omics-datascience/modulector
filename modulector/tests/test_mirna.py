@@ -1,3 +1,4 @@
+import json
 from django.test import Client, TestCase
 
 client = Client()
@@ -5,6 +6,15 @@ client = Client()
 
 class miRNATests(TestCase):
     """ Testing of miRNA endpoints """
+
+    def __check_pagination(self, response):
+        """check that the response is paginated"""
+        self.assertTrue('count' in response.data)
+        self.assertTrue('next' in response.data)
+        self.assertTrue('previous' in response.data)
+        self.assertTrue('results' in response.data)
+        self.assertIsInstance(response.data['results'], list)
+        self.assertIsInstance(response.data['count'], int)
 
     def __check_empty_pagination(self, response):
         """Checks if fields of response are valid for an empty pagination response"""
@@ -69,6 +79,7 @@ class miRNATests(TestCase):
         response = client.get(
             '/mirna-target-interactions/', {'mirna': 'goku_capo'})
         self.assertEqual(response.status_code, 200)
+        self.__check_pagination(response)
         self.__check_empty_pagination(response)
 
     def testMirnaTargetInteractions2(self):
@@ -76,6 +87,7 @@ class miRNATests(TestCase):
         response = client.get(
             '/mirna-target-interactions/', {'mirna': 'hsa-miR-891a-5p', 'gene': 'EGFR'})
         self.assertEqual(response.status_code, 200)
+        self.__check_pagination(response)
         self.__check_one_result_pagination(response)
         # Checks all fields
         data = response.data['results'][0]
@@ -109,3 +121,80 @@ class miRNATests(TestCase):
         """Tests 400 error for mirna endpoint due to not specify parameters"""
         response = client.get('/mirna-target-interactions/')
         self.assertEqual(response.status_code, 400)
+
+    """ Testing /mirna-aliases/ endpoint """
+
+    def testMirnaAliases1(self):
+        """ Test the entire mirna-aliases/ endpoint since it does not receive parameters """
+        response = client.get('/mirna-aliases/')
+        self.assertEqual(response.status_code, 200)
+        self.__check_pagination(response)
+
+    """ Testing /mirna-codes/ endpoint """
+
+    def testMirnaCodes1(self):
+        """ Tests with a valid body """
+        data = json.dumps({"mirna_codes": ["name_01", "Hsa-Mir-935-v2_5p*",
+                                           "MIMAT0000066",
+                                           "MI0026417",
+                                           "hsa-let-7e-5p"]
+                           })
+        response = client.post('/mirna-codes/', data=data,
+                               content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        data = response.data
+        self.assertTrue("name_01" in data)
+        self.assertTrue("Hsa-Mir-935-v2_5p*" in data)
+        self.assertTrue("MIMAT0000066" in data)
+        self.assertTrue("MI0026417" in data)
+        self.assertTrue("hsa-let-7e-5p" in data)
+        self.assertIsNone(data["name_01"])
+        self.assertIsNone(data["Hsa-Mir-935-v2_5p*"])
+        self.assertEqual(data["MIMAT0000066"], "MIMAT0000066")
+        self.assertEqual(data["MI0026417"], "MI0026417")
+        self.assertEqual(data["hsa-let-7e-5p"], "MIMAT0000066")
+
+    def testMirnaCodes2(self):
+        """ Tests with a invalid body type """
+        data = json.dumps({"mirna_codes": "Hsa-Mir-935-v2_5p*"})
+        response = client.post('/mirna-codes/', data=data,
+                               content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        data = response.data
+        self.assertTrue("detail" in data)
+
+    def testMirnaCodes3(self):
+        """ Tests with a invalid body key """
+        data = json.dumps({"mirna": ["Hsa-Mir-935-v2_5p*"]})
+        response = client.post('/mirna-codes/', data=data,
+                               content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        data = response.data
+        self.assertTrue("detail" in data)
+
+    """ Testing /mirna-codes-finder/ endpoint """
+
+    def testMirnaCodesFinder1(self):
+        """ Tests with a valid response whit 7 results """
+        response = client.get(
+            '/mirna-codes-finder/', {'query': 'hsa-', 'limit': 7})
+        self.assertEqual(response.status_code, 200)
+        data = response.data
+        self.assertIsInstance(data, list)
+        self.assertTrue(len(data) == 7)
+
+    def testMirnaCodesFinder2(self):
+        """ Tests default limit parameter value """
+        response = client.get('/mirna-codes-finder/', {'query': 'hsa-'})
+        self.assertEqual(response.status_code, 200)
+        data = response.data
+        self.assertIsInstance(data, list)
+        self.assertTrue(len(data) == 50)
+
+    def testMirnaCodesFinder3(self):
+        """ Tests endpoint without parameters """
+        response = client.get('/mirna-codes-finder/')
+        self.assertEqual(response.status_code, 200)
+        data = response.data
+        self.assertIsInstance(data, list)
+        self.assertTrue(len(data) == 0)
