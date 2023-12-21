@@ -1,5 +1,4 @@
 import json
-import sys
 from django.test import Client, TestCase
 
 client = Client()
@@ -125,17 +124,18 @@ class methylationTests(TestCase):
                                content_type='application/json')
         self.assertEqual(response.status_code, 200)
         data = response.data
-        # sys.exit(str(data))
+        print(data)
         for k in data:
             self.assertIsInstance(data[k], list)
         self.assertTrue("cg22461615_TC11" in data)
         self.assertTrue("cg01615704_TC11" in data)
         self.assertTrue("cg25908985" in data)
         self.assertTrue("invalid_data" in data)
-        # self.assertEqual(data["cg22461615_TC11"], ["cg22461615"])
-        # self.assertEqual(data["cg01615704_TC11"], ["cg01615704"])
-        # self.assertEqual(data["cg25908985"], ["cg25908985"])
-        # self.assertEqual(data["invalid_data"], [])
+        # TODO arreglar
+        # self.assertEqual(data["cg22461615_TC11"][0], "cg22461615")
+        # self.assertEqual(data["cg01615704_TC11"][0], "cg01615704")
+        # self.assertEqual(data["cg25908985"][0], "cg25908985")
+        # self.assertTrue(len(data["invalid_data"][0]) == 0)
 
     def testMethylationSites2(self):
         """ Tests with a invalid body type """
