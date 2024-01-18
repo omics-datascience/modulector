@@ -6,7 +6,7 @@ Below are the steps to perform a production deploy.
 ## Requirements
 
 1. The entire deploy was configured to be simple from the tool Docker Compose. So you need to install:
-    - [docker](https://docs.docker.com/desktop/#download-and-install)
+    - [Docker](https://docs.docker.com/desktop/#download-and-install)
     - [Docker Compose](https://docs.docker.com/compose/install/)
 
 
