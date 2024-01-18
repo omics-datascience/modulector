@@ -1,8 +1,11 @@
 # Modulector
 
-Modulector is a performing open platform that provides information about miRNAs and genes based on a compilation of information from different databases. It offers data about:
+Modulector is a performing open platform that provides information about miRNAs, genes and methylation sites based on a compilation of information from different resources.
+
+Document content:
 
 - [Modulector](#modulector)
+  - [Integrated databases](#integrated-databases)
   - [Usage](#usage)
     - [General](#general)
     - [Sorting](#sorting)
@@ -29,6 +32,16 @@ Modulector is a performing open platform that provides information about miRNAs 
   - [Sonarcloud](#sonarcloud)
   - [License](#license)
 
+## Integrated databases
+
+Modulector obtains information from different bioinformatics databases or resources. These databases were installed locally to reduce data search time. The databases currently integrated to Modulector are:
+
+1. miRNA data: [mirDIP: microRNA Data Integration Portal](https://ophid.utoronto.ca/mirDIP/).  
+   mirDIP is an integrative database of human microRNA target predictions. Modulector use mirDIP 5.2.  
+2. miRNA data: [miRBase: the microRNA database](https://mirbase.org/).  
+   miRBase is a searchable database of published miRNA sequences and annotations. Each entry in the miRBase Sequence database represents a predicted hairpin portion of a miRNA transcript (termed hairpin in the database), with information on the location and sequence of the mature miRNA sequence (termed mature). Modulector use miRBase 22.1.  
+3. Methyaation data: Illumina [Infinium MethylationEPIC 2.0](https://www.illumina.com/products/by-type/microarray-kits/infinium-methylation-epic.html) array.  
+   The Infinium MethylationEPIC v2.0 BeadChip Kit is a genome-wide methylation screening tool that targets over 935,000 CpG sites in the most biologically significant regions of the human methylome. At Modulector we use the information provided by Illumina on its [product files](https://support.illumina.com/downloads/infinium-methylationepic-v2-0-product-files.html) website.  
 
 ## Usage
 
@@ -36,11 +49,9 @@ Modulector can be used through the graphical interfaces provided in [Multiomix][
 
 All services are available through a web API accessible from a browser or any other web client. All the responses are in JSON format. In addition to the information provided, sorting, filtering, searching and paging functions are also available. How to use these functions is explained below:
 
-
 ### General
 
 All functions are used as a parameter in the URL. So if you want to access `https://modulector.multiomix.org/service/` by sending parameters to it, just add the following suffix to the end of the URL: `?parameter1=value&parameter2=value&parameter3=value`. The `?` indicates that the parameter section begins, these will be of the form `parameterName=parameterValue` and are separated, in case you need to send more than one, by a `&`.
-
 
 ### Sorting
 
@@ -50,20 +61,17 @@ For example, if you want to consume the [miRNA-target interactions](#mirna-targe
 
 `https://modulector.multiomix.org/mirna-target-interactions/?ordering=-score,gene`
 
-
 ### Filters
 
 To filter it is enough to specify the field and the value by which you want to filter. For example, if you want to consume the [miRNA aliases](#mirna-aliases) service keeping only the aliases of `MIMAT0000062` you could access the following resource:
 
 `https://modulector.multiomix.org/mirna-aliases/?mirbase_accession_id=MIMAT0000062`
 
-
 ### Search
 
 The search is done on the basis of a single parameter called `search` which must contain the value to be searched for. Unlike the filter, the search can be performed on multiple fields at once and is performed by *containing* the search term in the field and is case insensitive (while the filter is by exact value). The fields considered in the search are fixed and will be specified for each service later. For example, the [drugs](#drugs) service allows a search by the `condition`, `small_molecule` and `expression_pattern` fields, then the following query could be performed:
 
 `https://modulector.multiomix.org/drugs/?mirna=miR-126*search=breast`
-
 
 ### Pagination
 
@@ -79,7 +87,6 @@ All the paginated responses contain the following fields:
 - `previous`: link to the previous page.
 - `results`: array of elements (the structure of each element depends on the service and is explained in detail in the [services](#services) section).
 
-
 ### Combining functions
 
 All of the above parameters can be used together! For example, if we wanted to consume the [diseases](#diseases) service by sorting ascending by disease, performing a disease search and keeping only the first 3 items, we could perform the following query (the order of the parameters **does not matter**):
@@ -87,7 +94,6 @@ All of the above parameters can be used together! For example, if we wanted to c
 `https://modulector.multiomix.org/diseases/?ordering=disease&search=leukemia&page_size=3`
 
 **It will be indicated for each service which fields are available for filtering, sorting and/or searching**.
-
 
 ## Services
 
@@ -98,30 +104,31 @@ If no gene symbol is entered, all mirna interactions are returned. If a mirna is
 
 - URL: `/mirna-target-interactions`
 - Query params:
-    - `mirna`: miRNA (Accession ID or name in mirBase) to get its interactions with different genes targets.
-    - `gene`: gene symbol to get its interactions with different miRNAs targets.
-    - `score`: numerical score to filter the interactions (only interactions with a score greater than or equal to the parameter value are returned). The value of this score is provided by the mirDip database.  
-    - `include_pubmeds`: if its value is 'true', the endpoint also returns a list of links to Pubmed where the mirnas are related to the genes (this may affect Modulector's response time). Default is 'false'.
+  - `mirna`: miRNA (Accession ID or name in mirBase) to get its interactions with different genes targets.
+  - `gene`: gene symbol to get its interactions with different miRNAs targets.
+  - `score`: numerical score to filter the interactions (only interactions with a score greater than or equal to the parameter value are returned). The value of this score is provided by the mirDip database.  
+  - `include_pubmeds`: if its value is 'true', the endpoint also returns a list of links to Pubmed where the mirnas are related to the genes (this may affect Modulector's response time). Default is 'false'.
 *NOTE*: mirna or gene are required
 - Functions:
-    - Ordering fields: `gene` and `score`
-    - Filtering fields: filtering is not available for this service
-    - Searching fields: `gene` 
-    - Pagination: yes
+  - Ordering fields: `gene` and `score`
+  - Filtering fields: filtering is not available for this service
+  - Searching fields: `gene`
+  - Pagination: yes
 - Success Response:
-    - Code: 200
-    - Content:
-        - `id`: internal ID of the interaction.
-        - `mirna`: miRNA ID (mirbase MIMAT id or previous ID). The received one as query param.
-        - `gene`: target gene.
-        - `score`: interaction score (according mirDIP).
-        - `source_name`: database from which the interaction was extracted.
-        - `pubmeds`: array of pubmed for the miRNA-gene interaction (according to mirTaRBase). 
-        - `sources`: miRNA-Gene interaction sources which publish this interaction. mirDIP score is based on the scores of those sources. This field is an array that contains the interaction score source names.
-        - `score_class`: `L` (Low), `M` (Medium), `H` (High) or `V` (Very high)
-    - Example:
-        - URL: http://localhost:8000/mirna-target-interactions/?mirna=hsa-miR-891a-5p&gene=EGFR&include_pubmeds=true
-        - Response:
+  - Code: 200
+  - Content:
+    - `id`: internal ID of the interaction.
+    - `mirna`: miRNA ID (mirbase MIMAT id or previous ID). The received one as query param.
+    - `gene`: target gene.
+    - `score`: interaction score (according mirDIP).
+    - `source_name`: database from which the interaction was extracted.
+    - `pubmeds`: array of pubmed for the miRNA-gene interaction (according to mirTaRBase).
+    - `sources`: miRNA-Gene interaction sources which publish this interaction. mirDIP score is based on the scores of those sources. This field is an array that contains the interaction score source names.
+    - `score_class`: `L` (Low), `M` (Medium), `H` (High) or `V` (Very high)
+  - Example:
+    - URL: <http://localhost:8000/mirna-target-interactions/?mirna=hsa-miR-891a-5p&gene=EGFR&include_pubmeds=true>
+    - Response:
+
             ```json
             {
                 "count":1,
@@ -152,10 +159,10 @@ If no gene symbol is entered, all mirna interactions are returned. If a mirna is
                 ]
             }
             ```  
-- Error Response:
-    - Code: 400
-    - Content: `detail`: error description
 
+- Error Response:
+  - Code: 400
+  - Content: `detail`: error description
 
 ### MiRNA details
 
@@ -163,22 +170,23 @@ Returns extra information of a miRNA.
 
 - URL: `/mirna`
 - Required query params:
-    - `mirna`: miRNA identifier (miRNA code or Accession ID)
+  - `mirna`: miRNA identifier (miRNA code or Accession ID)
 - Functions:
-    - Ordering fields: ordering is not available for this service
-    - Filtering fields: filtering is not available for this service
-    - Searching fields: searching is not available for this service
-    - Pagination: no
+  - Ordering fields: ordering is not available for this service
+  - Filtering fields: filtering is not available for this service
+  - Searching fields: searching is not available for this service
+  - Pagination: no
 - Success Response:
-    - Code: 200
-    - Content:
-        - `aliases`: array of miRNA aliases (previous IDs according to mirBase).
-        - `mirna_sequence`: miRNA nucleotide sequence.
-        - `mirbase_accession_id`: miRNA accession ID (MIMAT).
-        - `links` array of URLs with extra information about this miRNA.
-    - Example:
-        - URL: http://localhost:8000/mirna/?mirna=hsa-miR-548ai
-        - Response:
+  - Code: 200
+  - Content:
+    - `aliases`: array of miRNA aliases (previous IDs according to mirBase).
+    - `mirna_sequence`: miRNA nucleotide sequence.
+    - `mirbase_accession_id`: miRNA accession ID (MIMAT).
+    - `links` array of URLs with extra information about this miRNA.
+  - Example:
+    - URL: <http://localhost:8000/mirna/?mirna=hsa-miR-548ai>
+    - Response:
+
             ```json
             {
                 "aliases":[
@@ -196,10 +204,10 @@ Returns extra information of a miRNA.
                 ]
             }
             ```  
-- Error Response:
-    - Code: 404
-    - Content: -
 
+- Error Response:
+  - Code: 404
+  - Content: -
 
 ### MiRNA aliases
 
@@ -208,18 +216,19 @@ Returns a paginated response with aliases of a miRNA.
 - URL: `/mirna-aliases`
 - Required query params: -
 - Functions:
-    - Ordering fields: `mature_mirna`
-    - Filtering fields: `mature_mirna` and `mirbase_accession_id`
-    - Searching fields: searching is not available for this service
-    - Pagination: yes
+  - Ordering fields: `mature_mirna`
+  - Filtering fields: `mature_mirna` and `mirbase_accession_id`
+  - Searching fields: searching is not available for this service
+  - Pagination: yes
 - Success Response:
-    - Code: 200
-    - Content:
-        - `mirbase_accession_id`: miRNA mirBase accession ID (MIMAT).
-        - `mature_mirna`: previous ID (according to mirBase).
-    - Example:
-        - URL: http://localhost:8000/mirna-aliases/?mirbase_accession_id=MIMAT0000062
-        - Response:
+  - Code: 200
+  - Content:
+    - `mirbase_accession_id`: miRNA mirBase accession ID (MIMAT).
+    - `mature_mirna`: previous ID (according to mirBase).
+  - Example:
+    - URL: <http://localhost:8000/mirna-aliases/?mirbase_accession_id=MIMAT0000062>
+    - Response:
+
             ```json
             {
                 "count":1,
@@ -233,8 +242,8 @@ Returns a paginated response with aliases of a miRNA.
                 ]
             }
             ```  
-- Error Response: -
 
+- Error Response: -
 
 ### MiRNA codes finder
 
@@ -243,20 +252,21 @@ Service that takes a string of any length and returns a list of miRNAs that cont
 - URL: `/mirna-codes-finder`
 - Method: GET
 - Required query params:
-    - `query`: mirna search string.  
+  - `query`: mirna search string.  
 - Optional query params:
-    - `limit`: number of elements returned by the service. 50 by default and maximum 3000.   
+  - `limit`: number of elements returned by the service. 50 by default and maximum 3000.
 - Functions:
-    - Ordering fields: ordering is not available for this service
-    - Filtering fields: filtering is not available for this service
-    - Searching fields: searching is not available for this service
-    - Pagination: no
+  - Ordering fields: ordering is not available for this service
+  - Filtering fields: filtering is not available for this service
+  - Searching fields: searching is not available for this service
+  - Pagination: no
 - Success Response:
-    - Code: 200
-    - Content: a list of miRNAs (IDs or accession IDs from miRbase DB) matching the search criteria.
-    - Example:
-        - URL: http://localhost:8000/mirna-codes-finder/?query=hsa-let-7a
-        - Response:
+  - Code: 200
+  - Content: a list of miRNAs (IDs or accession IDs from miRbase DB) matching the search criteria.
+  - Example:
+    - URL: <http://localhost:8000/mirna-codes-finder/?query=hsa-let-7a>
+    - Response:
+
             ```json
             [
                 "hsa-let-7a-3",
@@ -267,29 +277,30 @@ Service that takes a string of any length and returns a list of miRNAs that cont
                 "hsa-let-7a-5p"
             ]
             ```  
-- Error Response: -
 
+- Error Response: -
 
 ### miRNA codes
 
 Searches for codes from a list of miRNA identifiers and returns the approved access identifier according to miRbase DB.
 
-- URL: `/mirna-codes` 
+- URL: `/mirna-codes`
 - Method: POST
 - Required body params (in JSON format):  
-    - `mirna_codes`: list of identifiers that you want to get your accession ID from miRbase DB.  
+  - `mirna_codes`: list of identifiers that you want to get your accession ID from miRbase DB.  
 - Functions:
-    - Ordering fields: ordering is not available for this service
-    - Filtering fields: filtering is not available for this service
-    - Searching fields: searching is not available for this service
-    - Pagination: no
+  - Ordering fields: ordering is not available for this service
+  - Filtering fields: filtering is not available for this service
+  - Searching fields: searching is not available for this service
+  - Pagination: no
 - Success Response:
-    - Code: 200
-    - Content: 
-        - `mirna_codes`: a JSON object with as many keys as miRNAs in the body of the request. For each miRNA, the value is a valid miRNA accession ID or `null`.  
-    - Example:
-        - URL: http://localhost:8000/mirna-codes/
-        - body: 
+  - Code: 200
+  - Content:
+    - `mirna_codes`: a JSON object with as many keys as miRNAs in the body of the request. For each miRNA, the value is a valid miRNA accession ID or `null`.  
+  - Example:
+    - URL: <http://localhost:8000/mirna-codes/>
+    - body:
+
             ```json
             {
                 "mirna_codes":[
@@ -301,7 +312,9 @@ Searches for codes from a list of miRNA identifiers and returns the approved acc
                 ]
             }
             ```
-        - Response:
+
+    - Response:
+
             ```json
             {
                 "name_01":null,
@@ -311,33 +324,34 @@ Searches for codes from a list of miRNA identifiers and returns the approved acc
                 "hsa-let-7e-5p":"MIMAT0000066"
             }
             ```  
-- Error Response: 
-    - Code: 400
-    - Content:
-        - `detail`: a text with information about the error.  
 
+- Error Response:
+  - Code: 400
+  - Content:
+    - `detail`: a text with information about the error.  
 
 ### Methylation sites finder
 
-Service that takes a text string of any length and returns a list of methylation sites names (loci) containing that search criteria within the Illumina _Infinium MethylationEPIC 2.0_ array.
+Service that takes a text string of any length and returns a list of methylation sites names (loci) containing that search criteria within the Illumina *Infinium MethylationEPIC 2.0* array.
 
 - URL: `/methylation-sites-finder`
 - Method: GET
 - Required query params:
-    - `query`: Methylation search string.  
+  - `query`: Methylation search string.  
 - Optional query params:
-    - `limit`: number of elements returned by the service. 50 by default and maximum 3000.   
+  - `limit`: number of elements returned by the service. 50 by default and maximum 3000.
 - Functions:
-    - Ordering fields: ordering is not available for this service
-    - Filtering fields: filtering is not available for this service
-    - Searching fields: searching is not available for this service
-    - Pagination: no
+  - Ordering fields: ordering is not available for this service
+  - Filtering fields: filtering is not available for this service
+  - Searching fields: searching is not available for this service
+  - Pagination: no
 - Success Response:
-    - Code: 200
-    - Content: a list of methylation sites from the Illumina 'Infinium MethylationEPIC 2.0' array matching the search criteria.
-    - Example:
-        - URL: http://localhost:8000/methylation-sites-finder/?query=cg25&limit=5
-        - Response:
+  - Code: 200
+  - Content: a list of methylation sites from the Illumina 'Infinium MethylationEPIC 2.0' array matching the search criteria.
+  - Example:
+    - URL: <http://localhost:8000/methylation-sites-finder/?query=cg25&limit=5>
+    - Response:
+
             ```json
             [
                 "cg25324105",
@@ -347,29 +361,30 @@ Service that takes a text string of any length and returns a list of methylation
                 "cg25487775"
             ]
             ```  
-- Error Response: -
 
+- Error Response: -
 
 ### Methylation sites
 
-Searches a list of methylation site names or IDs from different Illumina array versions and returns the name for the _Infinium MethylationEPIC 2.0_ array.
+Searches a list of methylation site names or IDs from different Illumina array versions and returns the name for the *Infinium MethylationEPIC 2.0* array.
 
 - URL: `/methylation-sites`
 - Method: POST
 - Required body params (in JSON format):
-    - `methylation_sites`: list of names or identifiers that you want to get your current name from Illumina 'Infinium MethylationEPIC 2.0' array.  
+  - `methylation_sites`: list of names or identifiers that you want to get your current name from Illumina 'Infinium MethylationEPIC 2.0' array.  
 - Functions:
-    - Ordering fields: ordering is not available for this service
-    - Filtering fields: filtering is not available for this service
-    - Searching fields: searching is not available for this service
-    - Pagination: no
+  - Ordering fields: ordering is not available for this service
+  - Filtering fields: filtering is not available for this service
+  - Searching fields: searching is not available for this service
+  - Pagination: no
 - Success Response:
-    - Code: 200
-    - Content: 
-        - `methylation_sites`: a JSON object with as many keys as methylation names in the body of the request. For each methylation name, the value is a list of valid methylation names to Illumina _Infinium MethylationEPIC 2.0_ array.
-    - Example:
-        - URL: http://localhost:8000/methylation-sites/
-        - body: 
+  - Code: 200
+  - Content:
+    - `methylation_sites`: a JSON object with as many keys as methylation names in the body of the request. For each methylation name, the value is a list of valid methylation names to Illumina *Infinium MethylationEPIC 2.0* array.
+  - Example:
+    - URL: <http://localhost:8000/methylation-sites/>
+    - body:
+
             ```json
             {
                 "methylation_sites":[
@@ -378,7 +393,9 @@ Searches a list of methylation site names or IDs from different Illumina array v
                 ]
             }
             ```
-        - Response:
+
+    - Response:
+
             ```json
             {
                 "cg17771854_BC11":[
@@ -389,11 +406,11 @@ Searches a list of methylation site names or IDs from different Illumina array v
                 ]
             }
             ```  
-- Error Response: 
-    - Code: 400
-    - Content:
-        - `detail`: a text with information about the error.  
 
+- Error Response:
+  - Code: 400
+  - Content:
+    - `detail`: a text with information about the error.  
 
 ### Genes of methylation sites
 
@@ -402,19 +419,20 @@ A service that searches from a list of CpG methylation site identifiers from dif
 - URL: `/methylation-sites-genes`
 - Method: POST
 - Required body params (in JSON format):
-    - `methylation_sites`: list of Illumina array methylation site names or identifiers for which you want to know the gene(s).  
+  - `methylation_sites`: list of Illumina array methylation site names or identifiers for which you want to know the gene(s).  
 - Functions:
-    - Ordering fields: ordering is not available for this service
-    - Filtering fields: filtering is not available for this service
-    - Searching fields: searching is not available for this service
-    - Pagination: no
+  - Ordering fields: ordering is not available for this service
+  - Filtering fields: filtering is not available for this service
+  - Searching fields: searching is not available for this service
+  - Pagination: no
 - Success Response:
-    - Code: 200
-    - Content: 
-      - Returns a Json with as many keys as there are methylation names/ids in the body. For each methylation name/ID, the value is a list of genes that the name/id methylates.  
-    - Example:
-        - URL: http://localhost:8000/methylation-sites-genes/
-        - body: 
+  - Code: 200
+  - Content:
+    - Returns a Json with as many keys as there are methylation names/ids in the body. For each methylation name/ID, the value is a list of genes that the name/id methylates.  
+  - Example:
+    - URL: <http://localhost:8000/methylation-sites-genes/>
+    - body:
+
             ```json
             {
                 "methylation_sites":[
@@ -424,7 +442,9 @@ A service that searches from a list of CpG methylation site identifiers from dif
                 ]
             }
             ```
-        - Response:
+
+    - Response:
+
             ```json
             {
                 "cg17771854_BC11":[
@@ -437,11 +457,11 @@ A service that searches from a list of CpG methylation site identifiers from dif
                 ]
             }
             ```  
-- Error Response: 
-    - Code: 400
-    - Content:
-      - `detail`: a text with information about the error.  
 
+- Error Response:
+  - Code: 400
+  - Content:
+    - `detail`: a text with information about the error.  
 
 ### Methylation site details
 
@@ -449,25 +469,26 @@ Returns information of a methylation site.
 
 - URL: `/methylation`
 - Required query params:
-    - `methylation_site`: methylation_site name from Illumina _Infinium MethylationEPIC 2.0_ array
+  - `methylation_site`: methylation_site name from Illumina *Infinium MethylationEPIC 2.0* array
 - Functions:
-    - Ordering fields: ordering is not available for this service
-    - Filtering fields: filtering is not available for this service
-    - Searching fields: searching is not available for this service
-    - Pagination: no
+  - Ordering fields: ordering is not available for this service
+  - Filtering fields: filtering is not available for this service
+  - Searching fields: searching is not available for this service
+  - Pagination: no
 - Success Response:
-    - Code: 200
-    - Content:
-        - `name`: name of methylation site.
-        - `aliases`: list of other names for the same methylation site on other illumina arrays (EPIC v2, EPIC v1, Methyl450 and Methyl27).
-        - `chromosome_position`: information about the chromosome, position and strand on which the site is located.
-        - `ucsc_cpg_islands`: List of islands related to the methylation site according to the UCSC database. Each element in the view is a json with the following content:  
-            - `cpg_island`: chromosomal coordinates where the island is located.
-            - `relation`: Relation of the site to the CpG island. The values it can take are: *Island*=within boundaries of a CpG Island, *N_Shore*=0-2kb 5' of Island, *N_Shelf*=2kb-4kb 5' of Island, *S_Shore*=0-2kb 3' of Island, *S_Shelf*=2kb-4kb 3' of Island.
-        - `genes`: The value is a json where each key is a gene that is related to the methylation site. The values for each gene is a list that contains the region of the gene where the methylation site is located. These regions, according to the NCBI RefSeq database, can be: *5UTR*=5' untranslated region between the TSS and ATG start site, *3UTR*=3' untranslated region between stop codon and poly A signal, *exon_#*, *TSS200*=1-200 bp 5' the TSS, *TS1500*=200-1500 bp 5' of the TSS.
-    - Example:
-        - URL: http://localhost:8000/methylation/?methylation_site=cg22461615
-        - Response:
+  - Code: 200
+  - Content:
+    - `name`: name of methylation site.
+    - `aliases`: list of other names for the same methylation site on other illumina arrays (EPIC v2, EPIC v1, Methyl450 and Methyl27).
+    - `chromosome_position`: information about the chromosome, position and strand on which the site is located.
+    - `ucsc_cpg_islands`: List of islands related to the methylation site according to the UCSC database. Each element in the view is a json with the following content:  
+      - `cpg_island`: chromosomal coordinates where the island is located.
+      - `relation`: Relation of the site to the CpG island. The values it can take are: *Island*=within boundaries of a CpG Island, *N_Shore*=0-2kb 5' of Island, *N_Shelf*=2kb-4kb 5' of Island, *S_Shore*=0-2kb 3' of Island, *S_Shelf*=2kb-4kb 3' of Island.
+    - `genes`: The value is a json where each key is a gene that is related to the methylation site. The values for each gene is a list that contains the region of the gene where the methylation site is located. These regions, according to the NCBI RefSeq database, can be: *5UTR*=5' untranslated region between the TSS and ATG start site, *3UTR*=3' untranslated region between stop codon and poly A signal, *exon_#*, *TSS200*=1-200 bp 5' the TSS, *TS1500*=200-1500 bp 5' of the TSS.
+  - Example:
+    - URL: <http://localhost:8000/methylation/?methylation_site=cg22461615>
+    - Response:
+
             ```json
             {
                 "name":"cg22461615",
@@ -495,11 +516,11 @@ Returns information of a methylation site.
                 }
             }
             ```  
+
     *NOTE*: Multiple values of the same gene name indicate splice variants.  
 - Error Response:
-    - Code: 400
-    - Content: error explanation text  
-
+  - Code: 400
+  - Content: error explanation text  
 
 ### Diseases
 
@@ -508,23 +529,24 @@ Returns a paginated response of diseases related to a miRNA.
 - URL: `/diseases`
 - Method: GET
 - Required query params:
-    - `mirna`: miRNA (miRNA code or Accession ID) to get its interactions with different targets. If it is not specified, the service returns all the elements in a paginated response.
+  - `mirna`: miRNA (miRNA code or Accession ID) to get its interactions with different targets. If it is not specified, the service returns all the elements in a paginated response.
 - Functions:
-    - Ordering fields: `disease`
-    - Filtering fields: filtering is not available for this service
-    - Searching fields: `disease`
-    - Pagination: yes
+  - Ordering fields: `disease`
+  - Filtering fields: filtering is not available for this service
+  - Searching fields: `disease`
+  - Pagination: yes
 - Success Response:
-    - Code: 200
-    - Content:
-        - `id`: internal ID of the record.
-        - `category`: disease category.
-        - `disease`: disease name.
-        - `pubmed`: Pubmed URL.
-        - `description`: description about why this miRNA is related to this disease.
-    - Example:
-        - URL: http://localhost:8000/diseases/?mirna=hsa-miR-9500
-        - Response:
+  - Code: 200
+  - Content:
+    - `id`: internal ID of the record.
+    - `category`: disease category.
+    - `disease`: disease name.
+    - `pubmed`: Pubmed URL.
+    - `description`: description about why this miRNA is related to this disease.
+  - Example:
+    - URL: <http://localhost:8000/diseases/?mirna=hsa-miR-9500>
+    - Response:
+
             ```json
             {
                 "count":1,
@@ -541,11 +563,11 @@ Returns a paginated response of diseases related to a miRNA.
                 ]
             }
             ```  
-- Error Response:
-    - Code: 200
-    - Content: empty paginated response (number of elements = 0)
-- Additional details: **we capitalize the R present in the mirna for each record, because they are mature, however the file does not format it correctly and in the website they show up capitalized**
 
+- Error Response:
+  - Code: 200
+  - Content: empty paginated response (number of elements = 0)
+- Additional details: **we capitalize the R present in the mirna for each record, because they are mature, however the file does not format it correctly and in the website they show up capitalized**
 
 ### Drugs
 
@@ -554,28 +576,29 @@ Returns a paginated response of experimentally validated small molecules (or dru
 - URL: `/drugs`
 - Method: GET
 - Required query params:
-    - `mirna`: miRNA (miRNA code or Accession ID) to get its interactions with different targets. If it is not specified, the service returns all the elements in a paginated response.
+  - `mirna`: miRNA (miRNA code or Accession ID) to get its interactions with different targets. If it is not specified, the service returns all the elements in a paginated response.
 - Functions:
-    - Ordering fields: `condition`, `detection_method`, `small_molecule`, `expression_pattern`, `reference`
+  - Ordering fields: `condition`, `detection_method`, `small_molecule`, `expression_pattern`, `reference`
       and `support`
-    - Filtering fields: `fda_approved` (possible values: `true` or `false`)
-    - Searching fields: `condition`, `small_molecule` and `expression_pattern`
-    - Pagination: yes
+  - Filtering fields: `fda_approved` (possible values: `true` or `false`)
+  - Searching fields: `condition`, `small_molecule` and `expression_pattern`
+  - Pagination: yes
 - Success Response:
-    - Code: 200
-    - Content:
-        - `id`: internal ID of the record.
-        - `small_molecule`: small molecule (or drug).
-        - `fda_approved`: approved by FDA or not.
-        - `detection_method`: experimental detection method.
-        - `condition`: tissues or conditions for detection.
-        - `pubmed`: Pubmed URL.
-        - `reference`: reference title.
-        - `expression_pattern`: expression pattern of miRNA.
-        - `support`: support information for this effect.
-    - Example:
-        - URL: http://localhost:8000/drugs/?mirna=miR-126*
-        - Response:
+  - Code: 200
+  - Content:
+    - `id`: internal ID of the record.
+    - `small_molecule`: small molecule (or drug).
+    - `fda_approved`: approved by FDA or not.
+    - `detection_method`: experimental detection method.
+    - `condition`: tissues or conditions for detection.
+    - `pubmed`: Pubmed URL.
+    - `reference`: reference title.
+    - `expression_pattern`: expression pattern of miRNA.
+    - `support`: support information for this effect.
+  - Example:
+    - URL: <http://localhost:8000/drugs/?mirna=miR-126>*
+    - Response:
+
             ```json
             {
                 "count":1,
@@ -596,11 +619,11 @@ Returns a paginated response of experimentally validated small molecules (or dru
                 ]
             }
             ```  
-- Error Response:
-    - Code: 200
-    - Content: empty paginated response (number of elements = 0)
-- Additional details: **we are concatenating the 'hsa' prefix for all the drugs records because the file that we are using does not have it and to maintain consistency with the format for mature miRNAs**
 
+- Error Response:
+  - Code: 200
+  - Content: empty paginated response (number of elements = 0)
+- Additional details: **we are concatenating the 'hsa' prefix for all the drugs records because the file that we are using does not have it and to maintain consistency with the format for mature miRNAs**
 
 ### Subscribe to PUBMEDS news
 
@@ -609,17 +632,16 @@ Subscribes an email to our email service that sends news about new pubmeds assoc
 - URL: `/subscribe-pubmeds/`
 
 - Required query params:
-    - `mirna`: miRNA (miRNA code or Accession ID)
-    - `email`: valid email addres to send the information to
+  - `mirna`: miRNA (miRNA code or Accession ID)
+  - `email`: valid email addres to send the information to
 - Optional query params:
-    - `gene`: this param allows the user to filter with the mirna and the gene
+  - `gene`: this param allows the user to filter with the mirna and the gene
 - Success Response:
-    - Code: 200
-    - Content:
-        - `token`: subscription token.
+  - Code: 200
+  - Content:
+    - `token`: subscription token.
 - Error Response:
-    - Code: 400
-
+  - Code: 400
 
 ### Unsubscribe from PUBMEDS news
 
@@ -627,12 +649,11 @@ Subscribes an email to our email service that sends news about new pubmeds assoc
 
 - URL: `/unsubscribe-pubmeds/`
 - Required query params:
-    - `token`: token that references the subscription
+  - `token`: token that references the subscription
 - Success Response:
-    - Code: 200
+  - Code: 200
 - Error Response:
-    - Code: 400
-
+  - Code: 400
 
 ## Considerations
 
@@ -650,11 +671,9 @@ If you use any part of our code, or the tool itself is useful for your research,
 }
 ```
 
-
 ## Contributing
 
 All the contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
-
 
 ## Sonarcloud
 
@@ -662,10 +681,8 @@ We are using sonarcloud to analize repository code. We are not strictly followin
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=omics-datascience_modulector&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=omics-datascience_modulector)
 
-
 ## License
 
 This repository is distributed under the terms of the MIT license.
-
 
 [multiomix-site]: https://multiomix.org/
