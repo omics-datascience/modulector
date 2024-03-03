@@ -40,14 +40,14 @@ Modulector obtains information from different bioinformatics databases or resour
    mirDIP is an integrative database of human microRNA target predictions. Modulector use mirDIP 5.2.  
 2. miRNA data: [miRBase: the microRNA database](https://mirbase.org/).  
    miRBase is a searchable database of published miRNA sequences and annotations. Each entry in the miRBase Sequence database represents a predicted hairpin portion of a miRNA transcript (termed hairpin in the database), with information on the location and sequence of the mature miRNA sequence (termed mature). Modulector use miRBase 22.1.  
-3. Methyaation data: Illumina [Infinium MethylationEPIC 2.0](https://www.illumina.com/products/by-type/microarray-kits/infinium-methylation-epic.html) array.  
+3. Methylation data: Illumina [Infinium MethylationEPIC 2.0](https://www.illumina.com/products/by-type/microarray-kits/infinium-methylation-epic.html) array.  
    The Infinium MethylationEPIC v2.0 BeadChip Kit is a genome-wide methylation screening tool that targets over 935,000 CpG sites in the most biologically significant regions of the human methylome. At Modulector we use the information provided by Illumina on its [product files](https://support.illumina.com/downloads/infinium-methylationepic-v2-0-product-files.html) website.  
 
 ## Usage
 
-Modulector can be used through the graphical interfaces provided in [Multiomix][multiomix-site], or it can be hosted on your own server (read [DEPLOYING.md](DEPLOYING.md) for more information). We strongly recommend use this software through Multiomix application.
+Modulector can be used through the graphical interfaces provided in [Multiomix][multiomix-site], or it can be hosted on your server (read [DEPLOYING.md](DEPLOYING.md) for more information). We strongly recommend using this software through the Multiomix application.
 
-All services are available through a web API accessible from a browser or any other web client. All the responses are in JSON format. In addition to the information provided, sorting, filtering, searching and paging functions are also available. How to use these functions is explained below:
+All services are available through a web API accessible from a browser or any other web client. All the responses are in JSON format. In addition to the information provided, sorting, filtering, searching, and paging functions are also available. How to use these functions is explained below:
 
 ### General
 
@@ -55,7 +55,7 @@ All functions are used as a parameter in the URL. So if you want to access `http
 
 ### Sorting
 
-In order to sort you must specify the parameter `ordering=fieldToSort`, if you want to sort descending you must add a `-` before the field name. You can specify several fields to sort separated by *commas*.
+To sort you must specify the parameter `ordering=fieldToSort`, if you want to sort descending you must add a `-` before the field name. You can specify several fields to sort separated by *commas*.
 
 For example, if you want to consume the [miRNA-target interactions](#mirna-target-interactions) service by sorting by `score` descending and by `gene` ascending you can access the URL:
 
@@ -69,13 +69,13 @@ To filter it is enough to specify the field and the value by which you want to f
 
 ### Search
 
-The search is done on the basis of a single parameter called `search` which must contain the value to be searched for. Unlike the filter, the search can be performed on multiple fields at once and is performed by *containing* the search term in the field and is case insensitive (while the filter is by exact value). The fields considered in the search are fixed and will be specified for each service later. For example, the [drugs](#drugs) service allows a search by the `condition`, `small_molecule` and `expression_pattern` fields, then the following query could be performed:
+The search is done on the basis of a single parameter called `search` which must contain the value to be searched for. Unlike the filter, the search can be performed on multiple fields at once and is performed by *containing* the search term in the field and is case insensitive (while the filter is by exact value). The fields considered in the search are fixed and will be specified for each service later. For example, the [drugs](#drugs) service allows a search by the `condition`, `small_molecule`, and `expression_pattern` fields, then the following query could be performed:
 
 `https://modulector.multiomix.org/drugs/?mirna=miR-126*search=breast`
 
 ### Pagination
 
-Some services can return so many items that paginated responses were chosen, so that they are efficient queries of few items and can be traversed through parameterizable pages. There are two parameters that can be specified to handle pagination:
+Some services can return so many items that paginated responses were chosen so that they are efficient queries of few items and can be traversed through parameterizable pages. There are two parameters that can be specified to handle pagination:
 
 - `page`: allows you to specify the current page. If not specified, the default value `1` is used.
 - `page_size`: number of elements to return per page. If not specified, the default value `10` is used. The value cannot   be greater than `1000`.
@@ -93,22 +93,22 @@ All of the above parameters can be used together! For example, if we wanted to c
 
 `https://modulector.multiomix.org/diseases/?ordering=disease&search=leukemia&page_size=3`
 
-**It will be indicated for each service which fields are available for filtering, sorting and/or searching**.
+**It will be indicated for each service which fields are available for filtering, sorting, and/or searching**.
 
 ## Services
 
 ### MiRNA target interactions
 
 Receives a miRNA and/or a gene symbol and returns a paginated vector. Each vector entry represents a miRNA-Gene interaction.  
-If no gene symbol is entered, all mirna interactions are returned. If a mirna is not entered, all gene interactions are returned. If both are entered, the interaction of mirna with the gene is returned.
+If no gene symbol is entered, all miRNA interactions are returned. If a miRNA is not entered, all gene interactions are returned. If both are entered, the interaction of mirna with the gene is returned.
 
 - URL: `/mirna-target-interactions`
 - Query params:
   - `mirna`: miRNA (Accession ID or name in mirBase) to get its interactions with different genes targets.
-  - `gene`: gene symbol to get its interactions with different miRNAs targets.
+  - `gene`: gene symbol to get its interactions with different miRNA targets.
   - `score`: numerical score to filter the interactions (only interactions with a score greater than or equal to the parameter value are returned). The value of this score is provided by the mirDip database.  
-  - `include_pubmeds`: if its value is 'true', the endpoint also returns a list of links to Pubmed where the mirnas are related to the genes (this may affect Modulector's response time). Default is 'false'.
-*NOTE*: mirna or gene are required
+  - `include_pubmeds`: if its value is 'true', the endpoint also returns a list of links to Pubmed where the miRNAs are related to the genes (this may affect Modulector's response time). The default is 'false'.
+*NOTE*: `mirna` or `gene` are required
 - Functions:
   - Ordering fields: `gene` and `score`
   - Filtering fields: filtering is not available for this service
@@ -118,11 +118,11 @@ If no gene symbol is entered, all mirna interactions are returned. If a mirna is
   - Code: 200
   - Content:
     - `id`: internal ID of the interaction.
-    - `mirna`: miRNA ID (mirbase MIMAT id or previous ID). The received one as query param.
+    - `mirna`: miRNA ID (miRBase MIMAT id or previous ID). The received one as query param.
     - `gene`: target gene.
-    - `score`: interaction score (according mirDIP).
+    - `score`: interaction score (according to mirDIP).
     - `source_name`: database from which the interaction was extracted.
-    - `pubmeds`: array of pubmed for the miRNA-gene interaction (according to mirTaRBase).
+    - `pubmeds`: array of PubMed for the miRNA-gene interaction (according to mirTaRBase).
     - `sources`: miRNA-Gene interaction sources which publish this interaction. mirDIP score is based on the scores of those sources. This field is an array that contains the interaction score source names.
     - `score_class`: `L` (Low), `M` (Medium), `H` (High) or `V` (Very high)
   - Example:
@@ -179,7 +179,7 @@ Returns extra information of a miRNA.
 - Success Response:
   - Code: 200
   - Content:
-    - `aliases`: array of miRNA aliases (previous IDs according to mirBase).
+    - `aliases`: array of miRNA aliases (previous IDs according to miRBase).
     - `mirna_sequence`: miRNA nucleotide sequence.
     - `mirbase_accession_id`: miRNA accession ID (MIMAT).
     - `links` array of URLs with extra information about this miRNA.
@@ -224,7 +224,7 @@ Returns a paginated response with aliases of a miRNA.
   - Code: 200
   - Content:
     - `mirbase_accession_id`: miRNA mirBase accession ID (MIMAT).
-    - `mature_mirna`: previous ID (according to mirBase).
+    - `mature_mirna`: previous ID (according to miRBase).
   - Example:
     - URL: <http://localhost:8000/mirna-aliases/?mirbase_accession_id=MIMAT0000062>
     - Response:
@@ -254,7 +254,7 @@ Service that takes a string of any length and returns a list of miRNAs that cont
 - Required query params:
   - `query`: mirna search string.  
 - Optional query params:
-  - `limit`: number of elements returned by the service. 50 by default and maximum 3000.
+  - `limit`: number of elements returned by the service. `50` by default and a maximum of `3000`.
 - Functions:
   - Ordering fields: ordering is not available for this service
   - Filtering fields: filtering is not available for this service
@@ -282,12 +282,12 @@ Service that takes a string of any length and returns a list of miRNAs that cont
 
 ### miRNA codes
 
-Searches for codes from a list of miRNA identifiers and returns the approved access identifier according to miRbase DB.
+Searches for codes from a list of miRNA identifiers and returns the approved access identifier according to miRBase DB.
 
 - URL: `/mirna-codes`
 - Method: POST
 - Required body params (in JSON format):  
-  - `mirna_codes`: list of identifiers that you want to get your accession ID from miRbase DB.  
+  - `mirna_codes`: list of identifiers that you want to get your accession ID from miRBase DB.  
 - Functions:
   - Ordering fields: ordering is not available for this service
   - Filtering fields: filtering is not available for this service
@@ -339,7 +339,7 @@ Service that takes a text string of any length and returns a list of methylation
 - Required query params:
   - `query`: Methylation search string.  
 - Optional query params:
-  - `limit`: number of elements returned by the service. 50 by default and maximum 3000.
+  - `limit`: number of elements returned by the service. `50` by default and a maximum of `3000`.
 - Functions:
   - Ordering fields: ordering is not available for this service
   - Filtering fields: filtering is not available for this service
@@ -428,7 +428,7 @@ A service that searches from a list of CpG methylation site identifiers from dif
 - Success Response:
   - Code: 200
   - Content:
-    - Returns a Json with as many keys as there are methylation names/ids in the body. For each methylation name/ID, the value is a list of genes that the name/id methylates.  
+    - Returns a Json with as many keys as there are methylation names/ids in the body. For each methylation name/ID, the value is a list of genes that the name/ID methylates.  
   - Example:
     - URL: <http://localhost:8000/methylation-sites-genes/>
     - body:
@@ -465,7 +465,7 @@ A service that searches from a list of CpG methylation site identifiers from dif
 
 ### Methylation site details
 
-Returns information of a methylation site.
+Returns information on a methylation site.
 
 - URL: `/methylation`
 - Required query params:
@@ -479,12 +479,12 @@ Returns information of a methylation site.
   - Code: 200
   - Content:
     - `name`: name of methylation site.
-    - `aliases`: list of other names for the same methylation site on other illumina arrays (EPIC v2, EPIC v1, Methyl450 and Methyl27).
-    - `chromosome_position`: information about the chromosome, position and strand on which the site is located.
-    - `ucsc_cpg_islands`: List of islands related to the methylation site according to the UCSC database. Each element in the view is a json with the following content:  
+    - `aliases`: list of other names for the same methylation site on other Illumina arrays (EPIC v2, EPIC v1, Methyl450, and Methyl27).
+    - `chromosome_position`: information about the chromosome, position, and strand on which the site is located.
+    - `ucsc_cpg_islands`: List of islands related to the methylation site according to the UCSC database. Each element in the view is a JSON with the following content:  
       - `cpg_island`: chromosomal coordinates where the island is located.
-      - `relation`: Relation of the site to the CpG island. The values it can take are: *Island*=within boundaries of a CpG Island, *N_Shore*=0-2kb 5' of Island, *N_Shelf*=2kb-4kb 5' of Island, *S_Shore*=0-2kb 3' of Island, *S_Shelf*=2kb-4kb 3' of Island.
-    - `genes`: The value is a json where each key is a gene that is related to the methylation site. The values for each gene is a list that contains the region of the gene where the methylation site is located. These regions, according to the NCBI RefSeq database, can be: *5UTR*=5' untranslated region between the TSS and ATG start site, *3UTR*=3' untranslated region between stop codon and poly A signal, *exon_#*, *TSS200*=1-200 bp 5' the TSS, *TS1500*=200-1500 bp 5' of the TSS.
+      - `relation`: Relation of the site to the CpG island. The values it can take are *Island*=within boundaries of a CpG Island, *N_Shore*=0-2kb 5' of Island, *N_Shelf*=2kb-4kb 5' of Island, *S_Shore*=0-2kb 3' of Island, *S_Shelf*=2kb-4kb 3' of Island.
+    - `genes`: The value is a JSON where each key is a gene that is related to the methylation site. Values for each gene is a list that contains the region of the gene where the methylation site is located. These regions, according to the NCBI RefSeq database, can be: *5UTR*=5' untranslated region between the TSS and ATG start site, *3UTR*=3' untranslated region between stop codon and poly A signal, *exon_#*, *TSS200*=1-200 bp 5' the TSS, *TS1500*=200-1500 bp 5' of the TSS.
   - Example:
     - URL: <http://localhost:8000/methylation/?methylation_site=cg22461615>
     - Response:
@@ -567,11 +567,11 @@ Returns a paginated response of diseases related to a miRNA.
 - Error Response:
   - Code: 200
   - Content: empty paginated response (number of elements = 0)
-- Additional details: **we capitalize the R present in the mirna for each record, because they are mature, however the file does not format it correctly and in the website they show up capitalized**
+- Additional details: **We capitalize the R present in the miRNA for each record because they are mature, however, the file does not format it correctly and on the website they show up capitalized**
 
 ### Drugs
 
-Returns a paginated response of experimentally validated small molecules (or drugs) effects on miRNA expression.
+Returns a paginated response of experimentally validated small molecules (or drugs) that affect miRNA expression.
 
 - URL: `/drugs`
 - Method: GET
@@ -581,7 +581,7 @@ Returns a paginated response of experimentally validated small molecules (or dru
   - Ordering fields: `condition`, `detection_method`, `small_molecule`, `expression_pattern`, `reference`
       and `support`
   - Filtering fields: `fda_approved` (possible values: `true` or `false`)
-  - Searching fields: `condition`, `small_molecule` and `expression_pattern`
+  - Searching fields: `condition`, `small_molecule`, and `expression_pattern`
   - Pagination: yes
 - Success Response:
   - Code: 200
@@ -623,19 +623,19 @@ Returns a paginated response of experimentally validated small molecules (or dru
 - Error Response:
   - Code: 200
   - Content: empty paginated response (number of elements = 0)
-- Additional details: **we are concatenating the 'hsa' prefix for all the drugs records because the file that we are using does not have it and to maintain consistency with the format for mature miRNAs**
+- Additional details: **We are concatenating the 'hsa' prefix for all the drugs records because the file that we are using does not have it and to maintain consistency with the format for mature miRNAs**
 
 ### Subscribe to PUBMEDS news
 
-Subscribes an email to our email service that sends news about new pubmeds associated to a mirna and/or gene
+Subscribes an email to our email service that sends news about new Pubmed associated with a miRNA and/or gene.
 
 - URL: `/subscribe-pubmeds/`
 
 - Required query params:
   - `mirna`: miRNA (miRNA code or Accession ID)
-  - `email`: valid email addres to send the information to
+  - `email`: valid email address to send the information to
 - Optional query params:
-  - `gene`: this param allows the user to filter with the mirna and the gene
+  - `gene`: this param allows the user to filter with the miRNA and the gene
 - Success Response:
   - Code: 200
   - Content:
@@ -645,11 +645,11 @@ Subscribes an email to our email service that sends news about new pubmeds assoc
 
 ### Unsubscribe from PUBMEDS news
 
-Subscribes an email to our email service that sends news about new pubmeds associated to a mirna and/or gene
+Subscribes an email to our email service that sends news about new Pubmed associated with a miRNA and/or gene
 
 - URL: `/unsubscribe-pubmeds/`
 - Required query params:
-  - `token`: token that references the subscription
+  - `token`: a token that references the subscription
 - Success Response:
   - Code: 200
 - Error Response:
@@ -677,7 +677,7 @@ All the contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md
 
 ## Sonarcloud
 
-We are using sonarcloud to analize repository code. We are not strictly following all the sonarCloud recomendations but we think that some recomendatios will help us to increase quality.
+We are using Sonarcloud to analyze repository code. We are not strictly following all the sonarCloud recommendations but we think that some recommendations will help us to increase quality.
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=omics-datascience_modulector&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=omics-datascience_modulector)
 
