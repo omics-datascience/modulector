@@ -129,36 +129,36 @@ If no gene symbol is entered, all miRNA interactions are returned. If a miRNA is
     - URL: <http://localhost:8000/mirna-target-interactions/?mirna=hsa-miR-891a-5p&gene=EGFR&include_pubmeds=true>
     - Response:
 
-            ```JSON
+    ```JSON
+      {
+        "count":1,
+        "next":null,
+        "previous":null,
+        "results":[
             {
-                "count":1,
-                "next":null,
-                "previous":null,
-                "results":[
-                    {
-                        "id":629118277,
-                        "mirna":"hsa-miR-891a-5p",
-                        "gene":"EGFR",
-                        "score":0.0684,
-                        "source_name":"mirdip",
-                        "pubmeds":[
-                            "https://pubmed.ncbi.nlm.nih.gov/5362487",
-                            "https://pubmed.ncbi.nlm.nih.gov/10120249",
-                            "https://pubmed.ncbi.nlm.nih.gov/8948606",
-                            "https://pubmed.ncbi.nlm.nih.gov/5642539",
-                            "https://pubmed.ncbi.nlm.nih.gov/9361765",
-                            "https://pubmed.ncbi.nlm.nih.gov/4895700"
-                        ],
-                        "sources":[
-                            "MirAncesTar",
-                            "mirmap_May_2021",
-                            "MiRNATIP"
-                        ],
-                        "score_class":"M"
-                    }
-                ]
+                "id":629118277,
+                "mirna":"hsa-miR-891a-5p",
+                "gene":"EGFR",
+                "score":0.0684,
+                "source_name":"mirdip",
+                "pubmeds":[
+                    "https://pubmed.ncbi.nlm.nih.gov/5362487",
+                    "https://pubmed.ncbi.nlm.nih.gov/10120249",
+                    "https://pubmed.ncbi.nlm.nih.gov/8948606",
+                    "https://pubmed.ncbi.nlm.nih.gov/5642539",
+                    "https://pubmed.ncbi.nlm.nih.gov/9361765",
+                    "https://pubmed.ncbi.nlm.nih.gov/4895700"
+                ],
+                "sources":[
+                    "MirAncesTar",
+                    "mirmap_May_2021",
+                    "MiRNATIP"
+                ],
+                "score_class":"M"
             }
-            ```  
+        ]
+      }
+    ```  
 
 - Error Response:
   - Code: 400
@@ -187,23 +187,23 @@ Returns extra information of a miRNA.
     - URL: <http://localhost:8000/mirna/?mirna=hsa-miR-548ai>
     - Response:
 
-            ```JSON
-            {
-                "aliases":[
-                    "hsa-miR-548ai",
-                    "MIMAT0018989",
-                    "hsa-miR-548ai"
-                ],
-                "mirna_sequence":"AAAGGUAAUUGCAGUUUUUCCC",
-                "mirbase_accession_id":"MIMAT0018989",
-                "links":[
-                    {
-                        "source":"mirbase",
-                        "url":"http://www.mirbase.org/cgi-bin/mirna_entry.pl?acc=MIMAT0018989"
-                    }
-                ]
-            }
-            ```  
+      ```JSON
+        {
+          "aliases":[
+              "hsa-miR-548ai",
+              "MIMAT0018989",
+              "hsa-miR-548ai"
+          ],
+          "mirna_sequence":"AAAGGUAAUUGCAGUUUUUCCC",
+          "mirbase_accession_id":"MIMAT0018989",
+          "links":[
+              {
+                  "source":"mirbase",
+                  "url":"http://www.mirbase.org/cgi-bin/mirna_entry.pl?acc=MIMAT0018989"
+              }
+          ]
+        }
+      ```  
 
 - Error Response:
   - Code: 404
@@ -229,19 +229,19 @@ Returns a paginated response with aliases of a miRNA.
     - URL: <http://localhost:8000/mirna-aliases/?mirbase_accession_id=MIMAT0000062>
     - Response:
 
-            ```JSON
-            {
-                "count":1,
-                "next":null,
-                "previous":null,
-                "results":[
-                    {
-                        "mirbase_accession_id":"MIMAT0000062",
-                        "mature_mirna":"hsa-let-7a-5p"
-                    }
-                ]
-            }
-            ```  
+      ```JSON
+        {
+          "count":1,
+          "next":null,
+          "previous":null,
+          "results":[
+              {
+                  "mirbase_accession_id":"MIMAT0000062",
+                  "mature_mirna":"hsa-let-7a-5p"
+              }
+          ]
+        }
+      ```  
 
 - Error Response: -
 
@@ -267,16 +267,16 @@ Service that takes a string of any length and returns a list of miRNAs that cont
     - URL: <http://localhost:8000/mirna-codes-finder/?query=hsa-let-7a>
     - Response:
 
-            ```JSON
-            [
-                "hsa-let-7a-3",
-                "hsa-let-7a-2",
-                "hsa-let-7a-3p",
-                "hsa-let-7a-2-3p",
-                "hsa-let-7a-1",
-                "hsa-let-7a-5p"
-            ]
-            ```  
+      ```JSON
+        [
+          "hsa-let-7a-3",
+          "hsa-let-7a-2",
+          "hsa-let-7a-3p",
+          "hsa-let-7a-2-3p",
+          "hsa-let-7a-1",
+          "hsa-let-7a-5p"
+        ]
+      ```  
 
 - Error Response: -
 
@@ -301,29 +301,29 @@ Searches for codes from a list of miRNA identifiers and returns the approved acc
     - URL: <http://localhost:8000/mirna-codes/>
     - body:
 
-            ```JSON
-            {
-                "mirna_codes":[
-                    "name_01",
-                    "Hsa-Mir-935-v2_5p*",
-                    "MIMAT0000066",
-                    "MI0026417",
-                    "hsa-let-7e-5p"
-                ]
-            }
-            ```
+      ```JSON
+        {
+          "mirna_codes":[
+              "name_01",
+              "Hsa-Mir-935-v2_5p*",
+              "MIMAT0000066",
+              "MI0026417",
+              "hsa-let-7e-5p"
+          ]
+        }
+      ```
 
     - Response:
 
-            ```JSON
-            {
-                "name_01":null,
-                "Hsa-Mir-935-v2_5p*":null,
-                "MIMAT0000066":"MIMAT0000066",
-                "MI0026417":"MI0026417",
-                "hsa-let-7e-5p":"MIMAT0000066"
-            }
-            ```  
+      ```JSON
+        {
+          "name_01":null,
+          "Hsa-Mir-935-v2_5p*":null,
+          "MIMAT0000066":"MIMAT0000066",
+          "MI0026417":"MI0026417",
+          "hsa-let-7e-5p":"MIMAT0000066"
+        }
+      ```  
 
 - Error Response:
   - Code: 400
@@ -352,15 +352,15 @@ Service that takes a text string of any length and returns a list of methylation
     - URL: <http://localhost:8000/methylation-sites-finder/?query=cg25&limit=5>
     - Response:
 
-            ```JSON
-            [
-                "cg25324105",
-                "cg25383568",
-                "cg25455143",
-                "cg25459778",
-                "cg25487775"
-            ]
-            ```  
+      ```JSON
+        [
+          "cg25324105",
+          "cg25383568",
+          "cg25455143",
+          "cg25459778",
+          "cg25487775"
+        ]
+      ```  
 
 - Error Response: -
 
@@ -385,27 +385,27 @@ Searches a list of methylation site names or IDs from different Illumina array v
     - URL: <http://localhost:8000/methylation-sites/>
     - body:
 
-            ```JSON
-            {
-                "methylation_sites":[
-                    "cg17771854_BC11",
-                    "cg01615704_TC11"
-                ]
-            }
-            ```
+      ```JSON
+        {
+          "methylation_sites":[
+              "cg17771854_BC11",
+              "cg01615704_TC11"
+          ]
+        }
+      ```
 
     - Response:
 
-            ```JSON
-            {
-                "cg17771854_BC11":[
-                    "cg17771854"
-                ],
-                "cg01615704_TC11":[
-                    "cg01615704"
-                ]
-            }
-            ```  
+      ```JSON
+        {
+          "cg17771854_BC11":[
+              "cg17771854"
+          ],
+          "cg01615704_TC11":[
+              "cg01615704"
+          ]
+        }
+      ```  
 
 - Error Response:
   - Code: 400
@@ -433,30 +433,30 @@ A service that searches from a list of CpG methylation site identifiers from dif
     - URL: <http://localhost:8000/methylation-sites-genes/>
     - body:
 
-            ```JSON
-            {
-                "methylation_sites":[
-                    "cg17771854_BC11",
-                    "cg22461615_TC11",
-                    "name_007"
-                ]
-            }
-            ```
+      ```JSON
+        {
+          "methylation_sites":[
+              "cg17771854_BC11",
+              "cg22461615_TC11",
+              "name_007"
+          ]
+        }
+      ```
 
     - Response:
 
-            ```JSON
-            {
-                "cg17771854_BC11":[
-                    "IPO13"
-                ],
-                "cg22461615_TC11":[
-                    "THAP9",
-                    "THAP9-AS1",
-                    "SEC31A"
-                ]
-            }
-            ```  
+      ```JSON
+        {
+          "cg17771854_BC11":[
+              "IPO13"
+          ],
+          "cg22461615_TC11":[
+              "THAP9",
+              "THAP9-AS1",
+              "SEC31A"
+          ]
+        }
+      ```  
 
 - Error Response:
   - Code: 400
@@ -489,33 +489,33 @@ Returns information on a methylation site.
     - URL: <http://localhost:8000/methylation/?methylation_site=cg22461615>
     - Response:
 
-            ```JSON
-            {
-                "name":"cg22461615",
-                "chromosome_position":"chr4:82900764 [+]",
-                "aliases":[
-                    "cg22461615_TC11"
-                ],
-                "ucsc_cpg_islands":[
-                    {
-                        "cpg_island":"chr4:82900535-82900912",
-                        "relation":"Island"
-                    }
-                ],
-                "genes":{
-                    "THAP9":[
-                        "5UTR",
-                        "exon_1"
-                    ],
-                    "THAP9-AS1":[
-                        "exon_1"
-                    ],
-                    "SEC31A":[
-                        "TSS200"
-                    ]
-                }
-            }
-            ```  
+      ```JSON
+        {
+          "name":"cg22461615",
+          "chromosome_position":"chr4:82900764 [+]",
+          "aliases":[
+              "cg22461615_TC11"
+          ],
+          "ucsc_cpg_islands":[
+              {
+                  "cpg_island":"chr4:82900535-82900912",
+                  "relation":"Island"
+              }
+          ],
+          "genes":{
+              "THAP9":[
+                  "5UTR",
+                  "exon_1"
+              ],
+              "THAP9-AS1":[
+                  "exon_1"
+              ],
+              "SEC31A":[
+                  "TSS200"
+              ]
+          }
+        }
+      ```  
 
     *NOTE*: Multiple values of the same gene name indicate splice variants.  
 - Error Response:
@@ -547,22 +547,22 @@ Returns a paginated response of diseases related to a miRNA.
     - URL: <http://localhost:8000/diseases/?mirna=hsa-miR-9500>
     - Response:
 
-            ```JSON
-            {
-                "count":1,
-                "next":null,
-                "previous":null,
-                "results":[
-                    {
-                        "id":3540992,
-                        "category":"target gene",
-                        "disease":"Liver Neoplasms",
-                        "pubmed":"https://pubmed.ncbi.nlm.nih.gov/24658401",
-                        "description":"The novel miR-9500 regulates the proliferation and migration of human lung cancer cells by targeting Akt1."
-                    }
-                ]
-            }
-            ```  
+      ```JSON
+        {
+          "count":1,
+          "next":null,
+          "previous":null,
+          "results":[
+              {
+                  "id":3540992,
+                  "category":"target gene",
+                  "disease":"Liver Neoplasms",
+                  "pubmed":"https://pubmed.ncbi.nlm.nih.gov/24658401",
+                  "description":"The novel miR-9500 regulates the proliferation and migration of human lung cancer cells by targeting Akt1."
+              }
+          ]
+        }
+      ```  
 
 - Error Response:
   - Code: 200
@@ -599,26 +599,26 @@ Returns a paginated response of experimentally validated small molecules (or dru
     - URL: <http://localhost:8000/drugs/?mirna=miR-126>*
     - Response:
 
-            ```JSON
-            {
-                "count":1,
-                "next":null,
-                "previous":null,
-                "results":[
-                    {
-                        "id":275028,
-                        "small_molecule":"17beta-estradiol (E2)",
-                        "fda_approved":true,
-                        "detection_method":"Microarray",
-                        "condition":"MCF-7AKT breast cancer cells",
-                        "pubmed":"https://pubmed.ncbi.nlm.nih.gov/19528081",
-                        "reference":"Estradiol-regulated microRNAs control estradiol response in breast cancer cells.",
-                        "expression_pattern":"down-regulated",
-                        "support":"To investigate this possibility, we determined microRNA-expression patterns in MCF-7p and MCF-7AKT cells with and without E2 treatment for 4 h. We observed 21 E2-inducible and 7 E2-repressible microRNAs in MCF-7p cells (statistical cutoff P-value <0.05 and fold change >1.5 or <0.7) (Table 1)."
-                    }
-                ]
-            }
-            ```  
+      ```JSON
+        {
+          "count":1,
+          "next":null,
+          "previous":null,
+          "results":[
+              {
+                  "id":275028,
+                  "small_molecule":"17beta-estradiol (E2)",
+                  "fda_approved":true,
+                  "detection_method":"Microarray",
+                  "condition":"MCF-7AKT breast cancer cells",
+                  "pubmed":"https://pubmed.ncbi.nlm.nih.gov/19528081",
+                  "reference":"Estradiol-regulated microRNAs control estradiol response in breast cancer cells.",
+                  "expression_pattern":"down-regulated",
+                  "support":"To investigate this possibility, we determined microRNA-expression patterns in MCF-7p and MCF-7AKT cells with and without E2 treatment for 4 h. We observed 21 E2-inducible and 7 E2-repressible microRNAs in MCF-7p cells (statistical cutoff P-value <0.05 and fold change >1.5 or <0.7) (Table 1)."
+              }
+          ]
+        }
+      ```  
 
 - Error Response:
   - Code: 200
