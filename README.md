@@ -129,7 +129,7 @@ If no gene symbol is entered, all miRNA interactions are returned. If a miRNA is
     - URL: <http://localhost:8000/mirna-target-interactions/?mirna=hsa-miR-891a-5p&gene=EGFR&include_pubmeds=true>
     - Response:
 
-            ```json
+            ```JSON
             {
                 "count":1,
                 "next":null,
@@ -187,7 +187,7 @@ Returns extra information of a miRNA.
     - URL: <http://localhost:8000/mirna/?mirna=hsa-miR-548ai>
     - Response:
 
-            ```json
+            ```JSON
             {
                 "aliases":[
                     "hsa-miR-548ai",
@@ -229,7 +229,7 @@ Returns a paginated response with aliases of a miRNA.
     - URL: <http://localhost:8000/mirna-aliases/?mirbase_accession_id=MIMAT0000062>
     - Response:
 
-            ```json
+            ```JSON
             {
                 "count":1,
                 "next":null,
@@ -267,7 +267,7 @@ Service that takes a string of any length and returns a list of miRNAs that cont
     - URL: <http://localhost:8000/mirna-codes-finder/?query=hsa-let-7a>
     - Response:
 
-            ```json
+            ```JSON
             [
                 "hsa-let-7a-3",
                 "hsa-let-7a-2",
@@ -301,7 +301,7 @@ Searches for codes from a list of miRNA identifiers and returns the approved acc
     - URL: <http://localhost:8000/mirna-codes/>
     - body:
 
-            ```json
+            ```JSON
             {
                 "mirna_codes":[
                     "name_01",
@@ -315,7 +315,7 @@ Searches for codes from a list of miRNA identifiers and returns the approved acc
 
     - Response:
 
-            ```json
+            ```JSON
             {
                 "name_01":null,
                 "Hsa-Mir-935-v2_5p*":null,
@@ -352,7 +352,7 @@ Service that takes a text string of any length and returns a list of methylation
     - URL: <http://localhost:8000/methylation-sites-finder/?query=cg25&limit=5>
     - Response:
 
-            ```json
+            ```JSON
             [
                 "cg25324105",
                 "cg25383568",
@@ -385,7 +385,7 @@ Searches a list of methylation site names or IDs from different Illumina array v
     - URL: <http://localhost:8000/methylation-sites/>
     - body:
 
-            ```json
+            ```JSON
             {
                 "methylation_sites":[
                     "cg17771854_BC11",
@@ -396,7 +396,7 @@ Searches a list of methylation site names or IDs from different Illumina array v
 
     - Response:
 
-            ```json
+            ```JSON
             {
                 "cg17771854_BC11":[
                     "cg17771854"
@@ -428,12 +428,12 @@ A service that searches from a list of CpG methylation site identifiers from dif
 - Success Response:
   - Code: 200
   - Content:
-    - Returns a Json with as many keys as there are methylation names/ids in the body. For each methylation name/ID, the value is a list of genes that the name/ID methylates.  
+    - Returns a JSON with as many keys as there are methylation names/ids in the body. For each methylation name/ID, the value is a list of genes that the name/ID methylates.  
   - Example:
     - URL: <http://localhost:8000/methylation-sites-genes/>
     - body:
 
-            ```json
+            ```JSON
             {
                 "methylation_sites":[
                     "cg17771854_BC11",
@@ -445,7 +445,7 @@ A service that searches from a list of CpG methylation site identifiers from dif
 
     - Response:
 
-            ```json
+            ```JSON
             {
                 "cg17771854_BC11":[
                     "IPO13"
@@ -489,7 +489,7 @@ Returns information on a methylation site.
     - URL: <http://localhost:8000/methylation/?methylation_site=cg22461615>
     - Response:
 
-            ```json
+            ```JSON
             {
                 "name":"cg22461615",
                 "chromosome_position":"chr4:82900764 [+]",
@@ -547,7 +547,7 @@ Returns a paginated response of diseases related to a miRNA.
     - URL: <http://localhost:8000/diseases/?mirna=hsa-miR-9500>
     - Response:
 
-            ```json
+            ```JSON
             {
                 "count":1,
                 "next":null,
@@ -599,7 +599,7 @@ Returns a paginated response of experimentally validated small molecules (or dru
     - URL: <http://localhost:8000/drugs/?mirna=miR-126>*
     - Response:
 
-            ```json
+            ```JSON
             {
                 "count":1,
                 "next":null,
