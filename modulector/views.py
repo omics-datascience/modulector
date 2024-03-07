@@ -30,7 +30,7 @@ MAX_PAGE_SIZE: Final[int] = 3000
 PROCESS_POOL_WORKERS: Final[int] = settings.PROCESS_POOL_WORKERS
 
 
-def get_methylation_epic_sites_names(input_id: str) -> List[str]:
+def get_methylation_epic_sites_names(input_id: str) -> tuple[str, List[str]]:
     """
     Gets methylation sites from any type of Loci id.
     :param input_id: String to query in the DB.
@@ -40,7 +40,7 @@ def get_methylation_epic_sites_names(input_id: str) -> List[str]:
                                          Q(methyl450_loci=input_id) | Q(methyl27_loci=input_id) |
                                          Q(epicv1_loci=input_id)).values_list('name', flat=True)
 
-    return list(res)
+    return (input_id, list(res))
 
 
 def get_limit_parameter(value: Optional[str]) -> int:
@@ -312,14 +312,20 @@ class MethylationSites(APIView):
         # Generates a dict with the methylation sites as keys and the result of the query as values.
         # note: it uses ProcessPoolExecutor to parallelize the queries and not a ThreadPoolExecutor because
         # the latter has a bug closing Django connections (see https://stackoverflow.com/q/57211476/7058363)
+        # with ProcessPoolExecutor(max_workers=PROCESS_POOL_WORKERS) as executor:
+        #     res = {
+        #         methylation_name: result
+        #         for methylation_name, result in zip(methylation_sites, executor.map(
+        #             get_methylation_epic_sites_names, methylation_sites
+        #         ))
+        #     }
+
+        # NEW:
         with ProcessPoolExecutor(max_workers=PROCESS_POOL_WORKERS) as executor:
             res = {
-                methylation_name: result
-                for methylation_name, result in zip(methylation_sites, executor.map(
-                    get_methylation_epic_sites_names, methylation_sites
-                ))
+                result[0]: result[1]
+                for result in executor.map(get_methylation_epic_sites_names, methylation_sites)
             }
-
         return Response(res)
 
 
