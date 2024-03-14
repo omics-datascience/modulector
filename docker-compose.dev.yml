@@ -19,15 +19,6 @@ services:
             - modulector_postgres_data:/var/lib/postgresql/data/
             - ./config/postgres/postgres.conf:/etc/postgresql/postgresql.conf
 
-
-    # Web-based DB admin interface for DB management
-    adminer:
-        image: adminer
-        container_name: modulector_dev_adminer
-        restart: always
-        ports:
-            - '8080:8080'
-
 # Uncomment if using empty Postgres service
 volumes:
     modulector_postgres_data:
