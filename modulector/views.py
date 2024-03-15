@@ -31,15 +31,20 @@ MAX_PAGE_SIZE: Final[int] = 3000
 PROCESS_POOL_WORKERS: Final[int] = settings.PROCESS_POOL_WORKERS
 
 
+def get_methylation_match_condition(input_name: str) -> Q:
+    """Generates the condition to match a Methylation site."""
+    return (Q(ilmnid=input_name) | Q(name=input_name) | Q(methyl450_loci=input_name) | Q(methyl27_loci=input_name) |
+            Q(epicv1_loci=input_name))
+
+
 def get_methylation_epic_sites_names(input_id: str) -> tuple[str, list[str]]:
     """
     Gets methylation sites from any type of Loci id.
     :param input_id: String to query in the DB.
     :return: list of Methylation sites.
     """
-    res = MethylationEPIC.objects.filter(Q(ilmnid=input_id) | Q(name=input_id) |
-                                         Q(methyl450_loci=input_id) | Q(methyl27_loci=input_id) |
-                                         Q(epicv1_loci=input_id)).values_list('name', flat=True)
+    condition = get_methylation_match_condition(input_id)
+    res = MethylationEPIC.objects.filter(condition).values_list('name', flat=True)
 
     return input_id, list(res)
 
@@ -185,20 +190,20 @@ class MirnaCodesFinder(APIView):
         limit = get_limit_parameter(limit)
 
         res_mirna = Mirna.objects.filter(mirna_code__istartswith=query)[
-            :limit].values_list('mirna_code', flat=True)
+                    :limit].values_list('mirna_code', flat=True)
         res.extend(res_mirna)
         res_mirna_count = len(res_mirna)
         if res_mirna_count < limit:
             num_of_reg = limit - res_mirna_count
             res_mirbaseidmirna_id = MirbaseIdMirna.objects.filter(mature_mirna__istartswith=query)[
-                :num_of_reg].values_list('mature_mirna', flat=True)
+                                    :num_of_reg].values_list('mature_mirna', flat=True)
             res.extend(res_mirbaseidmirna_id)
             res = list(set(res))  # Removes duplicates
             res_mirna_count = len(res_mirbaseidmirna_id)
             if res_mirna_count < limit:
                 num_of_reg = limit - res_mirna_count
                 res_mirbaseidmirna_acc = MirbaseIdMirna.objects.filter(mirbase_accession_id__istartswith=query)[
-                    :num_of_reg].values_list('mirbase_accession_id', flat=True)
+                                         :num_of_reg].values_list('mirbase_accession_id', flat=True)
                 res.extend(res_mirbaseidmirna_acc)
                 res = list(set(res))  # remove duplicates
 
@@ -300,6 +305,7 @@ class UnsubscribeUserToPubmed(APIView):
 class MethylationSites(APIView):
     """Service that searches a list of methylation site identifiers from different Illumina array versions and
     returns the identifiers for the most recent version of the array."""
+
     @staticmethod
     def post(request):
         data = request.data
@@ -332,7 +338,7 @@ class MethylationSitesFinder(APIView):
         limit = get_limit_parameter(limit)
 
         res = MethylationEPIC.objects.filter(name__istartswith=query)[
-            :limit].values_list('name', flat=True)
+              :limit].values_list('name', flat=True)
         return Response(list(res))
 
 
@@ -347,9 +353,8 @@ class MethylationSitesToGenes(APIView):
         :param input_name: String to query in the DB (site name)
         :return: list of ID of Methylation sites from EPIC v2 database
         """
-        res = MethylationEPIC.objects.filter(Q(ilmnid=input_name) | Q(name=input_name) |
-                                             Q(methyl450_loci=input_name) | Q(methyl27_loci=input_name) |
-                                             Q(epicv1_loci=input_name)).values_list('id', flat=True)
+        condition = get_methylation_match_condition(input_name)
+        res = MethylationEPIC.objects.filter(condition).values_list('id', flat=True)
         return list(res)
 
     @staticmethod
@@ -413,10 +418,10 @@ class MethylationDetails(APIView):
             # Loads chromosome data
             if epic_data.strand_fr == "F":
                 res["chromosome_position"] = epic_data.chr + \
-                    ":" + str(epic_data.mapinfo) + " [+]"
+                                             ":" + str(epic_data.mapinfo) + " [+]"
             elif epic_data.strand_fr == "R":
                 res["chromosome_position"] = epic_data.chr + \
-                    ":" + str(epic_data.mapinfo) + " [-]"
+                                             ":" + str(epic_data.mapinfo) + " [-]"
 
             # load aliases to response
             res["aliases"] = []
