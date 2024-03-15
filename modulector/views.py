@@ -1,6 +1,6 @@
 import re
-from concurrent.futures import ProcessPoolExecutor
-from typing import List, Optional, Final
+from typing import Final
+
 from django.conf import settings
 from django.db.models.query_utils import Q
 from django.http import Http404, HttpRequest
@@ -10,6 +10,7 @@ from rest_framework import status, generics, filters, viewsets
 from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
 from modulector.models import MethylationUCSC_CPGIsland, MethylationUCSCRefGene, MirnaXGene, Mirna, MirbaseIdMirna, \
     MirnaDisease, MirnaDrug, GeneAliases, MethylationEPIC
 from modulector.pagination import StandardResultsSetPagination
@@ -30,20 +31,20 @@ MAX_PAGE_SIZE: Final[int] = 3000
 PROCESS_POOL_WORKERS: Final[int] = settings.PROCESS_POOL_WORKERS
 
 
-def get_methylation_epic_sites_names(input_id: str) -> tuple[str, List[str]]:
+def get_methylation_epic_sites_names(input_id: str) -> tuple[str, list[str]]:
     """
     Gets methylation sites from any type of Loci id.
     :param input_id: String to query in the DB.
-    :return: List of Methylation sites.
+    :return: list of Methylation sites.
     """
     res = MethylationEPIC.objects.filter(Q(ilmnid=input_id) | Q(name=input_id) |
                                          Q(methyl450_loci=input_id) | Q(methyl27_loci=input_id) |
                                          Q(epicv1_loci=input_id)).values_list('name', flat=True)
 
-    return (input_id, list(res))
+    return input_id, list(res)
 
 
-def get_limit_parameter(value: Optional[str]) -> int:
+def get_limit_parameter(value: str | None) -> int:
     """
     Gets a valid int value for the 'limit' parameter in requests
     :param value: Current value in GET request
@@ -70,7 +71,7 @@ class MirnaTargetInteractions(generics.ListAPIView):
     handler400 = 'rest_framework.exceptions.bad_request'
 
     @staticmethod
-    def __get_gene_aliases(gene: str) -> List[str]:
+    def __get_gene_aliases(gene: str) -> list[str]:
         """Retrieves the aliases for a gene based on the gene provided"""
         match_gene = GeneAliases.objects.filter(
             Q(alias=gene) | Q(gene_symbol=gene)).first()
@@ -142,7 +143,7 @@ class MirnaCodes(APIView):
     """Service that searches a list of miRNA codes and returns the code for the miRbase DB."""
 
     @staticmethod
-    def __get_mirna_code(mirna_code: str) -> Optional[str]:
+    def __get_mirna_code(mirna_code: str) -> str | None:
         """
         Receives a miRNA Previous ID or Accession ID, and returns the associated Accession ID.
         :param mirna_code: miRNA Previous ID or Accession ID.
@@ -310,22 +311,11 @@ class MethylationSites(APIView):
             return Response({"detail": "'methylation_sites' must be of list type"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Generates a dict with the methylation sites as keys and the result of the query as values.
-        # note: it uses ProcessPoolExecutor to parallelize the queries and not a ThreadPoolExecutor because
-        # the latter has a bug closing Django connections (see https://stackoverflow.com/q/57211476/7058363)
-        # with ProcessPoolExecutor(max_workers=PROCESS_POOL_WORKERS) as executor:
-        #     res = {
-        #         methylation_name: result
-        #         for methylation_name, result in zip(methylation_sites, executor.map(
-        #             get_methylation_epic_sites_names, methylation_sites
-        #         ))
-        #     }
+        res = {
+            methylation_name: get_methylation_epic_sites_names(methylation_name)[1]
+            for methylation_name in methylation_sites
+        }
 
-        # NEW:
-        with ProcessPoolExecutor(max_workers=PROCESS_POOL_WORKERS) as executor:
-            res = {
-                result[0]: result[1]
-                for result in executor.map(get_methylation_epic_sites_names, methylation_sites)
-            }
         return Response(res)
 
 
@@ -351,11 +341,11 @@ class MethylationSitesToGenes(APIView):
     versions of Illumina arrays and returns the gene(s) they belong to."""
 
     @staticmethod
-    def __get_methylation_epic_sites_ids(input_name: str) -> List[str]:
+    def __get_methylation_epic_sites_ids(input_name: str) -> list[str]:
         """
         Gets methylation sites from any type of Loci id
         :param input_name: String to query in the DB (site name)
-        :return: List of ID of Methylation sites from EPIC v2 database
+        :return: list of ID of Methylation sites from EPIC v2 database
         """
         res = MethylationEPIC.objects.filter(Q(ilmnid=input_name) | Q(name=input_name) |
                                              Q(methyl450_loci=input_name) | Q(methyl27_loci=input_name) |
@@ -363,7 +353,7 @@ class MethylationSitesToGenes(APIView):
         return list(res)
 
     @staticmethod
-    def __get_genes_from_methylation_epic_site(input_id: str) -> List[str]:
+    def __get_genes_from_methylation_epic_site(input_id: str) -> list[str]:
         """
         Gets genes from a specific methylation CpG site
         :param input_id: String to query in the DB (CpG ID)
