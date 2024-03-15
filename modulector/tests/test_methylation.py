@@ -24,7 +24,7 @@ class MethylationTests(TestCase):
         self.assertIsNone(response.data['previous'])
 
     def __check_one_result_pagination(self, response):
-        """Checks if fields of response are valid for an one-result pagination response"""
+        """Checks if fields of response are valid for a one-result pagination response"""
         self.assertEqual(response.data['count'], 1)
         self.assertTrue(len(response.data['results']) == 1)
         self.assertIsNone(response.data['next'])
@@ -60,7 +60,7 @@ class MethylationTests(TestCase):
         self.assertEqual(data['genes']['SEC31A'], ["TSS200"])
 
     def testMethylationDetails2(self):
-        """ Tests methylation endpoint with a invalid methylation site """
+        """ Tests methylation endpoint with an invalid methylation site """
         response = client.get(
             '/methylation/', {'methylation_site': 'thisIsNotAMethylationSite'})
         self.assertEqual(response.status_code, 400)
@@ -136,7 +136,7 @@ class MethylationTests(TestCase):
         self.assertTrue(len(data["invalid_data"]) == 0)
 
     def testMethylationSites2(self):
-        """ Tests with a invalid body type """
+        """ Tests with an invalid body type """
         data = json.dumps({"methylation_sites": "cg01615704_TC11"})
         response = client.post('/methylation-sites/', data=data,
                                content_type='application/json')
@@ -145,7 +145,7 @@ class MethylationTests(TestCase):
         self.assertTrue("detail" in data)
 
     def testMethylationSites3(self):
-        """ Tests with a invalid body key """
+        """ Tests with an invalid body key """
         data = json.dumps({"methylation": ["cg01615704_TC11"]})
         response = client.post('/methylation-sites/', data=data,
                                content_type='application/json')
@@ -172,7 +172,7 @@ class MethylationTests(TestCase):
         self.assertEqual(data["cg22461615"], ["THAP9", "THAP9-AS1", "SEC31A"])
 
     def testMethylationSitesToGenes2(self):
-        """ Tests with a invalid body type """
+        """ Tests with an invalid body type """
         data = json.dumps({"methylation_sites": "cg17771854_BC11"})
         response = client.post('/methylation-sites-genes/', data=data,
                                content_type='application/json')
@@ -181,7 +181,7 @@ class MethylationTests(TestCase):
         self.assertTrue("detail" in data)
 
     def testMethylationSitesToGenes3(self):
-        """ Tests with a invalid body key """
+        """ Tests with an invalid body key """
         data = json.dumps({"methylation": "cg17771854_BC11"})
         response = client.post('/methylation-sites-genes/', data=data,
                                content_type='application/json')

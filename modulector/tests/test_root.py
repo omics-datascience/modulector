@@ -3,7 +3,7 @@ from django.test import Client, TestCase
 client = Client()
 
 
-class rootTests(TestCase):
+class RootTests(TestCase):
     def testRootView(self):
         """Tests / endpoint"""
         response = client.get('/')

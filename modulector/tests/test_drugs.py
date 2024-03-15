@@ -3,7 +3,7 @@ from django.test import Client, TestCase
 client = Client()
 
 
-class drugsTests(TestCase):
+class DrugsTests(TestCase):
     def __check_empty_pagination(self, response):
         """Checks if fields of response are valid for an empty pagination response"""
         self.assertEqual(response.data['count'], 0)
@@ -12,7 +12,7 @@ class drugsTests(TestCase):
         self.assertIsNone(response.data['previous'])
 
     def __check_one_result_pagination(self, response):
-        """Checks if fields of response are valid for an one-result pagination response"""
+        """Checks if fields of response are valid for a one-result pagination response"""
         self.assertEqual(response.data['count'], 1)
         self.assertTrue(len(response.data['results']) == 1)
         self.assertIsNone(response.data['next'])

@@ -4,7 +4,7 @@ from django.test import Client, TestCase
 client = Client()
 
 
-class miRNATests(TestCase):
+class MiRNATests(TestCase):
     """ Testing of miRNA endpoints """
 
     def __check_pagination(self, response):
@@ -24,7 +24,7 @@ class miRNATests(TestCase):
         self.assertIsNone(response.data['previous'])
 
     def __check_one_result_pagination(self, response):
-        """Checks if fields of response are valid for an one-result pagination response"""
+        """Checks if fields of response are valid for a one-result pagination response"""
         self.assertEqual(response.data['count'], 1)
         self.assertTrue(len(response.data['results']) == 1)
         self.assertIsNone(response.data['next'])
@@ -33,7 +33,7 @@ class miRNATests(TestCase):
     """ Testing /mirna/ endpoint """
 
     def testMirnaList1(self):
-        """Tests mirna endpoint with a invalid mirna"""
+        """Tests mirna endpoint with an invalid mirna"""
         response = client.get('/mirna/', {'mirna': 'goku_rules'})
         self.assertEqual(response.status_code, 404)
         # Checks all fields
@@ -75,7 +75,7 @@ class miRNATests(TestCase):
     """ Testing /mirna-target-interactions/ endpoint """
 
     def testMirnaTargetInteractions1(self):
-        """Tests with a invalid mirna"""
+        """Tests with an invalid mirna"""
         response = client.get(
             '/mirna-target-interactions/', {'mirna': 'goku_capo'})
         self.assertEqual(response.status_code, 200)
@@ -155,7 +155,7 @@ class miRNATests(TestCase):
         self.assertEqual(data["hsa-let-7e-5p"], "MIMAT0000066")
 
     def testMirnaCodes2(self):
-        """ Tests with a invalid body type """
+        """ Tests with an invalid body type """
         data = json.dumps({"mirna_codes": "Hsa-Mir-935-v2_5p*"})
         response = client.post('/mirna-codes/', data=data,
                                content_type='application/json')
@@ -164,7 +164,7 @@ class miRNATests(TestCase):
         self.assertTrue("detail" in data)
 
     def testMirnaCodes3(self):
-        """ Tests with a invalid body key """
+        """ Tests with an invalid body key """
         data = json.dumps({"mirna": ["Hsa-Mir-935-v2_5p*"]})
         response = client.post('/mirna-codes/', data=data,
                                content_type='application/json')
