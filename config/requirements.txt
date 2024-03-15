@@ -1,11 +1,11 @@
-daphne==4.0.0
-Django==4.2.8
+daphne==4.1.0
+Django==4.2.11
 django-crontab==0.7.1
 django-filter==23.3
 django-generate-secret-key==1.0.2
-django-stubs==4.2.6
+django-stubs==4.2.7
 djangorestframework==3.14.0
-mypy==1.6.1
+mypy==1.9.0
 pandas==2.1.2
 psycopg2-binary==2.9.9
 requests==2.31.0
