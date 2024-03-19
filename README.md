@@ -106,7 +106,7 @@ If no gene symbol is entered, all miRNA interactions are returned. If a miRNA is
 - Query params:
   - `mirna`: miRNA (Accession ID or name in mirBase) to get its interactions with different genes targets.
   - `gene`: gene symbol to get its interactions with different miRNA targets.
-  - `score`: numerical score to filter the interactions (only interactions with a score greater than or equal to the parameter value are returned). The value of this score is provided by the mirDip database.  
+  - `score`: numerical score to filter the interactions (only interactions with a score greater than or equal to the parameter value are returned). The score corresponds to that obtained for the unidirectional analysis of the MirDip tool. MiRDIP groups information from [24 different predictors](https://ophid.utoronto.ca/mirDIP/statistics.jsp) to then calculate a score for each target gene. For more information about the calculation of the score, you can consult the [scientific publication](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9825511/) of the tool.  
   - `include_pubmeds`: if its value is 'true', the endpoint also returns a list of links to Pubmed where the miRNAs are related to the genes (this may affect Modulector's response time). The default is 'false'.
 *NOTE*: `mirna` or `gene` are required
 - Functions:
@@ -117,14 +117,14 @@ If no gene symbol is entered, all miRNA interactions are returned. If a miRNA is
 - Success Response:
   - Code: 200
   - Content:
-    - `id`: internal ID of the interaction.
+    - `id`: Record identifier in MirDIP.
     - `mirna`: miRNA ID (miRBase MIMAT id or previous ID). The received one as query param.
     - `gene`: target gene.
-    - `score`: interaction score (according to mirDIP).
-    - `source_name`: database from which the interaction was extracted.
-    - `pubmeds`: array of PubMed for the miRNA-gene interaction (according to mirTaRBase).
-    - `sources`: miRNA-Gene interaction sources which publish this interaction. mirDIP score is based on the scores of those sources. This field is an array that contains the interaction score source names.
-    - `score_class`: `L` (Low), `M` (Medium), `H` (High) or `V` (Very high)
+    - `score`: interaction score (according to mirDIP). Value range between 0 and 1.
+    - `source_name`: database from which the interaction was extracted. For now you will always receive the `mirdip` value.  
+    - `pubmeds`: array of PubMed URLs for the miRNA-gene interaction (according to mirTaRBase).
+    - `sources`: miRNA-Gene interaction sources. mirDIP score is based on the scores of those sources. This field is an array that contains the interaction score source names. The different source databases can be found on the [official miRDIP site](https://ophid.utoronto.ca/mirDIP/statistics.jsp).
+    - `score_class`: score class according to mirDIP. The possible values are: `V` (Very high: Top 1%), `H` (High: Top 5%), `M` (Medium: Top 1/3) or `L` (Low: Bottom 2/3).
   - Example:
     - URL: <http://localhost:8000/mirna-target-interactions/?mirna=hsa-miR-891a-5p&gene=EGFR&include_pubmeds=true>
     - Response:
@@ -166,7 +166,7 @@ If no gene symbol is entered, all miRNA interactions are returned. If a miRNA is
 
 ### MiRNA details
 
-Returns extra information of a miRNA.
+This functionality allows obtaining different information about a miRNA, such as its sequence, its previous identifiers and databases where information about it can be found..
 
 - URL: `/mirna`
 - Required query params:
@@ -181,8 +181,10 @@ Returns extra information of a miRNA.
   - Content:
     - `aliases`: array of miRNA aliases (previous IDs according to miRBase).
     - `mirna_sequence`: miRNA nucleotide sequence.
-    - `mirbase_accession_id`: miRNA accession ID (MIMAT).
-    - `links` array of URLs with extra information about this miRNA.
+    - `mirbase_accession_id`: miRNA accession ID (MIMAT) according to miRBase DB.
+    - `links`: List of JSON containing the following information:
+      - `source`: Name of the database where you can find information related to miRNA.
+      - `url`: URL to access the `source` database for the miRNA of interest.
   - Example:
     - URL: <http://localhost:8000/mirna/?mirna=hsa-miR-548ai>
     - Response:
@@ -207,11 +209,12 @@ Returns extra information of a miRNA.
 
 - Error Response:
   - Code: 404
-  - Content: -
+  - Content: `detail`: error description
 
 ### MiRNA aliases
 
-Returns a paginated response with aliases of a miRNA.
+Returns all associations between mirnas Accessions IDs (MIMAT) and miRNAs matures IDs from the miRBase database.  
+The main difference between MIMAT and mature miRNA IDs in MiRBase lies in their purpose and usage. MIMAT are unique identifiers that define miRNAs uniquely in MiRBase, allowing users to retrieve comprehensive information about specific miRNAs, including their names, sequences, species, versions, and families. On the other hand, mature miRNA IDs refer to the specific mature sequences of miRNAs, such as miR-17-5p and miR-17-3p, which are excised from hairpin precursors and represent different arms of the miRNA. While accession IDs serve as universal identifiers for miRNAs across different versions of MiRBase, mature miRNA IDs focus on the individual sequences of mature miRNAs and their relationships within the database.
 
 - URL: `/mirna-aliases`
 - Required query params: -
@@ -223,8 +226,8 @@ Returns a paginated response with aliases of a miRNA.
 - Success Response:
   - Code: 200
   - Content:
-    - `mirbase_accession_id`: miRNA mirBase accession ID (MIMAT).
-    - `mature_mirna`: previous ID (according to miRBase).
+    - `mirbase_accession_id`: mirBase accession ID (MIMAT) for the miRNA.
+    - `mature_mirna`: Mature mirna ID in miRBase database.
   - Example:
     - URL: <http://localhost:8000/mirna-aliases/?mirbase_accession_id=MIMAT0000062>
     - Response:
@@ -282,7 +285,7 @@ Service that takes a string of any length and returns a list of miRNAs that cont
 
 ### miRNA codes
 
-Searches for codes from a list of miRNA identifiers and returns the approved access identifier according to miRBase DB.
+Searches for codes from a list of miRNA identifiers and returns the approved access identifier according to miRBase DB (MI or MIMAT ID).
 
 - URL: `/mirna-codes`
 - Method: POST
