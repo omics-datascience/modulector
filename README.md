@@ -166,7 +166,7 @@ If no gene symbol is entered, all miRNA interactions are returned. If a miRNA is
 
 ### MiRNA details
 
-This functionality allows obtaining different information about a miRNA, such as its sequence, its previous identifiers and databases where information about it can be found..
+This functionality allows obtaining different information about a miRNA, such as its sequence, its previous identifiers and databases where information about it can be found.
 
 - URL: `/mirna`
 - Required query params:
