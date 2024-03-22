@@ -184,7 +184,7 @@ This functionality allows obtaining different information about a miRNA, such as
     - `mirbase_accession_id`: miRNA accession ID (MIMAT) according to miRBase DB.
     - `links`: List of JSON containing the following information:
       - `source`: Name of the database where you can find information related to miRNA.
-      - `url`: URL to access the `source` database for the miRNA of interest.
+      - `url`: URL to access the source database for the miRNA of interest.
   - Example:
     - URL: <http://localhost:8000/mirna/?mirna=hsa-miR-548ai>
     - Response:
@@ -527,7 +527,7 @@ Returns information on a methylation site.
 
 ### Diseases
 
-Returns a paginated response of diseases related to a miRNA.
+This service provides information, with evidence supported by experiments, on the relationships between miRNAs and human diseases.
 
 - URL: `/diseases`
 - Method: GET
@@ -541,11 +541,11 @@ Returns a paginated response of diseases related to a miRNA.
 - Success Response:
   - Code: 200
   - Content:
-    - `id`: internal ID of the record.
-    - `category`: disease category.
-    - `disease`: disease name.
-    - `pubmed`: Pubmed URL.
-    - `description`: description about why this miRNA is related to this disease.
+    - `id`: Internal ID of the record in the HMDD database.
+    - `category`: Category codes assigned by the HMDD database to classify diseases. Possible codes can be found in the [database documentation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10767894/table/tbl1/?report=objectonly).
+    - `disease`: Name of the disease associated with the miRNA used as a parameter.
+    - `pubmed`: URL to the scientific article in the Pubmed database where the evidence that relates miRNA to the disease is found.
+    - `description`: Short description of why this miRNA is related to this disease.
   - Example:
     - URL: <http://localhost:8000/diseases/?mirna=hsa-miR-9500>
     - Response:
@@ -570,7 +570,7 @@ Returns a paginated response of diseases related to a miRNA.
 - Error Response:
   - Code: 200
   - Content: empty paginated response (number of elements = 0)
-- Additional details: **We capitalize the R present in the miRNA for each record because they are mature, however, the file does not format it correctly and on the website they show up capitalized**
+- Additional details: **We capitalize the R present in the miRNA for each record in HMDD database because they are mature, however, the file does not format it correctly and on the website they show up capitalized**
 
 ### Drugs
 
@@ -589,15 +589,15 @@ Returns a paginated response of experimentally validated small molecules (or dru
 - Success Response:
   - Code: 200
   - Content:
-    - `id`: internal ID of the record.
-    - `small_molecule`: small molecule (or drug).
-    - `fda_approved`: approved by FDA or not.
-    - `detection_method`: experimental detection method.
-    - `condition`: tissues or conditions for detection.
-    - `pubmed`: Pubmed URL.
-    - `reference`: reference title.
-    - `expression_pattern`: expression pattern of miRNA.
-    - `support`: support information for this effect.
+    - `id`: Internal ID of the record in the [SM2miR Database](http://www.jianglab.cn/SM2miR/).
+    - `small_molecule`: Small molecule (or drug) name.
+    - `fda_approved`: Indicates with a boolean whether the small molecule or drug is approved by the FDA.
+    - `detection_method`: Experimental detection method. The different methods can be: `Northern blot`, `Luciferase reporter assay`, `Illumina HiSeq2000`, `TaqMan low-density array`, `Microarray`, `Northern blot`, `MiRNA PCR array`, `Quantitative real-time PCR` or `Microarray`.
+    - `condition`: Tissues or conditions for detection.
+    - `pubmed`: URL to the scientific article in the Pubmed database where the evidence that relates miRNA to the small molecule is found.
+    - `reference`: Title of the scientific article where the evidence that relates miRNA to the small molecule is found.
+    - `expression_pattern`: Expression pattern of miRNA. The different methods can be: `up-regualted`or `down-regualted`.
+    - `support`: Brief text with supporting information for this drug-miRNA relationship.
   - Example:
     - URL: <http://localhost:8000/drugs/?mirna=miR-126>*
     - Response:
