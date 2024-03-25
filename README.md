@@ -40,7 +40,11 @@ Modulector obtains information from different bioinformatics databases or resour
    mirDIP is an integrative database of human microRNA target predictions. Modulector use mirDIP 5.2.  
 2. miRNA data: [miRBase: the microRNA database](https://mirbase.org/).  
    miRBase is a searchable database of published miRNA sequences and annotations. Each entry in the miRBase Sequence database represents a predicted hairpin portion of a miRNA transcript (termed hairpin in the database), with information on the location and sequence of the mature miRNA sequence (termed mature). Modulector use miRBase 22.1.  
-3. Methylation data: Illumina [Infinium MethylationEPIC 2.0](https://www.illumina.com/products/by-type/microarray-kits/infinium-methylation-epic.html) array.  
+3. Relationship data between miRNA and diseases: [HMDD: the Human microRNA Disease Database](https://www.cuilab.cn/hmdd).  
+   Increasing reports have shown that miRNAs play important roles in various critical biological processes. For their importance, the dysfunctions of miRNAs are associated with a broad spectrum of diseases. The Human microRNA Disease Database (HMDD) is a database that curated experiment-supported evidence for human microRNA (miRNA) and disease associations. Modulector use HMDD v3.2 .
+4. Relationship data between miRNA and drugs: [SM2miR Database](http://www.jianglab.cn/SM2miR/).
+   Many studies have demonstrated that bioactive small molecules (or drugs) can regulate the miRNA expression, which indicate that targeting miRNAs with small molecules is a new type of therapy for human diseases. SM2miR is a manual curated database which collects and incorporates the experimentally validated small molecules' effects on miRNA expression in 21 species from the published papers. Modulector uses leaked data from the SM2miR database for Homo Sapiens, in the version released on Apr. 27, 2015.
+5. Methylation data: Illumina [Infinium MethylationEPIC 2.0](https://www.illumina.com/products/by-type/microarray-kits/infinium-methylation-epic.html) array.  
    The Infinium MethylationEPIC v2.0 BeadChip Kit is a genome-wide methylation screening tool that targets over 935,000 CpG sites in the most biologically significant regions of the human methylome. At Modulector we use the information provided by Illumina on its [product files](https://support.illumina.com/downloads/infinium-methylationepic-v2-0-product-files.html) website.  
 
 ## Usage
@@ -183,7 +187,7 @@ This functionality allows obtaining different information about a miRNA, such as
     - `mirna_sequence`: miRNA nucleotide sequence.
     - `mirbase_accession_id`: miRNA accession ID (MIMAT) according to miRBase DB.
     - `links`: List of JSON containing the following information:
-      - `source`: Name of the database where you can find information related to miRNA.
+      - `source`: Name of the database where you can find information related to miRNA. For this version you will always receive the `mirbase` value.
       - `url`: URL to access the source database for the miRNA of interest.
   - Example:
     - URL: <http://localhost:8000/mirna/?mirna=hsa-miR-548ai>
@@ -481,13 +485,13 @@ Returns information on a methylation site.
 - Success Response:
   - Code: 200
   - Content:
-    - `name`: name of methylation site.
+    - `name`: name of methylation site according to the Illumina Infinium MethylationEPIC 2.0 array.
     - `aliases`: list of other names for the same methylation site on other Illumina arrays (EPIC v2, EPIC v1, Methyl450, and Methyl27).
-    - `chromosome_position`: information about the chromosome, position, and strand on which the site is located.
+    - `chromosome_position`: String with information about the chromosome, position, and strand on which the site is located. Format: `chr:position [strand]`
     - `ucsc_cpg_islands`: List of islands related to the methylation site according to the UCSC database. Each element in the view is a JSON with the following content:  
-      - `cpg_island`: chromosomal coordinates where the island is located.
-      - `relation`: Relation of the site to the CpG island. The values it can take are *Island*=within boundaries of a CpG Island, *N_Shore*=0-2kb 5' of Island, *N_Shelf*=2kb-4kb 5' of Island, *S_Shore*=0-2kb 3' of Island, *S_Shelf*=2kb-4kb 3' of Island.
-    - `genes`: The value is a JSON where each key is a gene that is related to the methylation site. Values for each gene is a list that contains the region of the gene where the methylation site is located. These regions, according to the NCBI RefSeq database, can be: *5UTR*=5' untranslated region between the TSS and ATG start site, *3UTR*=3' untranslated region between stop codon and poly A signal, *exon_#*, *TSS200*=1-200 bp 5' the TSS, *TS1500*=200-1500 bp 5' of the TSS.
+      - `cpg_island`: chromosomal coordinates where the island is located. Format: `chr:start position-end position`
+      - `relation`: Relation of the site to the CpG island. The values it can take are `Island`=within boundaries of a CpG Island, `N_Shore`=0-2kb 5' of Island, `N_Shelf`=2kb-4kb 5' of Island, `S_Shore`=0-2kb 3' of Island, `S_Shelf`=2kb-4kb 3' of Island.
+    - `genes`: The value is a JSON where each key is a gene that is related to the methylation site. Values for each gene is a list that contains the region of the gene where the methylation site is located. These regions, according to the NCBI RefSeq database, can be: `5UTR`=5' untranslated region between the TSS and ATG start site, `3UTR`=3' untranslated region between stop codon and poly A signal, `exon_#`, `TSS200`=1-200 bp 5' the TSS, or `TS1500`=200-1500 bp 5' of the TSS. TSS=*Transcription Start Site*.
   - Example:
     - URL: <http://localhost:8000/methylation/?methylation_site=cg22461615>
     - Response:
