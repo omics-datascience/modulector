@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 
 # Modulector version
-VERSION: str = '2.1.3'
+VERSION: str = '2.1.4'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -162,6 +162,9 @@ STATIC_URL = '/static/'
 # Media files
 MEDIA_ROOT = os.getenv('MEDIA_ROOT', os.path.join(BASE_DIR, ''))
 MEDIA_URL = os.getenv('MEDIA_URL', '/media/')
+
+# Test runner
+TEST_RUNNER = 'modulector.tests.runner.DjangoTestSuiteRunner'
 
 # Email Server
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

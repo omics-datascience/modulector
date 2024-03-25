@@ -47,19 +47,19 @@ The entire contributing process consists in the following steps:
 
 ## Workflow
 
-We use gitlab environment git workflow. The default branch is `dev` and the publishing branch is `prod`. The working branches are created from `dev` and must respect the following steps and actions:
+We use gitlab environment git workflow. The default branch is `dev` and the publishing branch is `main`. The working branches are created from `dev` and must respect the following steps and actions:
 
 1. A new branch is created from `dev`.
 1. After finish working with it, a PR to `dev` must be created.
 1. Automatic Action/Workflow for PR is executed.
 1. The new branch is merged to `dev`.
 1. Automatic Action/Workflow for _Push_ events into `dev` is executed.
-1. When is ready to publish a new version of `dev`, a PR to `prod` is created.
+1. When is ready to publish a new version of `dev`, a PR to `main` is created.
 1. These Action/Workflow are executed:
     1. PR.
     1. Version checker (to avoid overwrite an existing image on Docker Hub repository).
-1. `dev` is merged into `prod`.
-1. Automatic Action/Workflow for _Push_ events into `prod` is executed to build a new Docker image for Modulector and publish it.
+1. `dev` is merged into `main`.
+1. Automatic Action/Workflow for _Push_ events into `main` is executed to build a new Docker image for Modulector and publish it.
 
 
 [**More information**](https://docs.google.com/presentation/d/1c1PXM89HLXJyF-zHAEpW_bcxb0iE_Fv2XEpEXYV2Tj4/edit?usp=sharing)

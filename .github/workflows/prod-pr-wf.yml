@@ -2,7 +2,7 @@ name: Check if version exist on docker registry
 on:
   pull_request:
     branches:
-      - "prod"
+      - "main"
 jobs:
   version-check-repo:
     runs-on: ubuntu-latest
