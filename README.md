@@ -551,21 +551,35 @@ This service provides information, with evidence supported by experiments, on th
     - `pubmed`: URL to the scientific article in the Pubmed database where the evidence that relates miRNA to the disease is found.
     - `description`: Short description of why this miRNA is related to this disease.
   - Example:
-    - URL: <http://localhost:8000/diseases/?mirna=hsa-miR-9500>
+    - URL: <http://localhost:8000/diseases/?mirna=hsa-miR-6511b>
     - Response:
 
       ```JSON
         {
-          "count":1,
+          "count":3,
           "next":null,
           "previous":null,
           "results":[
               {
-                  "id":3540992,
-                  "category":"target gene",
-                  "disease":"Liver Neoplasms",
-                  "pubmed":"https://pubmed.ncbi.nlm.nih.gov/24658401",
-                  "description":"The novel miR-9500 regulates the proliferation and migration of human lung cancer cells by targeting Akt1."
+                  "id": 4203307,
+                  "category": "other",
+                  "disease": "Lymphoma",
+                  "pubmed": "https://pubmed.ncbi.nlm.nih.gov/36248425",
+                  "description": "LncHOTAIR/hsa-miR-6511b-5p/ATG7 could regulate the proliferation, apoptosis, and autophagy of Raji and BJAB lymphoma cells."
+              },
+              {
+                  "id": 4207900,
+                  "category": "genetics_overexpression_promote",
+                  "disease": "Colorectal Neoplasms",
+                  "pubmed": "https://pubmed.ncbi.nlm.nih.gov/35590122",
+                  "description": "In vitro, overexpression of miR-6511b-5p inhibited metastasis by decreasing CD44 expression via directly targeting BRG1 in colorectal cancer."
+              },
+              {
+                  "id": 4241262,
+                  "category": "other",
+                  "disease": "gastric adenocarcinoma",
+                  "pubmed": "https://pubmed.ncbi.nlm.nih.gov/31772663",
+                  "description": "2) were recognized as prognostic and used for the construction of a STAD prognostic signature."
               }
           ]
         }
