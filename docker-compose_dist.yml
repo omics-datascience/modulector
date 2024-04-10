@@ -31,7 +31,7 @@ services:
 
     # Django Backend Server
     web_modulector:
-        image: omicsdatascience/modulector:2.1.2
+        image: omicsdatascience/modulector:2.1.4
         restart: always
         depends_on:
             - db_modulector

@@ -149,3 +149,4 @@ modulector/files/EPIC-8v2-0_A1.csv
 modulector/files/mirDIP_Unidirectional_search_v.5.txt
 *.sql.gz
 modulector/files/tmp_db.csv
+docker-compose.mauri_dev.yml
