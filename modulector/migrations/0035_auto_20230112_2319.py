@@ -16,7 +16,7 @@ def import_methylation_epic_v2(apps, _schema_editor):
         modulector_methylation_gencode: info relating the methylation site to other genetic information such as genes and transcripts according to Gencode
     """
     parent_dir = pathlib.Path(__file__).parent.absolute().parent
-    db_path = os.path.join(parent_dir, "files/EPIC-8v2-0_A1.csv")  # Download DB from Infinium MethylationEPIC v2.0
+    db_path = os.path.join(parent_dir, "files/EPIC.csv")  # Download DB from Infinium MethylationEPIC v2.0
     # Product Files in https://support.illumina.com/array/array_kits/infinium-methylationepic-beadchip-kit/downloads.html
     print("\nRemoving comments in file...")
     os.system('tail -n +8 ' + db_path + ' >modulector/files/tmp_db.csv')  # Removes first 7 rows
