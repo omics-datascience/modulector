@@ -41,7 +41,7 @@ Modulector obtains information from different bioinformatics databases or resour
 2. miRNA data: [miRBase: the microRNA database](https://mirbase.org/).  
    miRBase is a searchable database of published miRNA sequences and annotations. Each entry in the miRBase Sequence database represents a predicted hairpin portion of a miRNA transcript (termed hairpin in the database), with information on the location and sequence of the mature miRNA sequence (termed mature). Modulector use miRBase 22.1.  
 3. Relationship data between miRNA and diseases: [HMDD: the Human microRNA Disease Database](https://www.cuilab.cn/hmdd).  
-   Increasing reports have shown that miRNAs play important roles in various critical biological processes. For their importance, the dysfunctions of miRNAs are associated with a broad spectrum of diseases. The Human microRNA Disease Database (HMDD) is a database that curated experiment-supported evidence for human microRNA (miRNA) and disease associations. Modulector use HMDD v3.2 .
+   Increasing reports have shown that miRNAs play important roles in various critical biological processes. For their importance, the dysfunctions of miRNAs are associated with a broad spectrum of diseases. The Human microRNA Disease Database (HMDD) is a database that curated experiment-supported evidence for human microRNA (miRNA) and disease associations. Modulector use HMDD v4.0.
 4. Relationship data between miRNA and drugs: [SM2miR Database](http://www.jianglab.cn/SM2miR/).
    Many studies have demonstrated that bioactive small molecules (or drugs) can regulate the miRNA expression, which indicate that targeting miRNAs with small molecules is a new type of therapy for human diseases. SM2miR is a manual curated database which collects and incorporates the experimentally validated small molecules' effects on miRNA expression in 21 species from the published papers. Modulector uses leaked data from the SM2miR database for Homo Sapiens, in the version released on Apr. 27, 2015.
 5. Methylation data: Illumina [Infinium MethylationEPIC 2.0](https://www.illumina.com/products/by-type/microarray-kits/infinium-methylation-epic.html) array.  
@@ -551,21 +551,35 @@ This service provides information, with evidence supported by experiments, on th
     - `pubmed`: URL to the scientific article in the Pubmed database where the evidence that relates miRNA to the disease is found.
     - `description`: Short description of why this miRNA is related to this disease.
   - Example:
-    - URL: <http://localhost:8000/diseases/?mirna=hsa-miR-9500>
+    - URL: <http://localhost:8000/diseases/?mirna=hsa-miR-6511b>
     - Response:
 
       ```JSON
         {
-          "count":1,
+          "count":3,
           "next":null,
           "previous":null,
           "results":[
               {
-                  "id":3540992,
-                  "category":"target gene",
-                  "disease":"Liver Neoplasms",
-                  "pubmed":"https://pubmed.ncbi.nlm.nih.gov/24658401",
-                  "description":"The novel miR-9500 regulates the proliferation and migration of human lung cancer cells by targeting Akt1."
+                  "id": 4203307,
+                  "category": "other",
+                  "disease": "Lymphoma",
+                  "pubmed": "https://pubmed.ncbi.nlm.nih.gov/36248425",
+                  "description": "LncHOTAIR/hsa-miR-6511b-5p/ATG7 could regulate the proliferation, apoptosis, and autophagy of Raji and BJAB lymphoma cells."
+              },
+              {
+                  "id": 4207900,
+                  "category": "genetics_overexpression_promote",
+                  "disease": "Colorectal Neoplasms",
+                  "pubmed": "https://pubmed.ncbi.nlm.nih.gov/35590122",
+                  "description": "In vitro, overexpression of miR-6511b-5p inhibited metastasis by decreasing CD44 expression via directly targeting BRG1 in colorectal cancer."
+              },
+              {
+                  "id": 4241262,
+                  "category": "other",
+                  "disease": "gastric adenocarcinoma",
+                  "pubmed": "https://pubmed.ncbi.nlm.nih.gov/31772663",
+                  "description": "2) were recognized as prognostic and used for the construction of a STAD prognostic signature."
               }
           ]
         }
