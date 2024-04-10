@@ -11,19 +11,12 @@ class DiseaseTests(TestCase):
         self.assertIsNone(response.data['next'])
         self.assertIsNone(response.data['previous'])
 
-    def __check_one_result_pagination(self, response):
-        """Checks if fields of response are valid for a one-result pagination response"""
-        self.assertEqual(response.data['count'], 1)
-        self.assertTrue(len(response.data['results']) == 1)
-        self.assertIsNone(response.data['next'])
-        self.assertIsNone(response.data['previous'])
-
     def testDiseasesView(self):
         """ Test the disease endpoint for a valid mirna """
-        response = client.get('/diseases/', {"mirna": "hsa-miR-9500"})
+        response = client.get('/diseases/', {"mirna": "hsa-miR-6511b"})
         self.assertEqual(response.status_code, 200)
-        self.__check_one_result_pagination(response)
-        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['count'], 3)
+        self.assertTrue(len(response.data['results']) == 3)
         first_result = response.data['results'][0]
         self.assertTrue('id' in first_result)
         self.assertTrue('category' in first_result)

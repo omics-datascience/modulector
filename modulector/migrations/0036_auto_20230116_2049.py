@@ -51,7 +51,7 @@ def import_mirbase(apps, _schema_editor):
 
 def import_mirdip(apps, _schema_editor):
     """It updates the mirDIP database in the table modulector_mirnaxgene. It also adds the miRNAs to the modulector_mirna table, without sequence, in case it is not found.
-    Columns for file : files/mirDIP_Unidirectional_search_v.5.txt
+    Columns for file : files/mirDIP_Unidirectional_search.txt
         GENE_SYMBOL
         MICRORNA
         SOURCE_NUMBER
@@ -62,7 +62,7 @@ def import_mirdip(apps, _schema_editor):
         "SPRYD3","hsa-miR-15a-5p",15,+9. 11060805626107E-001, "Cupid|MBStar|MirTar2|MultiMiTar|PACCMIT|bitargeting_May_2021|miRTar2GO|MirAncesTar|miranda_May_2021|mirbase|miRDB_v6|mirmap_May_2021|MiRNATIP|mirzag|TargetScan_v7_2", "V"
     """
     parent_dir = pathlib.Path(__file__).parent.absolute().parent
-    mirdip_file_path = os.path.join(parent_dir, "files/mirDIP_Unidirectional_search_v.5.txt")
+    mirdip_file_path = os.path.join(parent_dir, "files/mirDIP_Unidirectional_search.txt")
 
     print("\nGetting Django models...")
     MirnaXGene = apps.get_model(app_label='modulector', model_name='MirnaXGene')

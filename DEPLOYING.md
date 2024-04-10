@@ -134,28 +134,31 @@ You can use set Modulector DB in two ways.
 
 ### Regenerating the data manually
 
-1. Download the files for the mirDIP database (version 5.2) and the Illumina 'Infinium MethylationEPIC 2.0' array. The files can be freely downloaded from their respective web pages.  
+1. Download the files for the mirDIP database (version 5.2), Illumina 'Infinium MethylationEPIC 2.0' array and the Human MicroRNA Disease Database v4.0. The files can be freely downloaded from their respective web pages.  
    **For the mirDIP database**:
       - Go to the [MirDIP download web page](https://ophid.utoronto.ca/mirDIP/download.jsp) and download the file called *"mirDIPweb/mirDIP Unidirectional search ver. 5.2"*.
       - Unzip the file.
-      - Find the file called *"mirDIP_Unidirectional_search_v.5.txt"* and move it into the **"modulector/files/"** directory.  
+      - Find the file called *"mirDIP_Unidirectional_search.txt"* and move it into the **"modulector/files/"** directory.  
 
    **For the EPIC Methylation array**:
       - Go to the [Illumina product files web page](https://support.illumina.com/downloads/infinium-methylationepic-v2-0-product-files.html) and download the ZIP file called "*Infinium MethylationEPIC v2.0 Product Files (ZIP Format)*".
       - Unzip the file.
-      - Within the unzipped files you will find one called "*EPIC-8v2-0_A1.csv*". Move this file to the directory **"modulector/files/"**.
-      - **NOTE:** the total weight of both files is about 5 GB.
+      - Within the unzipped files you will find one called "*EPIC.csv*". Move this file to the directory **"modulector/files/"**.
+      - **NOTE:** the total weight of both files is about 5 GB.  
+
+    **For the HMDD database**:
+      - Go to the [HMDD website](https://www.cuilab.cn/hmdd) and from the *Downloads* tab, download the *txt* file from the option "The whole dataset of miRNA-disease association data". Use version 4.0.
+      - Rename the downloaded file as "*disease_hmdd.txt*". Move this file to the directory **"modulector/files/"**.  
 
    **For the mirBase database**: this database is embedded as it weighs only a few MBs. Its data is processed in Django migrations during the execution of the `python3 manage.py migrate` command. So, you don't have to do manual steps to incorporate mirBase data inside Modulector.
-1. Start up a PostgreSQL service. You can use the same service listed in the *docker-compose.dev.yml* file.
-1. Run `python3 manage.py migrate` to apply all the migrations (**NOTE:** this can take a long time to finish).
+2. Start up a PostgreSQL service. You can use the same service listed in the *docker-compose.dev.yml* file.
+3. Run `python3 manage.py migrate` to apply all the migrations (**NOTE:** this can take a long time to finish).
 
 ## Update databases
 
-Modulector currently works with the mirDIP (version 5.2) and miRBase (version 22.1) databases for miRNA data, and with information from the Illumina 'Infinium MethylationEPIC 2.0' array  for information about methylation sites.  
-If new versions are released for these databases, and you want to update them, follow these steps:  
+If new versions of the databases used in modulector are released and you want to update them, follow the following steps:  
 
-- For **mirDIP** and **Illumina EPIC array** you must follow the same steps described in the [Regenerating the data manually](#regenerating-the-data-manually) section, replacing the named files with the most recent versions that have been published on their sites .
+- For **mirDIP**, **HDMM** and **Illumina EPIC array** you must follow the same steps described in the [Regenerating the data manually](#regenerating-the-data-manually) section, replacing the named files with the most recent versions that have been published on their sites.
 - For **miRBase**, follow the instructions below:
    1. Go to the [*Download* section on the website][mirbase-download-page].
    1. Download the files named *hairpin.fa* and *mature.fa* from the latest version of the database.
