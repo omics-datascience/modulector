@@ -1,5 +1,3 @@
-version: '3'
-
 services:
     # PostgreSQL (empty DB)
     db_modulector:
@@ -47,9 +45,9 @@ services:
 
             # Allowed host must include the ones set in the NGINX modulector.conf file. Localhost is included for
             # health-checks
-            ALLOWED_HOSTS: 'web,web_modulector,localhost'
+            ALLOWED_HOSTS: 'web,web_modulector,127.0.0.1,localhost'
 
 volumes:
     postgres_data:
-        external:
-            name: 'modulector_postgres_data'
+        external: true
+        name: 'modulector_postgres_data'

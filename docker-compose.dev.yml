@@ -1,5 +1,3 @@
-version: '3'
-
 services:
     # PostgreSQL (empty DB)
     db_modulector:
@@ -22,5 +20,5 @@ services:
 # Uncomment if using empty Postgres service
 volumes:
     modulector_postgres_data:
-        external:
-            name: 'modulector_postgres_data'
+        external: true
+        name: 'modulector_postgres_data'
