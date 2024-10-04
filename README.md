@@ -32,6 +32,7 @@ Document content:
   - [Sonarcloud](#sonarcloud)
   - [License](#license)
 
+
 ## Integrated databases
 
 Modulector obtains information from different bioinformatics databases or resources. These databases were installed locally to reduce data search time. The databases currently integrated to Modulector are:
@@ -47,15 +48,18 @@ Modulector obtains information from different bioinformatics databases or resour
 5. Methylation data: Illumina [Infinium MethylationEPIC 2.0](https://www.illumina.com/products/by-type/microarray-kits/infinium-methylation-epic.html) array.  
    The Infinium MethylationEPIC v2.0 BeadChip Kit is a genome-wide methylation screening tool that targets over 935,000 CpG sites in the most biologically significant regions of the human methylome. At Modulector we use the information provided by Illumina on its [product files](https://support.illumina.com/downloads/infinium-methylationepic-v2-0-product-files.html) website.  
 
+
 ## Usage
 
 Modulector can be used through the graphical interfaces provided in [Multiomix][multiomix-site], or it can be hosted on your server (read [DEPLOYING.md](DEPLOYING.md) for more information). We strongly recommend using this software through the Multiomix application.
 
 All services are available through a web API accessible from a browser or any other web client. All the responses are in JSON format. In addition to the information provided, sorting, filtering, searching, and paging functions are also available. How to use these functions is explained below:
 
+
 ### General
 
 All functions are used as a parameter in the URL. So if you want to access `https://modulector.multiomix.org/service/` by sending parameters to it, just add the following suffix to the end of the URL: `?parameter1=value&parameter2=value&parameter3=value`. The `?` indicates that the parameter section begins, these will be of the form `parameterName=parameterValue` and are separated, in case you need to send more than one, by a `&`.
+
 
 ### Sorting
 
@@ -65,17 +69,20 @@ For example, if you want to consume the [miRNA-target interactions](#mirna-targe
 
 `https://modulector.multiomix.org/mirna-target-interactions/?ordering=-score,gene`
 
+
 ### Filters
 
 To filter it is enough to specify the field and the value by which you want to filter. For example, if you want to consume the [miRNA aliases](#mirna-aliases) service keeping only the aliases of `MIMAT0000062` you could access the following resource:
 
 `https://modulector.multiomix.org/mirna-aliases/?mirbase_accession_id=MIMAT0000062`
 
+
 ### Search
 
 The search is done on the basis of a single parameter called `search` which must contain the value to be searched for. Unlike the filter, the search can be performed on multiple fields at once and is performed by *containing* the search term in the field and is case insensitive (while the filter is by exact value). The fields considered in the search are fixed and will be specified for each service later. For example, the [drugs](#drugs) service allows a search by the `condition`, `small_molecule`, and `expression_pattern` fields, then the following query could be performed:
 
 `https://modulector.multiomix.org/drugs/?mirna=miR-126*search=breast`
+
 
 ### Pagination
 
@@ -91,6 +98,7 @@ All the paginated responses contain the following fields:
 - `previous`: link to the previous page.
 - `results`: array of elements (the structure of each element depends on the service and is explained in detail in the [services](#services) section).
 
+
 ### Combining functions
 
 All of the above parameters can be used together! For example, if we wanted to consume the [diseases](#diseases) service by sorting ascending by disease, performing a disease search and keeping only the first 3 items, we could perform the following query (the order of the parameters **does not matter**):
@@ -99,7 +107,9 @@ All of the above parameters can be used together! For example, if we wanted to c
 
 **It will be indicated for each service which fields are available for filtering, sorting, and/or searching**.
 
+
 ## Services
+
 
 ### MiRNA target interactions
 
@@ -130,7 +140,7 @@ If no gene symbol is entered, all miRNA interactions are returned. If a miRNA is
     - `sources`: miRNA-Gene interaction sources. mirDIP score is based on the scores of those sources. This field is an array that contains the interaction score source names. The different source databases can be found on the [official miRDIP site](https://ophid.utoronto.ca/mirDIP/statistics.jsp).
     - `score_class`: score class according to mirDIP. The possible values are: `V` (Very high: Top 1%), `H` (High: Top 5%), `M` (Medium: Top 1/3) or `L` (Low: Bottom 2/3).
   - Example:
-    - URL: <http://localhost:8000/mirna-target-interactions/?mirna=hsa-miR-891a-5p&gene=EGFR&include_pubmeds=true>
+    - URL: <https://modulector.multiomix.org/mirna-target-interactions/?mirna=hsa-miR-891a-5p&gene=EGFR&include_pubmeds=true>
     - Response:
 
     ```JSON
@@ -190,7 +200,7 @@ This functionality allows obtaining different information about a miRNA, such as
       - `source`: Name of the database where you can find information related to miRNA. For this version you will always receive the `mirbase` value.
       - `url`: URL to access the source database for the miRNA of interest.
   - Example:
-    - URL: <http://localhost:8000/mirna/?mirna=hsa-miR-548ai>
+    - URL: <https://modulector.multiomix.org/mirna/?mirna=hsa-miR-548ai>
     - Response:
 
       ```JSON
@@ -233,7 +243,7 @@ The main difference between MIMAT and mature miRNA IDs in MiRBase lies in their 
     - `mirbase_accession_id`: mirBase accession ID (MIMAT) for the miRNA.
     - `mature_mirna`: Mature mirna ID in miRBase database.
   - Example:
-    - URL: <http://localhost:8000/mirna-aliases/?mirbase_accession_id=MIMAT0000062>
+    - URL: <https://modulector.multiomix.org/mirna-aliases/?mirbase_accession_id=MIMAT0000062>
     - Response:
 
       ```JSON
@@ -271,7 +281,7 @@ Service that takes a string of any length and returns a list of miRNAs that cont
   - Code: 200
   - Content: a list of miRNAs (IDs or accession IDs from miRbase DB) matching the search criteria.
   - Example:
-    - URL: <http://localhost:8000/mirna-codes-finder/?query=hsa-let-7a>
+    - URL: <https://modulector.multiomix.org/mirna-codes-finder/?query=hsa-let-7a>
     - Response:
 
       ```JSON
@@ -305,7 +315,7 @@ Searches for codes from a list of miRNA identifiers and returns the approved acc
   - Content:
     - `mirna_codes`: a JSON object with as many keys as miRNAs in the body of the request. For each miRNA, the value is a valid miRNA accession ID or `null`.  
   - Example:
-    - URL: <http://localhost:8000/mirna-codes/>
+    - URL: <https://modulector.multiomix.org/mirna-codes/>
     - body:
 
       ```JSON
@@ -356,7 +366,7 @@ Service that takes a text string of any length and returns a list of methylation
   - Code: 200
   - Content: a list of methylation sites from the Illumina 'Infinium MethylationEPIC 2.0' array matching the search criteria.
   - Example:
-    - URL: <http://localhost:8000/methylation-sites-finder/?query=cg25&limit=5>
+    - URL: <https://modulector.multiomix.org/methylation-sites-finder/?query=cg25&limit=5>
     - Response:
 
       ```JSON
@@ -389,7 +399,7 @@ Searches a list of methylation site names or IDs from different Illumina array v
   - Content:
     - `methylation_sites`: a JSON object with as many keys as methylation names in the body of the request. For each methylation name, the value is a list of valid methylation names to Illumina *Infinium MethylationEPIC 2.0* array.
   - Example:
-    - URL: <http://localhost:8000/methylation-sites/>
+    - URL: <https://modulector.multiomix.org/methylation-sites/>
     - body:
 
       ```JSON
@@ -437,7 +447,7 @@ A service that searches from a list of CpG methylation site identifiers from dif
   - Content:
     - Returns a JSON with as many keys as there are methylation names/ids in the body. For each methylation name/ID, the value is a list of genes that the name/ID methylates.  
   - Example:
-    - URL: <http://localhost:8000/methylation-sites-genes/>
+    - URL: <https://modulector.multiomix.org/methylation-sites-genes/>
     - body:
 
       ```JSON
@@ -493,7 +503,7 @@ Returns information on a methylation site.
       - `relation`: Relation of the site to the CpG island. The values it can take are `Island`=within boundaries of a CpG Island, `N_Shore`=0-2kb 5' of Island, `N_Shelf`=2kb-4kb 5' of Island, `S_Shore`=0-2kb 3' of Island, `S_Shelf`=2kb-4kb 3' of Island.
     - `genes`: The value is a JSON where each key is a gene that is related to the methylation site. Values for each gene is a list that contains the region of the gene where the methylation site is located. These regions, according to the NCBI RefSeq database, can be: `5UTR`=5' untranslated region between the TSS and ATG start site, `3UTR`=3' untranslated region between stop codon and poly A signal, `exon_#`, `TSS200`=1-200 bp 5' the TSS, or `TS1500`=200-1500 bp 5' of the TSS. TSS=*Transcription Start Site*.
   - Example:
-    - URL: <http://localhost:8000/methylation/?methylation_site=cg22461615>
+    - URL: <https://modulector.multiomix.org/methylation/?methylation_site=cg22461615>
     - Response:
 
       ```JSON
@@ -551,7 +561,7 @@ This service provides information, with evidence supported by experiments, on th
     - `pubmed`: URL to the scientific article in the Pubmed database where the evidence that relates miRNA to the disease is found.
     - `description`: Short description of why this miRNA is related to this disease.
   - Example:
-    - URL: <http://localhost:8000/diseases/?mirna=hsa-miR-6511b>
+    - URL: <https://modulector.multiomix.org/diseases/?mirna=hsa-miR-6511b>
     - Response:
 
       ```JSON
@@ -617,7 +627,7 @@ Returns a paginated response of experimentally validated small molecules (or dru
     - `expression_pattern`: Expression pattern of miRNA. The different methods can be: `up-regualted`or `down-regualted`.
     - `support`: Brief text with supporting information for this drug-miRNA relationship.
   - Example:
-    - URL: <http://localhost:8000/drugs/?mirna=miR-126>*
+    - URL: <https://modulector.multiomix.org/drugs/?mirna=miR-126>*
     - Response:
 
       ```JSON
