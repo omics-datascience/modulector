@@ -5,6 +5,8 @@ django-filter==23.3
 django-generate-secret-key==1.0.2
 django-stubs==4.2.7
 djangorestframework==3.14.0
+drf-spectacular==0.28.0
+drf-spectacular-sidecar==2024.12.1
 mypy==1.9.0
 pandas==2.1.2
 psycopg2-binary==2.9.9
