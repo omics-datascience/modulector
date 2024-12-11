@@ -1,0 +1,556 @@
+openapi: 3.0.3
+info:
+  title: Your Project API
+  version: 1.0.0
+  description: Your project description
+paths:
+  /diseases/:
+    get:
+      operationId: diseases_list
+      description: Diseases endpoint
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - diseases
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMirnaDiseaseList'
+          description: ''
+  /drugs/:
+    get:
+      operationId: drugs_list
+      description: Drugs endpoint
+      parameters:
+      - in: query
+        name: fda_approved
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - drugs
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMirnaDrugsList'
+          description: ''
+  /methylation/:
+    get:
+      operationId: methylation_retrieve
+      description: |-
+        Service that obtains information about a specific CpG methylation site from
+        the 'Infinium MethylationEPIC V2.0' array.
+      tags:
+      - methylation
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /methylation-sites/:
+    post:
+      operationId: methylation_sites_create
+      description: |-
+        Service that searches a list of methylation site identifiers from different Illumina array versions and
+        returns the identifiers for the most recent version of the array.
+      tags:
+      - methylation-sites
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /methylation-sites-finder/:
+    get:
+      operationId: methylation_sites_finder_retrieve
+      description: |-
+        Service that takes a text string of any length and returns a list of methylation site names (loci) containing
+        that search criteria within the Illumina 'Infinium MethylationEPIC' array.
+      tags:
+      - methylation-sites-finder
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /methylation-sites-genes/:
+    post:
+      operationId: methylation_sites_genes_create
+      description: |-
+        A service that searches a list of CpG methylation site identifiers from different
+        versions of Illumina arrays and returns the gene(s) they belong to.
+      tags:
+      - methylation-sites-genes
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /mirna/:
+    get:
+      operationId: mirna_list
+      description: Returns a single instance of miRNA with general data (mirna endpoint)
+      tags:
+      - mirna
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Mirna'
+          description: ''
+  /mirna-aliases/:
+    get:
+      operationId: mirna_aliases_list
+      description: mirna-aliases endpoint
+      parameters:
+      - in: query
+        name: mature_mirna
+        schema:
+          type: string
+      - in: query
+        name: mirbase_accession_id
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - mirna-aliases
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMirnaAliasesList'
+          description: ''
+  /mirna-codes/:
+    post:
+      operationId: mirna_codes_create
+      description: Service that searches a list of miRNA codes and returns the code
+        for the miRbase DB.
+      tags:
+      - mirna-codes
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /mirna-codes-finder/:
+    get:
+      operationId: mirna_codes_finder_retrieve
+      description: Service that takes a string of any length and returns a list of
+        miRNA ids that contain that search criteria.
+      tags:
+      - mirna-codes-finder
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /mirna-target-interactions/:
+    get:
+      operationId: mirna_target_interactions_list
+      description: Returns a paginated response with all the interactions of a specific
+        miRNA (mirna-interactions endpoint)
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - mirna-target-interactions
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMirnaXGenList'
+          description: ''
+  /subscribe-pubmeds/:
+    get:
+      operationId: subscribe_pubmeds_retrieve
+      tags:
+      - subscribe-pubmeds
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /unsubscribe-pubmeds/:
+    get:
+      operationId: unsubscribe_pubmeds_retrieve
+      tags:
+      - unsubscribe-pubmeds
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    Mirna:
+      type: object
+      properties:
+        aliases:
+          type: array
+          items:
+            type: string
+          description: |-
+            Gets a miRNA aliases.
+            :param mirna: miRNA object to get its aliases.
+            :return: List of miRNA aliases.
+          readOnly: true
+        mirna_sequence:
+          type: string
+          nullable: true
+          maxLength: 40
+        mirbase_accession_id:
+          type: string
+          readOnly: true
+        links:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          description: |-
+            Gets a list of sources links for a specific miRNA.
+            :param mirna: miRNA object.
+            :return: List of sources links.
+          readOnly: true
+      required:
+      - aliases
+      - links
+      - mirbase_accession_id
+    MirnaAliases:
+      type: object
+      properties:
+        mirbase_accession_id:
+          type: string
+          maxLength: 20
+        mature_mirna:
+          type: string
+          maxLength: 30
+      required:
+      - mature_mirna
+      - mirbase_accession_id
+    MirnaDisease:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        category:
+          type: string
+          maxLength: 200
+        disease:
+          type: string
+          maxLength: 200
+        pubmed:
+          type: string
+          description: |-
+            Gets a PubMed URL for a miRNA-disease association.
+            :param disease: MirnaDisease object.
+            :return: Pubmed URL.
+          readOnly: true
+        description:
+          type: string
+      required:
+      - category
+      - description
+      - disease
+      - id
+      - pubmed
+    MirnaDrugs:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        small_molecule:
+          type: string
+        fda_approved:
+          type: boolean
+        detection_method:
+          type: string
+          maxLength: 100
+        condition:
+          type: string
+        pubmed:
+          type: string
+          description: |-
+            Gets a Pubmed URL for a miRNA-drug association
+            :param drug: MirnaDrugs object
+            :return: Pubmed URL
+          readOnly: true
+        reference:
+          type: string
+        expression_pattern:
+          type: string
+          maxLength: 30
+        support:
+          type: string
+      required:
+      - condition
+      - detection_method
+      - expression_pattern
+      - fda_approved
+      - id
+      - pubmed
+      - reference
+      - small_molecule
+      - support
+    MirnaXGen:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        mirna:
+          type: string
+          readOnly: true
+        gene:
+          type: string
+          maxLength: 50
+        score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,16}(?:\.\d{0,4})?$
+        source_name:
+          type: string
+          readOnly: true
+        pubmeds:
+          type: array
+          items:
+            type: string
+          description: |-
+            Gets a list of related Pubmed URLs to a miRNA-Gene interaction.
+            :param mirna_gene_interaction: miRNA-Gene interaction.
+            :return: List of Pubmed URLs.
+          readOnly: true
+        sources:
+          type: array
+          items:
+            type: string
+          description: |-
+            Gets a list of sources for a miRNA-Gene interaction
+            :param mirna_gene_interaction: miRNA-Gene interaction
+            :return: List of sources for the interaction
+          readOnly: true
+        score_class:
+          type: string
+          nullable: true
+          maxLength: 3
+      required:
+      - gene
+      - id
+      - mirna
+      - pubmeds
+      - score
+      - source_name
+      - sources
+    PaginatedMirnaAliasesList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MirnaAliases'
+    PaginatedMirnaDiseaseList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MirnaDisease'
+    PaginatedMirnaDrugsList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MirnaDrugs'
+    PaginatedMirnaXGenList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MirnaXGen'
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
