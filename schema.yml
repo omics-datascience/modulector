@@ -1,44 +1,50 @@
 openapi: 3.0.3
 info:
-  title: Your Project API
-  version: 1.0.0
-  description: Your project description
+  title: Modulector
+  version: 2.2.0
+  description: "\n### An open platform which provides information about methylation\
+    \ sites, miRNAs and genes from different popular databases.  \nThe platform is\
+    \ part of the Multiomix project. For more information, visit our [website](https://omicsdatascience.org/).\n\
+    To contribute: [OmicsDatascience](https://github.com/omics-datascience/modulector)"
 paths:
   /diseases/:
     get:
       operationId: diseases_list
-      description: Diseases endpoint
+      description: This service provides information, with evidence supported by experiments,
+        on the relationships between miRNAs and human diseases.
+      summary: Relationship between miRNAs and human diseases
       parameters:
-      - name: ordering
-        required: false
-        in: query
-        description: Which field to use when ordering the results.
+      - in: query
+        name: mirna
         schema:
           type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: page_size
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
+        description: miRNA (miRNA code or Accession ID) to get its interactions with
+          different targets. If it is not specified, the service returns all the elements
+          in a paginated response.
+        examples:
+          ? ''
+          : value: ''
+          Hsa-miR-891a-5p:
+            value: hsa-miR-891a-5p
+            summary: hsa-miR-891a-5p
+          Hsa-miR-21-5p:
+            value: hsa-miR-21-5p
+            summary: hsa-miR-21-5p
+      - in: query
+        name: search
         schema:
           type: string
+        description: Search by disease name
+        examples:
+          ? ''
+          : value: ''
+          BreastNeoplasms:
+            value: Breast Neoplasms
+            summary: Breast Neoplasms
+          Atherosclerosis:
+            value: Atherosclerosis
       tags:
-      - diseases
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - miRNA
       responses:
         '200':
           content:
@@ -49,42 +55,49 @@ paths:
   /drugs/:
     get:
       operationId: drugs_list
-      description: Drugs endpoint
+      description: Returns a paginated response of experimentally validated small
+        molecules (or drugs) that affect miRNA expression.
+      summary: Provides a list of drugs affecting miRNA expression.
       parameters:
       - in: query
         name: fda_approved
         schema:
           type: boolean
-      - name: ordering
-        required: false
-        in: query
-        description: Which field to use when ordering the results.
+        description: Defines if the drug is approved by the FDA
+      - in: query
+        name: mirna
         schema:
           type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: page_size
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
+        description: miRNA (miRNA code or Accession ID) to get its interactions with
+          different targets. If it is not specified, the service returns all the elements
+          in a paginated response.
+        examples:
+          ? ''
+          : value: ''
+          MiR-126*:
+            value: miR-126*
+            summary: miR-126*
+          MiR-21:
+            value: miR-21
+            summary: miR-21
+          MiR-155:
+            value: miR-155
+            summary: miR-155
+      - in: query
+        name: search
         schema:
           type: string
+        description: Search by condition, small_molecule, and expression_pattern
+        examples:
+          ? ''
+          : value: ''
+          Arsenite:
+            value: Arsenite
+          Up-regulated:
+            value: up-regulated
+            summary: up-regulated
       tags:
-      - drugs
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - miRNA
       responses:
         '200':
           content:
@@ -98,12 +111,24 @@ paths:
       description: |-
         Service that obtains information about a specific CpG methylation site from
         the 'Infinium MethylationEPIC V2.0' array.
+      summary: Retrieve methylation details
+      parameters:
+      - in: query
+        name: methylation_site
+        schema:
+          type: string
+        description: Methylation site name from Illumina Infinium MethylationEPIC
+          2.0 array
+        required: true
+        examples:
+          Cg22461615:
+            value: cg22461615
+            summary: cg22461615
+          Cg00000029:
+            value: cg00000029
+            summary: cg00000029
       tags:
-      - methylation
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - Methylation
       responses:
         '200':
           description: No response body
@@ -113,12 +138,27 @@ paths:
       description: |-
         Service that searches a list of methylation site identifiers from different Illumina array versions and
         returns the identifiers for the most recent version of the array.
+      summary: Retrieve Methylation sites
       tags:
-      - methylation-sites
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - Methylation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              schema:
+                type: object
+                properties:
+                  methylation_sites:
+                    type: array
+                    items:
+                      type: string
+                    description: List of Methylation names.
+                required:
+                - methylation_sites
+              example:
+                methylation_sites:
+                - cg17771854_BC11
+                - cg01615704_TC11
       responses:
         '200':
           description: No response body
@@ -128,12 +168,30 @@ paths:
       description: |-
         Service that takes a text string of any length and returns a list of methylation site names (loci) containing
         that search criteria within the Illumina 'Infinium MethylationEPIC' array.
+      summary: Searches and lists Methylation sites matching a string.
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: number of elements returned by the service. 50 by default and
+          a maximum of 3000.
+      - in: query
+        name: query
+        schema:
+          type: string
+        description: Methylation search string.
+        examples:
+          ? ''
+          : value: ''
+          Cg25:
+            value: cg25
+            summary: cg25
+          Cg01:
+            value: cg01
+            summary: cg01
       tags:
-      - methylation-sites-finder
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - Methylation
       responses:
         '200':
           description: No response body
@@ -143,25 +201,57 @@ paths:
       description: |-
         A service that searches a list of CpG methylation site identifiers from different
         versions of Illumina arrays and returns the gene(s) they belong to.
+      summary: Retrieve genes from methylation sites
       tags:
-      - methylation-sites-genes
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - Methylation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              schema:
+                type: object
+                properties:
+                  methylation_sites:
+                    type: array
+                    items:
+                      type: string
+                    description: list of Illumina array methylation site names or
+                      identifiers for which you want to know the gene(s).
+                required:
+                - methylation_sites
+              example:
+                methylation_sites:
+                - cg17771854_BC11
+                - cg22461615_TC11
+                - name_007
       responses:
         '200':
           description: No response body
   /mirna/:
     get:
       operationId: mirna_list
-      description: Returns a single instance of miRNA with general data (mirna endpoint)
+      description: This functionality allows obtaining different information about
+        a miRNA, such as its sequence, its previous identifiers and databases where
+        information about it can be found.
+      summary: Retrieves miRNA details, including sequence, identifiers, and related
+        databases.
+      parameters:
+      - in: query
+        name: mirna
+        schema:
+          type: string
+        description: miRNA identifier (miRNA code or Accession ID).
+        examples:
+          ? ''
+          : value: ''
+          Hsa-miR-548ai:
+            value: hsa-miR-548ai
+            summary: hsa-miR-548ai
+          Hsa-miR-21-5p:
+            value: hsa-miR-21-5p
+            summary: hsa-miR-21-5p
       tags:
-      - mirna
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - miRNA
       responses:
         '200':
           content:
@@ -174,40 +264,38 @@ paths:
   /mirna-aliases/:
     get:
       operationId: mirna_aliases_list
-      description: mirna-aliases endpoint
+      description: Returns all associations between miRNAs Accessions IDs (MIMAT)
+        and miRNAs matures IDs from the miRBase database.
+      summary: Lists miRNA Accession and mature IDs from miRBase.
       parameters:
       - in: query
         name: mature_mirna
         schema:
           type: string
+        description: Use to show only a specific miRNAs matures ID.
+        examples:
+          ? ''
+          : value: ''
+          Hsa-miR-21-5p:
+            value: hsa-miR-21-5p
+            summary: hsa-miR-21-5p
+          Hsa-miR-155-5p:
+            value: hsa-miR-155-5p
+            summary: hsa-miR-155-5p
       - in: query
         name: mirbase_accession_id
         schema:
           type: string
-      - name: ordering
-        required: false
-        in: query
-        description: Which field to use when ordering the results.
-        schema:
-          type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: page_size
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
+        description: Use to show only a specific miRNAs Accession ID.
+        examples:
+          ? ''
+          : value: ''
+          MIMAT0000062:
+            value: MIMAT0000062
+          MIMAT0000063:
+            value: MIMAT0000063
       tags:
-      - mirna-aliases
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - miRNA
       responses:
         '200':
           content:
@@ -220,12 +308,31 @@ paths:
       operationId: mirna_codes_create
       description: Service that searches a list of miRNA codes and returns the code
         for the miRbase DB.
+      summary: Retrieve miRNA codes
       tags:
-      - mirna-codes
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - miRNA
+      requestBody:
+        content:
+          application/json:
+            schema:
+              schema:
+                type: object
+                properties:
+                  mirna_codes:
+                    type: array
+                    items:
+                      type: string
+                    description: List of miRNA Previous IDs or Accession IDs to retrieve
+                      the associated Accession IDs.
+                required:
+                - mirna_codes
+              example:
+                mirna_codes:
+                - name_01
+                - hsa-miR-487a-3p
+                - MIMAT0000066
+                - MI0026417
+                - hsa-let-7e-5p
       responses:
         '200':
           description: No response body
@@ -234,45 +341,83 @@ paths:
       operationId: mirna_codes_finder_retrieve
       description: Service that takes a string of any length and returns a list of
         miRNA ids that contain that search criteria.
+      summary: Searches and lists miRNAs matching a string.
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: number of elements returned by the service. 50 by default and
+          a maximum of 3000.
+      - in: query
+        name: query
+        schema:
+          type: string
+        description: miRNA search string.
+        examples:
+          ? ''
+          : value: ''
+          Hsa-miR-2:
+            value: hsa-miR-2
+            summary: hsa-miR-2
+          Hsa-miR-1:
+            value: hsa-miR-1
+            summary: hsa-miR-1
       tags:
-      - mirna-codes-finder
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - miRNA
       responses:
         '200':
           description: No response body
   /mirna-target-interactions/:
     get:
       operationId: mirna_target_interactions_list
-      description: Returns a paginated response with all the interactions of a specific
-        miRNA (mirna-interactions endpoint)
+      description: Receives a miRNA and/or a gene symbol and returns a paginated vector.
+        Each vector entry represents a miRNA-Gene interaction. If no gene symbol is
+        entered, all miRNA interactions are returned. If a miRNA is not entered, all
+        gene interactions are returned. If both are entered, the interaction of mirna
+        with the gene is returned.
+      summary: Retrieve miRNA interactions
       parameters:
-      - name: ordering
-        required: false
-        in: query
-        description: Which field to use when ordering the results.
+      - in: query
+        name: gene
         schema:
           type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
+        description: Gene symbol to get its interactions with different miRNA targets
+        examples:
+          EGFR:
+            value: EGFR
+          APPBP2:
+            value: APPBP2
+      - in: query
+        name: include_pubmeds
         schema:
-          type: integer
-      - name: page_size
-        required: false
-        in: query
-        description: Number of results to return per page.
+          type: boolean
+        description: If True, the endpoint also returns a list of links to Pubmed
+          where the miRNAs are related to the genes (this may affect Modulector's
+          response time)
+      - in: query
+        name: mirna
         schema:
-          type: integer
+          type: string
+        description: miRNA (Accession ID or name in mirBase) to get its interactions
+          with different gene targets.
+        required: true
+        examples:
+          Hsa-miR-891a-5p:
+            value: hsa-miR-891a-5p
+            summary: hsa-miR-891a-5p
+          Hsa-miR-891a-3p:
+            value: hsa-miR-891a-3p
+            summary: hsa-miR-891a-3p
+      - in: query
+        name: score
+        schema:
+          type: number
+          format: double
+        description: Numerical score to filter the interactions (only interactions
+          with a score greater than or equal to the parameter value are returned).
       tags:
-      - mirna-target-interactions
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - miRNA
       responses:
         '200':
           content:
@@ -280,30 +425,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedMirnaXGenList'
           description: ''
-  /subscribe-pubmeds/:
-    get:
-      operationId: subscribe_pubmeds_retrieve
-      tags:
-      - subscribe-pubmeds
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /unsubscribe-pubmeds/:
-    get:
-      operationId: unsubscribe_pubmeds_retrieve
-      tags:
-      - unsubscribe-pubmeds
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '200':
-          description: No response body
 components:
   schemas:
     Mirna:
@@ -546,11 +667,3 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MirnaXGen'
-  securitySchemes:
-    basicAuth:
-      type: http
-      scheme: basic
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: sessionid
