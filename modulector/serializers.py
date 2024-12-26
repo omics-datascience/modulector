@@ -48,7 +48,7 @@ class MirnaXGenSerializer(serializers.ModelSerializer):
         model = MirnaXGene
         fields = ['id', 'mirna', 'gene', 'score',
                   'source_name', 'pubmeds', 'sources', 'score_class']
-
+    
     def get_pubmeds(self, mirna_gene_interaction: MirnaXGene) -> Set[str]:
         """
         Gets a list of related Pubmed URLs to a miRNA-Gene interaction.
