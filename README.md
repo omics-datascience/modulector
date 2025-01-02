@@ -53,7 +53,7 @@ Modulector obtains information from different bioinformatics databases or resour
 
 Modulector can be used through the graphical interfaces provided in [Multiomix][multiomix-site], or it can be hosted on your server (read [DEPLOYING.md](DEPLOYING.md) for more information). We strongly recommend using this software through the Multiomix application.
 
-All services are available through a web API accessible from a browser or any other web client. All the responses are in JSON format. In addition to the information provided, sorting, filtering, searching, and paging functions are also available. How to use these functions is explained below:
+All services are available through a web API accessible from a browser or web client, or you can try Modulector from its [Swagger interface](https://modulector.multiomix.org/api/schema/swagger-ui/). All the responses are in JSON format. In addition to the information provided, sorting, filtering, searching, and paging functions are also available. How to use these functions is explained below:
 
 
 ### General

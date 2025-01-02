@@ -1,0 +1,669 @@
+openapi: 3.0.3
+info:
+  title: Modulector
+  version: 2.2.1
+  description: "\n### An open platform which provides information about methylation\
+    \ sites, miRNAs and genes from different popular databases.  \nThe platform is\
+    \ part of the Multiomix project. For more information, visit our [website](https://omicsdatascience.org/).\n\
+    To contribute: [OmicsDatascience](https://github.com/omics-datascience/modulector)"
+paths:
+  /diseases/:
+    get:
+      operationId: diseases_list
+      description: This service provides information, with evidence supported by experiments,
+        on the relationships between miRNAs and human diseases.
+      summary: Relationship between miRNAs and human diseases
+      parameters:
+      - in: query
+        name: mirna
+        schema:
+          type: string
+        description: miRNA (miRNA code or Accession ID) to get its interactions with
+          different targets. If it is not specified, the service returns all the elements
+          in a paginated response.
+        examples:
+          ? ''
+          : value: ''
+          Hsa-miR-891a-5p:
+            value: hsa-miR-891a-5p
+            summary: hsa-miR-891a-5p
+          Hsa-miR-21-5p:
+            value: hsa-miR-21-5p
+            summary: hsa-miR-21-5p
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search by disease name
+        examples:
+          ? ''
+          : value: ''
+          BreastNeoplasms:
+            value: Breast Neoplasms
+            summary: Breast Neoplasms
+          Atherosclerosis:
+            value: Atherosclerosis
+      tags:
+      - miRNA
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMirnaDiseaseList'
+          description: ''
+  /drugs/:
+    get:
+      operationId: drugs_list
+      description: Returns a paginated response of experimentally validated small
+        molecules (or drugs) that affect miRNA expression.
+      summary: Provides a list of drugs affecting miRNA expression.
+      parameters:
+      - in: query
+        name: fda_approved
+        schema:
+          type: boolean
+        description: Defines if the drug is approved by the FDA
+      - in: query
+        name: mirna
+        schema:
+          type: string
+        description: miRNA (miRNA code or Accession ID) to get its interactions with
+          different targets. If it is not specified, the service returns all the elements
+          in a paginated response.
+        examples:
+          ? ''
+          : value: ''
+          MiR-126*:
+            value: miR-126*
+            summary: miR-126*
+          MiR-21:
+            value: miR-21
+            summary: miR-21
+          MiR-155:
+            value: miR-155
+            summary: miR-155
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search by condition, small_molecule, and expression_pattern
+        examples:
+          ? ''
+          : value: ''
+          Arsenite:
+            value: Arsenite
+          Up-regulated:
+            value: up-regulated
+            summary: up-regulated
+      tags:
+      - miRNA
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMirnaDrugsList'
+          description: ''
+  /methylation/:
+    get:
+      operationId: methylation_retrieve
+      description: |-
+        Service that obtains information about a specific CpG methylation site from
+        the 'Infinium MethylationEPIC V2.0' array.
+      summary: Retrieve methylation details
+      parameters:
+      - in: query
+        name: methylation_site
+        schema:
+          type: string
+        description: Methylation site name from Illumina Infinium MethylationEPIC
+          2.0 array
+        required: true
+        examples:
+          Cg22461615:
+            value: cg22461615
+            summary: cg22461615
+          Cg00000029:
+            value: cg00000029
+            summary: cg00000029
+      tags:
+      - Methylation
+      responses:
+        '200':
+          description: No response body
+  /methylation-sites/:
+    post:
+      operationId: methylation_sites_create
+      description: |-
+        Service that searches a list of methylation site identifiers from different Illumina array versions and
+        returns the identifiers for the most recent version of the array.
+      summary: Retrieve Methylation sites
+      tags:
+      - Methylation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              schema:
+                type: object
+                properties:
+                  methylation_sites:
+                    type: array
+                    items:
+                      type: string
+                    description: List of Methylation names.
+                required:
+                - methylation_sites
+              example:
+                methylation_sites:
+                - cg17771854_BC11
+                - cg01615704_TC11
+      responses:
+        '200':
+          description: No response body
+  /methylation-sites-finder/:
+    get:
+      operationId: methylation_sites_finder_retrieve
+      description: |-
+        Service that takes a text string of any length and returns a list of methylation site names (loci) containing
+        that search criteria within the Illumina 'Infinium MethylationEPIC' array.
+      summary: Searches and lists Methylation sites matching a string.
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: number of elements returned by the service. 50 by default and
+          a maximum of 3000.
+      - in: query
+        name: query
+        schema:
+          type: string
+        description: Methylation search string.
+        examples:
+          ? ''
+          : value: ''
+          Cg25:
+            value: cg25
+            summary: cg25
+          Cg01:
+            value: cg01
+            summary: cg01
+      tags:
+      - Methylation
+      responses:
+        '200':
+          description: No response body
+  /methylation-sites-genes/:
+    post:
+      operationId: methylation_sites_genes_create
+      description: |-
+        A service that searches a list of CpG methylation site identifiers from different
+        versions of Illumina arrays and returns the gene(s) they belong to.
+      summary: Retrieve genes from methylation sites
+      tags:
+      - Methylation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              schema:
+                type: object
+                properties:
+                  methylation_sites:
+                    type: array
+                    items:
+                      type: string
+                    description: list of Illumina array methylation site names or
+                      identifiers for which you want to know the gene(s).
+                required:
+                - methylation_sites
+              example:
+                methylation_sites:
+                - cg17771854_BC11
+                - cg22461615_TC11
+                - name_007
+      responses:
+        '200':
+          description: No response body
+  /mirna/:
+    get:
+      operationId: mirna_list
+      description: This functionality allows obtaining different information about
+        a miRNA, such as its sequence, its previous identifiers and databases where
+        information about it can be found.
+      summary: Retrieves miRNA details, including sequence, identifiers, and related
+        databases.
+      parameters:
+      - in: query
+        name: mirna
+        schema:
+          type: string
+        description: miRNA identifier (miRNA code or Accession ID).
+        examples:
+          ? ''
+          : value: ''
+          Hsa-miR-548ai:
+            value: hsa-miR-548ai
+            summary: hsa-miR-548ai
+          Hsa-miR-21-5p:
+            value: hsa-miR-21-5p
+            summary: hsa-miR-21-5p
+      tags:
+      - miRNA
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Mirna'
+          description: ''
+  /mirna-aliases/:
+    get:
+      operationId: mirna_aliases_list
+      description: Returns all associations between miRNAs Accessions IDs (MIMAT)
+        and miRNAs matures IDs from the miRBase database.
+      summary: Lists miRNA Accession and mature IDs from miRBase.
+      parameters:
+      - in: query
+        name: mature_mirna
+        schema:
+          type: string
+        description: Use to show only a specific miRNAs matures ID.
+        examples:
+          ? ''
+          : value: ''
+          Hsa-miR-21-5p:
+            value: hsa-miR-21-5p
+            summary: hsa-miR-21-5p
+          Hsa-miR-155-5p:
+            value: hsa-miR-155-5p
+            summary: hsa-miR-155-5p
+      - in: query
+        name: mirbase_accession_id
+        schema:
+          type: string
+        description: Use to show only a specific miRNAs Accession ID.
+        examples:
+          ? ''
+          : value: ''
+          MIMAT0000062:
+            value: MIMAT0000062
+          MIMAT0000063:
+            value: MIMAT0000063
+      tags:
+      - miRNA
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMirnaAliasesList'
+          description: ''
+  /mirna-codes/:
+    post:
+      operationId: mirna_codes_create
+      description: Service that searches a list of miRNA codes and returns the code
+        for the miRbase DB.
+      summary: Retrieve miRNA codes
+      tags:
+      - miRNA
+      requestBody:
+        content:
+          application/json:
+            schema:
+              schema:
+                type: object
+                properties:
+                  mirna_codes:
+                    type: array
+                    items:
+                      type: string
+                    description: List of miRNA Previous IDs or Accession IDs to retrieve
+                      the associated Accession IDs.
+                required:
+                - mirna_codes
+              example:
+                mirna_codes:
+                - name_01
+                - hsa-miR-487a-3p
+                - MIMAT0000066
+                - MI0026417
+                - hsa-let-7e-5p
+      responses:
+        '200':
+          description: No response body
+  /mirna-codes-finder/:
+    get:
+      operationId: mirna_codes_finder_retrieve
+      description: Service that takes a string of any length and returns a list of
+        miRNA ids that contain that search criteria.
+      summary: Searches and lists miRNAs matching a string.
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: number of elements returned by the service. 50 by default and
+          a maximum of 3000.
+      - in: query
+        name: query
+        schema:
+          type: string
+        description: miRNA search string.
+        examples:
+          ? ''
+          : value: ''
+          Hsa-miR-2:
+            value: hsa-miR-2
+            summary: hsa-miR-2
+          Hsa-miR-1:
+            value: hsa-miR-1
+            summary: hsa-miR-1
+      tags:
+      - miRNA
+      responses:
+        '200':
+          description: No response body
+  /mirna-target-interactions/:
+    get:
+      operationId: mirna_target_interactions_list
+      description: Receives a miRNA and/or a gene symbol and returns a paginated vector.
+        Each vector entry represents a miRNA-Gene interaction. If no gene symbol is
+        entered, all miRNA interactions are returned. If a miRNA is not entered, all
+        gene interactions are returned. If both are entered, the interaction of mirna
+        with the gene is returned.
+      summary: Retrieve miRNA interactions
+      parameters:
+      - in: query
+        name: gene
+        schema:
+          type: string
+        description: Gene symbol to get its interactions with different miRNA targets
+        examples:
+          EGFR:
+            value: EGFR
+          APPBP2:
+            value: APPBP2
+      - in: query
+        name: include_pubmeds
+        schema:
+          type: boolean
+        description: If True, the endpoint also returns a list of links to Pubmed
+          where the miRNAs are related to the genes (this may affect Modulector's
+          response time)
+      - in: query
+        name: mirna
+        schema:
+          type: string
+        description: miRNA (Accession ID or name in mirBase) to get its interactions
+          with different gene targets.
+        required: true
+        examples:
+          Hsa-miR-891a-5p:
+            value: hsa-miR-891a-5p
+            summary: hsa-miR-891a-5p
+          Hsa-miR-891a-3p:
+            value: hsa-miR-891a-3p
+            summary: hsa-miR-891a-3p
+      - in: query
+        name: score
+        schema:
+          type: number
+          format: double
+        description: Numerical score to filter the interactions (only interactions
+          with a score greater than or equal to the parameter value are returned).
+      tags:
+      - miRNA
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMirnaXGenList'
+          description: ''
+components:
+  schemas:
+    Mirna:
+      type: object
+      properties:
+        aliases:
+          type: array
+          items:
+            type: string
+          description: |-
+            Gets a miRNA aliases.
+            :param mirna: miRNA object to get its aliases.
+            :return: List of miRNA aliases.
+          readOnly: true
+        mirna_sequence:
+          type: string
+          nullable: true
+          maxLength: 40
+        mirbase_accession_id:
+          type: string
+          readOnly: true
+        links:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          description: |-
+            Gets a list of sources links for a specific miRNA.
+            :param mirna: miRNA object.
+            :return: List of sources links.
+          readOnly: true
+      required:
+      - aliases
+      - links
+      - mirbase_accession_id
+    MirnaAliases:
+      type: object
+      properties:
+        mirbase_accession_id:
+          type: string
+          maxLength: 20
+        mature_mirna:
+          type: string
+          maxLength: 30
+      required:
+      - mature_mirna
+      - mirbase_accession_id
+    MirnaDisease:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        category:
+          type: string
+          maxLength: 200
+        disease:
+          type: string
+          maxLength: 200
+        pubmed:
+          type: string
+          description: |-
+            Gets a PubMed URL for a miRNA-disease association.
+            :param disease: MirnaDisease object.
+            :return: Pubmed URL.
+          readOnly: true
+        description:
+          type: string
+      required:
+      - category
+      - description
+      - disease
+      - id
+      - pubmed
+    MirnaDrugs:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        small_molecule:
+          type: string
+        fda_approved:
+          type: boolean
+        detection_method:
+          type: string
+          maxLength: 100
+        condition:
+          type: string
+        pubmed:
+          type: string
+          description: |-
+            Gets a Pubmed URL for a miRNA-drug association
+            :param drug: MirnaDrugs object
+            :return: Pubmed URL
+          readOnly: true
+        reference:
+          type: string
+        expression_pattern:
+          type: string
+          maxLength: 30
+        support:
+          type: string
+      required:
+      - condition
+      - detection_method
+      - expression_pattern
+      - fda_approved
+      - id
+      - pubmed
+      - reference
+      - small_molecule
+      - support
+    MirnaXGen:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        mirna:
+          type: string
+          readOnly: true
+        gene:
+          type: string
+          maxLength: 50
+        score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,16}(?:\.\d{0,4})?$
+        source_name:
+          type: string
+          readOnly: true
+        pubmeds:
+          type: array
+          items:
+            type: string
+          description: |-
+            Gets a list of related Pubmed URLs to a miRNA-Gene interaction.
+            :param mirna_gene_interaction: miRNA-Gene interaction.
+            :return: List of Pubmed URLs.
+          readOnly: true
+        sources:
+          type: array
+          items:
+            type: string
+          description: |-
+            Gets a list of sources for a miRNA-Gene interaction
+            :param mirna_gene_interaction: miRNA-Gene interaction
+            :return: List of sources for the interaction
+          readOnly: true
+        score_class:
+          type: string
+          nullable: true
+          maxLength: 3
+      required:
+      - gene
+      - id
+      - mirna
+      - pubmeds
+      - score
+      - source_name
+      - sources
+    PaginatedMirnaAliasesList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MirnaAliases'
+    PaginatedMirnaDiseaseList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MirnaDisease'
+    PaginatedMirnaDrugsList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MirnaDrugs'
+    PaginatedMirnaXGenList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MirnaXGen'

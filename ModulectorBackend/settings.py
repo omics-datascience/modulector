@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 
 # Modulector version
-VERSION: str = '2.2.0'
+VERSION: str = '2.2.1'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -53,7 +53,9 @@ INSTALLED_APPS = [
     'modulector.apps.ModulectorConfig',
     'rest_framework',
     'django_filters',
-    'django_generate_secret_key'
+    'django_generate_secret_key',
+    'drf_spectacular',
+    'drf_spectacular_sidecar'
 ]
 
 CRONJOBS = [
@@ -78,7 +80,33 @@ REST_FRAMEWORK = {
     # 'DEFAULT_PERMISSION_CLASSES': (
     #  'rest_framework.permissions.DjangoModelPermissions',
     # )
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': [],
+    'DEFAULT_PERMISSION_CLASSES': []
 }
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Modulector',
+    'DESCRIPTION': """
+### An open platform which provides information about methylation sites, miRNAs and genes from different popular databases.  
+The platform is part of the Multiomix project. For more information, visit our [website](https://omicsdatascience.org/).
+To contribute: [OmicsDatascience](https://github.com/omics-datascience/modulector)""",
+    'VERSION': VERSION,
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_DIST': 'SIDECAR', 
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
+    'SCHEMA_PATH_PREFIX': '/api/',
+    'SWAGGER_UI_SETTINGS': {
+            'defaultModelsExpandDepth': -1, 
+            'displayRequestDuration': False,
+            'docExpansion': 'none',
+            'filter': False,
+            'showExtensions': True,
+            'showCommonExtensions': True,
+    }
+}
+
 
 ROOT_URLCONF = 'ModulectorBackend.urls'
 
