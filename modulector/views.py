@@ -214,7 +214,7 @@ class MirnaCodes(APIView):
     """
     Service that searches a list of miRNA codes and returns the code for the miRbase DB.
     """
-    serializer_class = None
+    serializer_class = None  # To prevent warnings from the drf-spectacular package
 
     @staticmethod
     def __get_mirna_code(mirna_code: str) -> str | None:
@@ -270,7 +270,7 @@ class MirnaCodesFinder(APIView):
     """
     Service that takes a string of any length and returns a list of miRNA ids that contain that search criteria.
     """
-    serializer_class = None
+    serializer_class = None  # To prevent warnings from the drf-spectacular package
 
     @extend_schema(
         tags=["miRNA"],
@@ -498,7 +498,7 @@ class MethylationSites(APIView):
     returns the identifiers for the most recent version of the array.
     """
 
-    serializer_class = None
+    serializer_class = None  # To prevent warnings from the drf-spectacular package
 
     @staticmethod
     @extend_schema(
@@ -544,7 +544,7 @@ class MethylationSitesFinder(APIView):
     Service that takes a text string of any length and returns a list of methylation site names (loci) containing
     that search criteria within the Illumina 'Infinium MethylationEPIC' array.
     """
-    serializer_class = None
+    serializer_class = None  # To prevent warnings from the drf-spectacular package
 
     @extend_schema(
         tags=["Methylation"],
@@ -581,7 +581,7 @@ class MethylationSitesToGenes(APIView):
     """A service that searches a list of CpG methylation site identifiers from different
     versions of Illumina arrays and returns the gene(s) they belong to."""
 
-    serializer_class = None
+    serializer_class = None  # To prevent warnings from the drf-spectacular package
 
     @staticmethod
     def __get_methylation_epic_sites_ids(input_name: str) -> list[str]:
@@ -659,7 +659,7 @@ class MethylationDetails(APIView):
     Service that obtains information about a specific CpG methylation site from
     the 'Infinium MethylationEPIC V2.0' array.
     """
-    serializer_class = None
+    serializer_class = None  # To prevent warnings from the drf-spectacular package
 
     @extend_schema(
         tags=["Methylation"],
