@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Modulector
-  version: 2.2.0
+  version: 2.2.1
   description: "\n### An open platform which provides information about methylation\
     \ sites, miRNAs and genes from different popular databases.  \nThe platform is\
     \ part of the Multiomix project. For more information, visit our [website](https://omicsdatascience.org/).\n\
