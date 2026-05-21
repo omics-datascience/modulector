@@ -150,7 +150,7 @@ You can use set Modulector DB in two ways.
       - Go to the [HMDD website](https://www.cuilab.cn/hmdd) and from the *Downloads* tab, download the *txt* file from the option "The whole dataset of miRNA-disease association data". Use version 4.0.
       - Rename the downloaded file as "*disease_hmdd.txt*". Move this file to the directory **"modulector/files/"**.  
 
-   **For the mirBase database**: this database is embedded as it weighs only a few MBs. Its data is processed in Django migrations during the execution of the `python3 manage.py migrate` command. So, you don't have to do manual steps to incorporate mirBase data inside Modulector.
+    **For the mirBase database**: this database is embedded as it weighs only a few MBs. Its data is processed in Django migrations during the execution of the `python3 manage.py migrate` command. So, you don't have to do manual steps to incorporate mirBase data inside Modulector.  
 2. Start up a PostgreSQL service. You can use the same service listed in the *docker-compose.dev.yml* file.
 3. Run `python3 manage.py migrate` to apply all the migrations (**NOTE:** this can take a long time to finish).
 
@@ -160,11 +160,14 @@ If new versions of the databases used in modulector are released and you want to
 
 - For **mirDIP**, **HDMM** and **Illumina EPIC array** you must follow the same steps described in the [Regenerating the data manually](#regenerating-the-data-manually) section, replacing the named files with the most recent versions that have been published on their sites.
 - For **miRBase**, follow the instructions below:
-   1. Go to the [*Download* section on the website][mirbase-download-page].
-   1. Download the files named *hairpin.fa* and *mature.fa* from the latest version of the database.
-   1. Replace the files inside the *modulector/files/* directory with the ones downloaded in the previous step.
-   1. Start up a PostgreSQL service. You can use the same service listed in the *docker-compose.dev.yml* file.
-   1. Run the command `python3 manage.py migrate` to apply all the migrations (**NOTE:** this can take a long time to finish).
+    1. Go to the [*Download* section on the website][mirbase-download-page].
+    1. Download the file *mature.fa* from the latest version of the database.
+    1. Replace the file inside the *modulector/files/* directory with the one downloaded in the previous step.
+    1. Go to <https://www.mirbase.org/download/CURRENT/database_files>.
+    1. Download the file `mirna_mature.txt` and replace the file inside `modulector/files/`.
+    1. Start up a PostgreSQL service. You can use the same service listed in the *docker-compose.dev.yml* file.
+    1. Run the command `python3 manage.py migrate` to apply all the migrations (**NOTE:** this can take a long time to finish).
+    1. The import will load only `hsa` mature miRNAs and will split multiple `previous_mature_mirna` values separated by `;` into separate DB rows.
 
 **Note:** These updates will work correctly as long as they maintain the format of the data in the source files.
 

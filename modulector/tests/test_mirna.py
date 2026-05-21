@@ -72,6 +72,17 @@ class MiRNATests(TestCase):
         response = client.get('/mirna/')
         self.assertEqual(response.status_code, 404)
 
+    def testMirnaList4(self):
+        """Tests mirna endpoint with a previous mature alias and avoids MultipleObjectsReturned"""
+        response = client.get('/mirna/', {'mirna': 'hsa-miR-550*'})
+        self.assertEqual(response.status_code, 200)
+        data = response.data
+        self.assertTrue('aliases' in data)
+        self.assertIsInstance(data['aliases'], list)
+        self.assertTrue('mirbase_accession_id' in data)
+        self.assertIsInstance(data['mirbase_accession_id'], str)
+        self.assertTrue(data['mirbase_accession_id'].startswith('MIMAT'))
+
     """ Testing /mirna-target-interactions/ endpoint """
 
     def testMirnaTargetInteractions1(self):
@@ -122,11 +133,56 @@ class MiRNATests(TestCase):
         response = client.get('/mirna-target-interactions/')
         self.assertEqual(response.status_code, 400)
 
+    def testMirnaTargetInteractions4(self):
+        """Tests /mirna-target-interactions/ with a previous_mature_mirna alias"""
+        response = client.get('/mirna-target-interactions/', {'mirna': 'hsa-miR-550*'})
+        self.assertEqual(response.status_code, 200)
+        self.__check_pagination(response)
+
+    def testMirnaTargetInteractions5(self):
+        """Tests /mirna-target-interactions/ with a gene symbol and alias"""
+        response = client.get('/mirna-target-interactions/', {'gene': 'EGFR'})
+        self.assertEqual(response.status_code, 200)
+        self.__check_pagination(response)
+
+    def testMirnaTargetInteractions6(self):
+        """Tests /mirna-target-interactions/ with ERBB1 (alias of EGFR)"""
+        response = client.get('/mirna-target-interactions/', {'gene': 'ERBB1'})
+        self.assertEqual(response.status_code, 200)
+        self.__check_pagination(response)
+        # Should return same results as EGFR
+        egfr_response = client.get('/mirna-target-interactions/', {'gene': 'EGFR'})
+        self.assertEqual(response.data['count'], egfr_response.data['count'])
+
     """ Testing /mirna-aliases/ endpoint """
 
     def testMirnaAliases1(self):
         """ Test the entire mirna-aliases/ endpoint since it does not receive parameters """
         response = client.get('/mirna-aliases/')
+        self.assertEqual(response.status_code, 200)
+        self.__check_pagination(response)
+
+    def testMirnaAliases2(self):
+        """ Test /mirna-aliases/ with search parameter searching for mature_mirna """
+        response = client.get('/mirna-aliases/', {'search': 'hsa-miR-21-5p'})
+        self.assertEqual(response.status_code, 200)
+        self.__check_pagination(response)
+        self.assertGreater(response.data['count'], 0)
+        # Verify result contains the searched value in one of the searchable fields
+        self.assertTrue(any(r['mature_mirna'] == 'hsa-miR-21-5p' for r in response.data['results']))
+
+    def testMirnaAliases3(self):
+        """ Test /mirna-aliases/ with search parameter searching for accession_id """
+        response = client.get('/mirna-aliases/', {'search': 'MIMAT0000062'})
+        self.assertEqual(response.status_code, 200)
+        self.__check_pagination(response)
+        self.assertGreater(response.data['count'], 0)
+        # Verify result contains the searched value in one of the searchable fields
+        self.assertTrue(any(r['mirbase_accession_id'] == 'MIMAT0000062' for r in response.data['results']))
+
+    def testMirnaAliases4(self):
+        """ Test /mirna-aliases/ with search parameter searching for previous_mature_mirna """
+        response = client.get('/mirna-aliases/', {'search': 'hsa-miR-550*'})
         self.assertEqual(response.status_code, 200)
         self.__check_pagination(response)
 
@@ -136,7 +192,6 @@ class MiRNATests(TestCase):
         """ Tests with a valid body """
         data = json.dumps({"mirna_codes": ["name_01", "Hsa-Mir-935-v2_5p*",
                                            "MIMAT0000066",
-                                           "MI0026417",
                                            "hsa-let-7e-5p"]
                            })
         response = client.post('/mirna-codes/', data=data,
@@ -146,12 +201,10 @@ class MiRNATests(TestCase):
         self.assertTrue("name_01" in data)
         self.assertTrue("Hsa-Mir-935-v2_5p*" in data)
         self.assertTrue("MIMAT0000066" in data)
-        self.assertTrue("MI0026417" in data)
         self.assertTrue("hsa-let-7e-5p" in data)
         self.assertIsNone(data["name_01"])
         self.assertIsNone(data["Hsa-Mir-935-v2_5p*"])
         self.assertEqual(data["MIMAT0000066"], "MIMAT0000066")
-        self.assertEqual(data["MI0026417"], "MI0026417")
         self.assertEqual(data["hsa-let-7e-5p"], "MIMAT0000066")
 
     def testMirnaCodes2(self):

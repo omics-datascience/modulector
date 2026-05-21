@@ -1,5 +1,7 @@
 import logging
 from typing import List, Optional, Dict, Set
+
+from django.db.models import Q
 from rest_framework import serializers
 from ModulectorBackend.settings import USE_PUBMED_API, PUBMED_API_TIMEOUT
 from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrug
@@ -43,11 +45,13 @@ class MirnaXGenSerializer(serializers.ModelSerializer):
     mirna = serializers.CharField(read_only=True, source='mirna.mirna_code')
     pubmeds = serializers.SerializerMethodField(method_name='get_pubmeds')
     sources = serializers.SerializerMethodField(method_name='get_sources')
+    mirna_aliases = serializers.SerializerMethodField(method_name='get_mirna_aliases')
+    gene_aliases = serializers.SerializerMethodField(method_name='get_gene_aliases')
 
     class Meta:
         model = MirnaXGene
         fields = ['id', 'mirna', 'gene', 'score',
-                  'source_name', 'pubmeds', 'sources', 'score_class']
+                  'source_name', 'pubmeds', 'sources', 'score_class', 'mirna_aliases', 'gene_aliases']
     
     def get_pubmeds(self, mirna_gene_interaction: MirnaXGene) -> Set[str]:
         """
@@ -94,11 +98,25 @@ class MirnaXGenSerializer(serializers.ModelSerializer):
             return sources.split('|')
         return []
 
+    def get_mirna_aliases(self, obj) -> List[str]:
+        """
+        Gets the list of miRNA aliases found during the search.
+        :return: The list of miRNA aliases or empty list if not in context
+        """
+        return self.context.get('mirna_aliases', [])
+
+    def get_gene_aliases(self, obj) -> List[str]:
+        """
+        Gets the list of gene aliases found during the search.
+        :return: The list of gene aliases or empty list if not in context
+        """
+        return self.context.get('gene_aliases', [])
+
 
 class MirnaAliasesSerializer(serializers.ModelSerializer):
     class Meta:
         model = MirbaseIdMirna
-        fields = ['mirbase_accession_id', 'mature_mirna']
+        fields = ['mirbase_accession_id', 'mature_mirna', 'previous_mature_mirna']
 
 
 class MirnaSerializer(serializers.ModelSerializer):
@@ -188,18 +206,18 @@ def get_mirna_aliases(mirna_code: str) -> List[str]:
 
     # Adds miRNA code to not omit it
     aliases.append(mirna_code)
-    return aliases
+    return list(dict.fromkeys([alias for alias in aliases if alias]))
 
 
 def get_mirna_from_accession(accession_id: str) -> List[str]:
     """
-    Retrieves from DB all the miRNA aliases (not duplicates) for a specific accession id.
+    Retrieves from DB all the mature miRNA identifiers (not duplicates) for a specific accession id.
     :param accession_id: Accession id to make the query
-    :return: List of related miRNA aliases
+    :return: List of related mature miRNA identifiers
     """
     return list(
         MirbaseIdMirna.objects.filter(
-            mirbase_accession_id=accession_id
+        mirbase_accession_id=accession_id
         ).values_list('mature_mirna', flat=True).distinct()
     )
 
@@ -210,5 +228,7 @@ def get_accession_from_mirna(mirna_code: str) -> Optional[str]:
     :param mirna_code: miRNA code to make the query
     :return: Accession id if found, None otherwise
     """
-    record = MirbaseIdMirna.objects.filter(mature_mirna=mirna_code).first()
+    record = MirbaseIdMirna.objects.filter(
+        Q(mature_mirna=mirna_code) | Q(previous_mature_mirna=mirna_code)
+    ).first()
     return record.mirbase_accession_id if record is not None else None

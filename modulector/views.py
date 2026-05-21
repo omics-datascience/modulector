@@ -87,15 +87,19 @@ class MirnaTargetInteractions(generics.ListAPIView):
         gene_symbol = match_gene.gene_symbol
         aliases = list(GeneAliases.objects.filter(
             gene_symbol=gene_symbol).values_list('alias', flat=True).distinct())
-        # Adds the parameter to not omit it in the future search
+        # Adds the gene_symbol and the parameter to not omit them in the future search
+        aliases.append(gene_symbol)
         aliases.append(gene)
-        return aliases
+        return list(dict.fromkeys(aliases))  # Remove duplicates while preserving order
 
     def get_serializer_context(self):
         context = super(MirnaTargetInteractions, self).get_serializer_context()
 
         include_pubmeds = self.request.GET.get("include_pubmeds") == "true"
         context['include_pubmeds'] = include_pubmeds
+        context['mirna_aliases'] = getattr(self, '_mirna_aliases', [])
+        context['gene_aliases'] = getattr(self, '_gene_aliases', [])
+        
         return context
 
     @extend_schema(
@@ -104,17 +108,20 @@ class MirnaTargetInteractions(generics.ListAPIView):
         parameters=[
             OpenApiParameter(name='mirna', type=str, 
                              description='miRNA (Accession ID or name in mirBase) to get its interactions with different gene targets.',
-                             required=True, 
+                             required=False, 
                              examples=[
                                  OpenApiExample(name="hsa-miR-891a-5p", value="hsa-miR-891a-5p"),
-                                 OpenApiExample(name="hsa-miR-891a-3p", value="hsa-miR-891a-3p")
+                                 OpenApiExample(name="hsa-miR-891a-3p", value="hsa-miR-891a-3p"),
+                                 OpenApiExample(name="MIMAT0004979", value="MIMAT0004979"),
+                                 OpenApiExample(name="hsa-miR-550*", value="hsa-miR-550*")
                              ]),
             OpenApiParameter(name='gene', type=str, 
                              description='Gene symbol to get its interactions with different miRNA targets', 
                              required=False,
                              examples=[
                                 OpenApiExample(name="EGFR", value="EGFR"),
-                                OpenApiExample(name="APPBP2", value="APPBP2")
+                                OpenApiExample(name="APPBP2", value="APPBP2"),
+                                OpenApiExample(name="ERBB1", value="ERBB1")
                              ]),
             OpenApiParameter(name='score', type=float,
                              description='Numerical score to filter the interactions (only interactions with a score greater than or equal to the parameter value are returned).',
@@ -125,6 +132,44 @@ class MirnaTargetInteractions(generics.ListAPIView):
             OpenApiParameter(name='ordering', exclude=True),
             OpenApiParameter(name='page', exclude=True),
             OpenApiParameter(name='page_size', exclude=True)
+        ],
+        examples=[
+            OpenApiExample(
+                name="miRNA-gene interaction response",
+                value={
+                    "count": 1,
+                    "next": None,
+                    "previous": None,
+                    "results": [
+                        {
+                            "id": 629118277,
+                            "mirna": "hsa-miR-891a-5p",
+                            "gene": "EGFR",
+                            "score": "0.0684",
+                            "source_name": "mirdip",
+                            "pubmeds": [
+                                "https://pubmed.ncbi.nlm.nih.gov/5362487"
+                            ],
+                            "sources": [
+                                "MirAncesTar",
+                                "mirmap_May_2021",
+                                "MiRNATIP"
+                            ],
+                            "score_class": "M",
+                            "mirna_aliases": [
+                                "hsa-miR-550*",
+                                "hsa-miR-550a-5p",
+                                "MIMAT0004908"
+                            ],
+                            "gene_aliases": [
+                                "ERBB1",
+                                "EGFR"
+                            ]
+                        }
+                    ]
+                },
+                response_only=True,
+            )
         ]
     )
     def get(self, request, *args, **kwargs):
@@ -137,6 +182,9 @@ class MirnaTargetInteractions(generics.ListAPIView):
         mirna = self.request.GET.get("mirna")
         gene = self.request.GET.get("gene")
         score = self.request.GET.get("score")
+
+        self._mirna_aliases = get_mirna_aliases(mirna) if mirna else []
+        self._gene_aliases = self.__get_gene_aliases(gene) if gene else []
 
         if score:
             try:
@@ -151,19 +199,13 @@ class MirnaTargetInteractions(generics.ListAPIView):
         if not mirna and not gene:
             raise ParseError(detail="'mirna' or 'gene' are mandatory")
         elif mirna and not gene:  # only mirna
-            mirna_aliases = get_mirna_aliases(mirna)
             data = MirnaXGene.objects.filter(
-                mirna__mirna_code__in=mirna_aliases)
+                mirna__mirna_code__in=self._mirna_aliases)
         elif not mirna and gene:  # only gene
-            gene_aliases = self.__get_gene_aliases(gene)
-            data = MirnaXGene.objects.filter(gene__in=gene_aliases)
+            data = MirnaXGene.objects.filter(gene__in=self._gene_aliases)
         else:  # mirna and gene
-            # Gets gene aliases
-            gene_aliases = self.__get_gene_aliases(gene)
-            # Gets miRNA aliases
-            mirna_aliases = get_mirna_aliases(mirna)
             data = MirnaXGene.objects.filter(
-                mirna__mirna_code__in=mirna_aliases, gene__in=gene_aliases)
+                mirna__mirna_code__in=self._mirna_aliases, gene__in=self._gene_aliases)
 
         return data.filter(score__gte=score) if score else data
 
@@ -171,13 +213,12 @@ class MirnaTargetInteractions(generics.ListAPIView):
 class MirnaAliasesList(generics.ListAPIView):
     """mirna-aliases endpoint"""
     serializer_class = MirnaAliasesSerializer
+    queryset = MirbaseIdMirna.objects.all()
     pagination_class = StandardResultsSetPagination
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter, DjangoFilterBackend]
     ordering = ['mature_mirna']
-    filterset_fields = ['mature_mirna', 'mirbase_accession_id']
-
-    def get_queryset(self):
-        return MirbaseIdMirna.objects.all()
+    search_fields = ['mature_mirna', 'mirbase_accession_id', 'previous_mature_mirna']
+    filterset_fields = ['mature_mirna', 'mirbase_accession_id', 'previous_mature_mirna']
 
     @extend_schema(
         tags=["miRNA"],
@@ -196,7 +237,26 @@ class MirnaAliasesList(generics.ListAPIView):
                                  OpenApiExample(name="", value=""),
                                  OpenApiExample(name="MIMAT0000062", value="MIMAT0000062"),
                                  OpenApiExample(name="MIMAT0000063", value="MIMAT0000063")
-                            ]),
+                             ]),
+            OpenApiParameter(name='previous_mature_mirna', type=str,
+                             description='Use to filter by a specific previous mature miRNA identifier.',
+                             examples=[
+                                 OpenApiExample(name="", value=""),
+                                 OpenApiExample(name="hsa-miR-545*", value="hsa-miR-545*"),
+                                 OpenApiExample(name="hsa-miR-550*", value="hsa-miR-550*")
+                             ]),
+            OpenApiParameter(name='search', type=str,
+                             description=(
+                                 'Search across all identifier types (miRBase accession ID, mature miRNA, '
+                                 'or previous mature miRNA). This parameter searches in all three fields '
+                                 'simultaneously.'
+                             ),
+                             examples=[
+                                 OpenApiExample(name="", value=""),
+                                 OpenApiExample(name="hsa-miR-17-5p", value="hsa-miR-17-5p"),
+                                 OpenApiExample(name="hsa-miR-550*", value="hsa-miR-550*"),
+                                 OpenApiExample(name="MIMAT0000062", value="MIMAT0000062")
+                             ]),
             # Exclude pagination and ordering parameters
             OpenApiParameter(name='ordering', exclude=True),
             OpenApiParameter(name='page', exclude=True),
@@ -224,7 +284,10 @@ class MirnaCodes(APIView):
         :return: The associated Accession ID.
         """
         res = MirbaseIdMirna.objects.filter(
-            Q(mirbase_accession_id=mirna_code) | Q(mature_mirna=mirna_code)).first()
+            Q(mirbase_accession_id=mirna_code) |
+            Q(mature_mirna=mirna_code) |
+            Q(previous_mature_mirna=mirna_code)
+        ).first()
         if res:
             return res.mirbase_accession_id
         else:
@@ -246,7 +309,7 @@ class MirnaCodes(APIView):
                     },
                     'required': ['mirna_codes']
                 },
-                'example': {'mirna_codes': ["name_01", "hsa-miR-487a-3p", "MIMAT0000066", "MI0026417", "hsa-let-7e-5p"]}
+                'example': {'mirna_codes': ["name_01", "hsa-miR-487a-3p", "hsa-miR-550*", "MIMAT0000066", "MI0026417", "hsa-let-7e-5p"]}
             }
         }
     )
@@ -310,6 +373,13 @@ class MirnaCodesFinder(APIView):
             res.extend(res_mirbaseidmirna_id)
             res = list(set(res))  # Removes duplicates
             res_mirna_count = len(res_mirbaseidmirna_id)
+            if res_mirna_count < limit:
+                num_of_reg = limit - res_mirna_count
+                res_mirbaseidmirna_prev = MirbaseIdMirna.objects.filter(previous_mature_mirna__istartswith=query)[
+                                          :num_of_reg].values_list('previous_mature_mirna', flat=True)
+                res.extend(res_mirbaseidmirna_prev)
+                res = list(set(filter(None, res)))  # remove duplicates and empty values
+                res_mirna_count = len(res_mirbaseidmirna_prev)
             if res_mirna_count < limit:
                 num_of_reg = limit - res_mirna_count
                 res_mirbaseidmirna_acc = MirbaseIdMirna.objects.filter(mirbase_accession_id__istartswith=query)[

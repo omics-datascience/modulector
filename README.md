@@ -132,15 +132,17 @@ If no gene symbol is entered, all miRNA interactions are returned. If a miRNA is
   - Code: 200
   - Content:
     - `id`: Record identifier in MirDIP.
-    - `mirna`: miRNA ID (miRBase MIMAT id or previous ID). The received one as query param.
+    - `mirna`: standardized miRNA ID used by the interaction record.
+    - `mirna_aliases`: list of aliases/identifiers used to resolve the searched miRNA (includes mature IDs, previous IDs, and accession IDs when available).
     - `gene`: target gene.
+    - `gene_aliases`: list of aliases/symbols associated with the searched gene.
     - `score`: interaction score (according to mirDIP). Value range between 0 and 1.
     - `source_name`: database from which the interaction was extracted. For now you will always receive the `mirdip` value.  
     - `pubmeds`: array of PubMed URLs for the miRNA-gene interaction (according to mirTaRBase).
     - `sources`: miRNA-Gene interaction sources. mirDIP score is based on the scores of those sources. This field is an array that contains the interaction score source names. The different source databases can be found on the [official miRDIP site](https://ophid.utoronto.ca/mirDIP/statistics.jsp).
     - `score_class`: score class according to mirDIP. The possible values are: `V` (Very high: Top 1%), `H` (High: Top 5%), `M` (Medium: Top 1/3) or `L` (Low: Bottom 2/3).
   - Example:
-    - URL: <https://modulector.multiomix.org/mirna-target-interactions/?mirna=hsa-miR-891a-5p&gene=EGFR&include_pubmeds=true>
+    - URL: <https://modulector.multiomix.org/mirna-target-interactions/?mirna=hsa-miR-550*&gene=ERBB1&include_pubmeds=true>
     - Response:
 
     ```JSON
@@ -152,7 +154,16 @@ If no gene symbol is entered, all miRNA interactions are returned. If a miRNA is
             {
                 "id":629118277,
                 "mirna":"hsa-miR-891a-5p",
+              "mirna_aliases":[
+                "hsa-miR-550*",
+                "hsa-miR-550a-5p",
+                "MIMAT0004908"
+              ],
                 "gene":"EGFR",
+              "gene_aliases":[
+                "ERBB1",
+                "EGFR"
+              ],
                 "score":0.0684,
                 "source_name":"mirdip",
                 "pubmeds":[
@@ -232,17 +243,20 @@ The main difference between MIMAT and mature miRNA IDs in MiRBase lies in their 
 
 - URL: `/mirna-aliases`
 - Required query params: -
+- Optional query params:
+  - `search`: Search across all identifier types (miRBase accession ID, mature miRNA, or previous mature miRNA). This parameter searches simultaneously in `mirbase_accession_id`, `mature_mirna`, and `previous_mature_mirna` fields and returns matching records by case-insensitive containment.
 - Functions:
   - Ordering fields: `mature_mirna`
-  - Filtering fields: `mature_mirna` and `mirbase_accession_id`
-  - Searching fields: searching is not available for this service
+  - Filtering fields: `mature_mirna`, `mirbase_accession_id`, and `previous_mature_mirna` (use these for specific exact matches)
+  - Searching fields: `mature_mirna`, `mirbase_accession_id`, and `previous_mature_mirna` (use `search`)
   - Pagination: yes
 - Success Response:
   - Code: 200
   - Content:
     - `mirbase_accession_id`: mirBase accession ID (MIMAT) for the miRNA.
     - `mature_mirna`: Mature mirna ID in miRBase database.
-  - Example:
+    - `previous_mature_mirna`: Previous mature miRNA identifier associated with the same accession ID. This field can be empty.
+  - Example with specific filter:
     - URL: <https://modulector.multiomix.org/mirna-aliases/?mirbase_accession_id=MIMAT0000062>
     - Response:
 
@@ -254,7 +268,32 @@ The main difference between MIMAT and mature miRNA IDs in MiRBase lies in their 
           "results":[
               {
                   "mirbase_accession_id":"MIMAT0000062",
-                  "mature_mirna":"hsa-let-7a-5p"
+                "mature_mirna":"hsa-let-7a-5p",
+                "previous_mature_mirna":"hsa-let-7a"
+              }
+          ]
+        }
+      ```  
+
+  - Example with universal identifier search:
+    - URL: <https://modulector.multiomix.org/mirna-aliases/?search=hsa-miR-550*>
+    - Response: Returns all records matching `hsa-miR-550*` in any of the three identifier fields (accession ID, mature miRNA, or previous mature miRNA).
+
+      ```JSON
+        {
+          "count":2,
+          "next":null,
+          "previous":null,
+          "results":[
+              {
+                  "mirbase_accession_id":"MIMAT0005948",
+                  "mature_mirna":"hsa-miR-550a-3p",
+                  "previous_mature_mirna":"hsa-miR-550*"
+              },
+              {
+                  "mirbase_accession_id":"MIMAT0005949",
+                  "mature_mirna":"hsa-miR-550b-3p",
+                  "previous_mature_mirna":"hsa-miR-550*"
               }
           ]
         }

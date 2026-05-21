@@ -50,11 +50,13 @@ class MethylationGencode(models.Model):
     methylation_epic_v2_ilmnid = models.ForeignKey(
         MethylationEPIC, on_delete=models.CASCADE)
 
-
 # Fin Modelos para Methylation
+
+# Modelos para MiRNA
 class MirbaseIdMirna(models.Model):
     mirbase_accession_id = models.CharField(max_length=20)
     mature_mirna = models.CharField(max_length=30)
+    previous_mature_mirna = models.CharField(max_length=30, null=True, blank=True)
 
 
 class UrlTemplate(models.Model):
@@ -68,10 +70,21 @@ class Mirna(models.Model):
 
     @property
     def mirbase_accession_id(self) -> Optional[MirbaseIdMirna]:
-        try:
-            return MirbaseIdMirna.objects.get(mature_mirna__contains=self.mirna_code)
-        except MirbaseIdMirna.DoesNotExist:
-            return None
+        exact_match = MirbaseIdMirna.objects.filter(
+            mature_mirna=self.mirna_code
+        ).order_by('id').first()
+        if exact_match is not None:
+            return exact_match
+
+        previous_match = MirbaseIdMirna.objects.filter(
+            previous_mature_mirna=self.mirna_code
+        ).order_by('id').first()
+        if previous_match is not None:
+            return previous_match
+
+        return MirbaseIdMirna.objects.filter(
+            mature_mirna__contains=self.mirna_code
+        ).order_by('id').first()
 
 
 class OldRefSeqMapping(models.Model):

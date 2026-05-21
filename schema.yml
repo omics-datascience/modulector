@@ -388,6 +388,8 @@ paths:
             value: EGFR
           APPBP2:
             value: APPBP2
+          ERBB1:
+            value: ERBB1
       - in: query
         name: include_pubmeds
         schema:
@@ -409,6 +411,9 @@ paths:
           Hsa-miR-891a-3p:
             value: hsa-miR-891a-3p
             summary: hsa-miR-891a-3p
+          hsa-miR-550*:
+            value: hsa-miR-550*
+            summary: hsa-miR-550*
       - in: query
         name: score
         schema:
