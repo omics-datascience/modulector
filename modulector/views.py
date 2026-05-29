@@ -15,7 +15,7 @@ from modulector.models import MethylationUCSC_CPGIsland, MethylationUCSCRefGene,
 from modulector.pagination import StandardResultsSetPagination
 from modulector.serializers import MirnaXGenSerializer, MirnaSerializer, \
     MirnaAliasesSerializer, MirnaDiseaseSerializer, MirnaDrugsSerializer, get_mirna_from_accession, \
-    get_mirna_aliases
+    get_mirna_aliases, get_accession_from_mirna
 from modulector.services import subscription_service
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 
@@ -283,15 +283,7 @@ class MirnaCodes(APIView):
         :param mirna_code: miRNA Previous ID or Accession ID.
         :return: The associated Accession ID.
         """
-        res = MirbaseIdMirna.objects.filter(
-            Q(mirbase_accession_id=mirna_code) |
-            Q(mature_mirna=mirna_code) |
-            Q(previous_mature_mirna=mirna_code)
-        ).first()
-        if res:
-            return res.mirbase_accession_id
-        else:
-            return None
+        return get_accession_from_mirna(mirna_code)
 
     @extend_schema(
         tags=["miRNA"],

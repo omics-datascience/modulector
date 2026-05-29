@@ -186,8 +186,6 @@ class MiRNATests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.__check_pagination(response)
 
-    """ Testing /mirna-codes/ endpoint """
-
     def testMirnaCodes1(self):
         """ Tests with a valid body """
         data = json.dumps({"mirna_codes": ["name_01", "Hsa-Mir-935-v2_5p*",

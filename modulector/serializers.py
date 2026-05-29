@@ -225,10 +225,12 @@ def get_mirna_from_accession(accession_id: str) -> List[str]:
 def get_accession_from_mirna(mirna_code: str) -> Optional[str]:
     """
     Retrieves an accession id from a miRNA code.
-    :param mirna_code: miRNA code to make the query
+    :param mirna_code: miRNA code, previous miRNA code, or accession ID to make the query
     :return: Accession id if found, None otherwise
     """
     record = MirbaseIdMirna.objects.filter(
-        Q(mature_mirna=mirna_code) | Q(previous_mature_mirna=mirna_code)
-    ).first()
+        Q(mirbase_accession_id=mirna_code) |
+        Q(mature_mirna=mirna_code) |
+        Q(previous_mature_mirna=mirna_code)
+    ).only('mirbase_accession_id').first()
     return record.mirbase_accession_id if record is not None else None

@@ -1,6 +1,6 @@
 import os
 import pathlib
-from django.db import migrations, models, connection
+from django.db import migrations, models
 
 
 def load_mirna_mature(apps, _schema_editor):
@@ -17,8 +17,7 @@ def load_mirna_mature(apps, _schema_editor):
     print("\nReading mirna_mature.txt...")
     MirbaseIdMirna = apps.get_model(app_label='modulector', model_name='MirbaseIdMirna')
 
-    with connection.cursor() as cursor:
-        cursor.execute("TRUNCATE TABLE modulector_mirbaseidmirna")
+    MirbaseIdMirna.objects.all().delete()
 
     batch_size = 5000
     records = []
@@ -50,7 +49,7 @@ def load_mirna_mature(apps, _schema_editor):
                     previous_mature_mirna=previous_value,
                 ))
 
-    print(f"Truncating modulector_mirbaseidmirna and loading {len(records)} hsa records...")
+    print(f"Deleting existing records and loading {len(records)} hsa records...")
     for i in range(0, len(records), batch_size):
         MirbaseIdMirna.objects.bulk_create(records[i:i + batch_size])
 
