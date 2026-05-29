@@ -38,13 +38,13 @@ Document content:
 Modulector obtains information from different bioinformatics databases or resources. These databases were installed locally to reduce data search time. The databases currently integrated to Modulector are:
 
 1. miRNA data: [mirDIP: microRNA Data Integration Portal](https://ophid.utoronto.ca/mirDIP/).  
-   mirDIP is an integrative database of human microRNA target predictions. Modulector use mirDIP 5.2.  
+   mirDIP is an integrative database of human microRNA target predictions. Modulector uses mirDIP 5.2.  
 2. miRNA data: [miRBase: the microRNA database](https://mirbase.org/).  
-   miRBase is a searchable database of published miRNA sequences and annotations. Each entry in the miRBase Sequence database represents a predicted hairpin portion of a miRNA transcript (termed hairpin in the database), with information on the location and sequence of the mature miRNA sequence (termed mature). Modulector use miRBase 22.1.  
+   miRBase is a searchable database of published miRNA sequences and annotations. Each entry in the miRBase Sequence database represents a predicted hairpin portion of a miRNA transcript (termed hairpin in the database), with information on the location and sequence of the mature miRNA (termed mature). Modulector uses miRBase 22.1.  
 3. Relationship data between miRNA and diseases: [HMDD: the Human microRNA Disease Database](https://www.cuilab.cn/hmdd).  
-   Increasing reports have shown that miRNAs play important roles in various critical biological processes. For their importance, the dysfunctions of miRNAs are associated with a broad spectrum of diseases. The Human microRNA Disease Database (HMDD) is a database that curated experiment-supported evidence for human microRNA (miRNA) and disease associations. Modulector use HMDD v4.0.
+   Increasing reports have shown that miRNAs play important roles in various critical biological processes. For their importance, the dysfunctions of miRNAs are associated with a broad spectrum of diseases. The Human microRNA Disease Database (HMDD) is a database that curated experiment-supported evidence for human microRNA (miRNA) and disease associations. Modulector uses HMDD v4.0.
 4. Relationship data between miRNA and drugs: [SM2miR Database](http://www.jianglab.cn/SM2miR/).
-   Many studies have demonstrated that bioactive small molecules (or drugs) can regulate the miRNA expression, which indicate that targeting miRNAs with small molecules is a new type of therapy for human diseases. SM2miR is a manual curated database which collects and incorporates the experimentally validated small molecules' effects on miRNA expression in 21 species from the published papers. Modulector uses leaked data from the SM2miR database for Homo Sapiens, in the version released on Apr. 27, 2015.
+   Many studies have demonstrated that bioactive small molecules (or drugs) can regulate miRNA expression, which indicates that targeting miRNAs with small molecules is a new type of therapy for human diseases. SM2miR is a manually curated database that collects and incorporates the experimentally validated small molecules' effects on miRNA expression in 21 species from the published papers. Modulector uses leaked data from the SM2miR database for Homo Sapiens, in the version released on Apr. 27, 2015.
 5. Methylation data: Illumina [Infinium MethylationEPIC 2.0](https://www.illumina.com/products/by-type/microarray-kits/infinium-methylation-epic.html) array.  
    The Infinium MethylationEPIC v2.0 BeadChip Kit is a genome-wide methylation screening tool that targets over 935,000 CpG sites in the most biologically significant regions of the human methylome. At Modulector we use the information provided by Illumina on its [product files](https://support.illumina.com/downloads/infinium-methylationepic-v2-0-product-files.html) website.  
 
@@ -53,7 +53,7 @@ Modulector obtains information from different bioinformatics databases or resour
 
 Modulector can be used through the graphical interfaces provided in [Multiomix][multiomix-site], or it can be hosted on your server (read [DEPLOYING.md](DEPLOYING.md) for more information). We strongly recommend using this software through the Multiomix application.
 
-All services are available through a web API accessible from a browser or any other web client. All the responses are in JSON format. In addition to the information provided, sorting, filtering, searching, and paging functions are also available. How to use these functions is explained below:
+All services are available through a web API accessible from a browser or web client, or you can try Modulector from its [Swagger interface](https://modulector.multiomix.org/api/schema/swagger-ui/). All the responses are in JSON format. In addition to the information provided, sorting, filtering, searching, and paging functions are also available. How to use these functions is explained below:
 
 
 ### General
@@ -118,7 +118,7 @@ If no gene symbol is entered, all miRNA interactions are returned. If a miRNA is
 
 - URL: `/mirna-target-interactions`
 - Query params:
-  - `mirna`: miRNA (Accession ID or name in mirBase) to get its interactions with different genes targets.
+  - `mirna`: miRNA (Accession ID or name in mirBase) to get its interactions with different gene targets.
   - `gene`: gene symbol to get its interactions with different miRNA targets.
   - `score`: numerical score to filter the interactions (only interactions with a score greater than or equal to the parameter value are returned). The score corresponds to that obtained for the unidirectional analysis of the MirDip tool. MiRDIP groups information from [24 different predictors](https://ophid.utoronto.ca/mirDIP/statistics.jsp) to then calculate a score for each target gene. For more information about the calculation of the score, you can consult the [scientific publication](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9825511/) of the tool.  
   - `include_pubmeds`: if its value is 'true', the endpoint also returns a list of links to Pubmed where the miRNAs are related to the genes (this may affect Modulector's response time). The default is 'false'.
@@ -132,15 +132,17 @@ If no gene symbol is entered, all miRNA interactions are returned. If a miRNA is
   - Code: 200
   - Content:
     - `id`: Record identifier in MirDIP.
-    - `mirna`: miRNA ID (miRBase MIMAT id or previous ID). The received one as query param.
+    - `mirna`: standardized miRNA ID used by the interaction record.
+    - `mirna_aliases`: list of aliases/identifiers used to resolve the searched miRNA (includes mature IDs, previous IDs, and accession IDs when available).
     - `gene`: target gene.
+    - `gene_aliases`: list of aliases/symbols associated with the searched gene.
     - `score`: interaction score (according to mirDIP). Value range between 0 and 1.
     - `source_name`: database from which the interaction was extracted. For now you will always receive the `mirdip` value.  
     - `pubmeds`: array of PubMed URLs for the miRNA-gene interaction (according to mirTaRBase).
     - `sources`: miRNA-Gene interaction sources. mirDIP score is based on the scores of those sources. This field is an array that contains the interaction score source names. The different source databases can be found on the [official miRDIP site](https://ophid.utoronto.ca/mirDIP/statistics.jsp).
     - `score_class`: score class according to mirDIP. The possible values are: `V` (Very high: Top 1%), `H` (High: Top 5%), `M` (Medium: Top 1/3) or `L` (Low: Bottom 2/3).
   - Example:
-    - URL: <https://modulector.multiomix.org/mirna-target-interactions/?mirna=hsa-miR-891a-5p&gene=EGFR&include_pubmeds=true>
+    - URL: <https://modulector.multiomix.org/mirna-target-interactions/?mirna=hsa-miR-550*&gene=ERBB1&include_pubmeds=true>
     - Response:
 
     ```JSON
@@ -152,7 +154,16 @@ If no gene symbol is entered, all miRNA interactions are returned. If a miRNA is
             {
                 "id":629118277,
                 "mirna":"hsa-miR-891a-5p",
+              "mirna_aliases":[
+                "hsa-miR-550*",
+                "hsa-miR-550a-5p",
+                "MIMAT0004908"
+              ],
                 "gene":"EGFR",
+              "gene_aliases":[
+                "ERBB1",
+                "EGFR"
+              ],
                 "score":0.0684,
                 "source_name":"mirdip",
                 "pubmeds":[
@@ -227,22 +238,25 @@ This functionality allows obtaining different information about a miRNA, such as
 
 ### MiRNA aliases
 
-Returns all associations between mirnas Accessions IDs (MIMAT) and miRNAs matures IDs from the miRBase database.  
+Returns all associations between miRNAs Accessions IDs (MIMAT) and miRNAs matures IDs from the miRBase database.  
 The main difference between MIMAT and mature miRNA IDs in MiRBase lies in their purpose and usage. MIMAT are unique identifiers that define miRNAs uniquely in MiRBase, allowing users to retrieve comprehensive information about specific miRNAs, including their names, sequences, species, versions, and families. On the other hand, mature miRNA IDs refer to the specific mature sequences of miRNAs, such as miR-17-5p and miR-17-3p, which are excised from hairpin precursors and represent different arms of the miRNA. While accession IDs serve as universal identifiers for miRNAs across different versions of MiRBase, mature miRNA IDs focus on the individual sequences of mature miRNAs and their relationships within the database.
 
 - URL: `/mirna-aliases`
 - Required query params: -
+- Optional query params:
+  - `search`: Search across all identifier types (miRBase accession ID, mature miRNA, or previous mature miRNA). This parameter searches simultaneously in `mirbase_accession_id`, `mature_mirna`, and `previous_mature_mirna` fields and returns matching records by case-insensitive containment.
 - Functions:
   - Ordering fields: `mature_mirna`
-  - Filtering fields: `mature_mirna` and `mirbase_accession_id`
-  - Searching fields: searching is not available for this service
+  - Filtering fields: `mature_mirna`, `mirbase_accession_id`, and `previous_mature_mirna` (use these for specific exact matches)
+  - Searching fields: `mature_mirna`, `mirbase_accession_id`, and `previous_mature_mirna` (use `search`)
   - Pagination: yes
 - Success Response:
   - Code: 200
   - Content:
     - `mirbase_accession_id`: mirBase accession ID (MIMAT) for the miRNA.
     - `mature_mirna`: Mature mirna ID in miRBase database.
-  - Example:
+    - `previous_mature_mirna`: Previous mature miRNA identifier associated with the same accession ID. This field can be empty.
+  - Example with specific filter:
     - URL: <https://modulector.multiomix.org/mirna-aliases/?mirbase_accession_id=MIMAT0000062>
     - Response:
 
@@ -254,7 +268,32 @@ The main difference between MIMAT and mature miRNA IDs in MiRBase lies in their 
           "results":[
               {
                   "mirbase_accession_id":"MIMAT0000062",
-                  "mature_mirna":"hsa-let-7a-5p"
+                "mature_mirna":"hsa-let-7a-5p",
+                "previous_mature_mirna":"hsa-let-7a"
+              }
+          ]
+        }
+      ```  
+
+  - Example with universal identifier search:
+    - URL: <https://modulector.multiomix.org/mirna-aliases/?search=hsa-miR-550*>
+    - Response: Returns all records matching `hsa-miR-550*` in any of the three identifier fields (accession ID, mature miRNA, or previous mature miRNA).
+
+      ```JSON
+        {
+          "count":2,
+          "next":null,
+          "previous":null,
+          "results":[
+              {
+                  "mirbase_accession_id":"MIMAT0005948",
+                  "mature_mirna":"hsa-miR-550a-3p",
+                  "previous_mature_mirna":"hsa-miR-550*"
+              },
+              {
+                  "mirbase_accession_id":"MIMAT0005949",
+                  "mature_mirna":"hsa-miR-550b-3p",
+                  "previous_mature_mirna":"hsa-miR-550*"
               }
           ]
         }
@@ -269,7 +308,7 @@ Service that takes a string of any length and returns a list of miRNAs that cont
 - URL: `/mirna-codes-finder`
 - Method: GET
 - Required query params:
-  - `query`: mirna search string.  
+  - `query`: miRNA search string.  
 - Optional query params:
   - `limit`: number of elements returned by the service. `50` by default and a maximum of `3000`.
 - Functions:
@@ -501,7 +540,7 @@ Returns information on a methylation site.
     - `ucsc_cpg_islands`: List of islands related to the methylation site according to the UCSC database. Each element in the view is a JSON with the following content:  
       - `cpg_island`: chromosomal coordinates where the island is located. Format: `chr:start position-end position`
       - `relation`: Relation of the site to the CpG island. The values it can take are `Island`=within boundaries of a CpG Island, `N_Shore`=0-2kb 5' of Island, `N_Shelf`=2kb-4kb 5' of Island, `S_Shore`=0-2kb 3' of Island, `S_Shelf`=2kb-4kb 3' of Island.
-    - `genes`: The value is a JSON where each key is a gene that is related to the methylation site. Values for each gene is a list that contains the region of the gene where the methylation site is located. These regions, according to the NCBI RefSeq database, can be: `5UTR`=5' untranslated region between the TSS and ATG start site, `3UTR`=3' untranslated region between stop codon and poly A signal, `exon_#`, `TSS200`=1-200 bp 5' the TSS, or `TS1500`=200-1500 bp 5' of the TSS. TSS=*Transcription Start Site*.
+    - `genes`: The value is a JSON where each key is a gene that is related to the methylation site. Values for each gene is a list that contains the region of the gene where the methylation site is located. These regions, according to the NCBI RefSeq database, can be: `5UTR`=5' untranslated region between the TSS and ATG start site, `3UTR`=3' untranslated region between the stop codon and poly A signal, `exon_#`, `TSS200`=1-200 bp 5' the TSS, or `TS1500`=200-1500 bp 5' of the TSS. TSS=*Transcription Start Site*.
   - Example:
     - URL: <https://modulector.multiomix.org/methylation/?methylation_site=cg22461615>
     - Response:
@@ -598,7 +637,7 @@ This service provides information, with evidence supported by experiments, on th
 - Error Response:
   - Code: 200
   - Content: empty paginated response (number of elements = 0)
-- Additional details: **We capitalize the R present in the miRNA for each record in HMDD database because they are mature, however, the file does not format it correctly and on the website they show up capitalized**
+- Additional details: **We capitalize the R present in the miRNA for each record in the HMDD database because they are mature, however, the file does not format it correctly and on the website, they show up capitalized**
 
 ### Drugs
 
