@@ -265,6 +265,7 @@ class MirnaAliasesList(generics.ListAPIView):
     )
     def get(self, request, *args, **kwargs):
         """
+        *This method is defined to auto-generate Swagger documentation.
         Returns all associations between miRNAs Accessions IDs (MIMAT) and miRNAs matures IDs from the miRBase database.
         """
         return super().get(request, *args, **kwargs)
