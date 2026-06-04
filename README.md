@@ -267,7 +267,7 @@ The main difference between MIMAT and mature miRNA IDs in MiRBase lies in their 
           "previous":null,
           "results":[
               {
-                  "mirbase_accession_id":"MIMAT0000062",
+                "mirbase_accession_id":"MIMAT0000062",
                 "mature_mirna":"hsa-let-7a-5p",
                 "previous_mature_mirna":"hsa-let-7a"
               }
