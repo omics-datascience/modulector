@@ -50,11 +50,13 @@ class MethylationGencode(models.Model):
     methylation_epic_v2_ilmnid = models.ForeignKey(
         MethylationEPIC, on_delete=models.CASCADE)
 
-
 # Fin Modelos para Methylation
+
+# Modelos para MiRNA
 class MirbaseIdMirna(models.Model):
     mirbase_accession_id = models.CharField(max_length=20)
     mature_mirna = models.CharField(max_length=30)
+    previous_mature_mirna = models.CharField(max_length=30, null=True, blank=True)
 
 
 class UrlTemplate(models.Model):
@@ -68,10 +70,56 @@ class Mirna(models.Model):
 
     @property
     def mirbase_accession_id(self) -> Optional[MirbaseIdMirna]:
-        try:
-            return MirbaseIdMirna.objects.get(mature_mirna__contains=self.mirna_code)
-        except MirbaseIdMirna.DoesNotExist:
-            return None
+        """
+        Retrieves the MirbaseIdMirna record associated with this miRNA through a cascading search.
+
+        **Purpose:**
+
+        This property is essential for:
+
+        - **Normalizing nomenclature**: Converts any miRNA name (current or obsolete) into its
+          standardized miRBase accession ID (e.g., ``MIMAT0000076``).
+        - **Linking to external databases**: The accession ID is the key for generating URLs
+          to scientific databases such as miRBase, miRTarBase, etc.
+        - **Handling obsolete nomenclature**: Enables mapping of historical miRNA names to their
+          current equivalents.
+
+        **Search logic:**
+
+        The search is performed in three sequential stages:
+
+        1. **Exact match**: Searches the ``mature_mirna`` field for a value that exactly
+           matches ``mirna_code``.
+        2. **Previous ID match**: If no exact match is found, searches in the
+           ``previous_mature_mirna`` field (old miRBase nomenclature).
+        3. **Partial match**: If the previous searches fail, performs a substring search
+           in ``mature_mirna`` using ``contains``.
+
+        The cascading search is important because it allows finding miRNAs even when:
+
+        - The user searches with old nomenclature (e.g., ``hsa-miR-550*``).
+        - Only part of the miRNA name is available.
+        - The miRNA name changed in newer miRBase versions.
+
+        :return: The first ``MirbaseIdMirna`` record found according to the search logic,
+                 or ``None`` if no match is found.
+        :rtype: Optional[MirbaseIdMirna]
+        """
+        exact_match = MirbaseIdMirna.objects.filter(
+            mature_mirna=self.mirna_code
+        ).order_by('id').first()
+        if exact_match is not None:
+            return exact_match
+
+        previous_match = MirbaseIdMirna.objects.filter(
+            previous_mature_mirna=self.mirna_code
+        ).order_by('id').first()
+        if previous_match is not None:
+            return previous_match
+
+        return MirbaseIdMirna.objects.filter(
+            mature_mirna__contains=self.mirna_code
+        ).order_by('id').first()
 
 
 class OldRefSeqMapping(models.Model):
