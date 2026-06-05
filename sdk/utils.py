@@ -6,23 +6,24 @@ The public API returns either a plain JSON payload or a paginated payload with
 
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Generic, TypeVar
 
 import requests
 
 JSON = dict[str, Any] | list[Any] | str | int | float | bool | None
 Params = Mapping[str, Any] | None
 Headers = Mapping[str, str] | None
+T = TypeVar("T")
 
 
 @dataclass(frozen=True)
-class PaginatedResponse:
+class PaginatedResponse(Generic[T]):
     """Representation of a Modulector paginated response."""
 
     count: int
     next: str | None
     previous: str | None
-    results: list[Any]
+    results: list[T]
 
 
 def request_url(
@@ -93,7 +94,7 @@ def get_paginated_response(
     headers: Headers = None,
     timeout: float = 30.0,
     session: requests.Session | None = None,
-) -> PaginatedResponse:
+) -> PaginatedResponse[Any]:
     """Return one page from an endpoint using Modulector pagination."""
 
     request_params = _with_pagination_params(params, page=page, page_size=page_size)
@@ -206,7 +207,7 @@ def _with_pagination_params(
     return request_params
 
 
-def _parse_paginated_response(payload: JSON) -> PaginatedResponse:
+def _parse_paginated_response(payload: JSON) -> PaginatedResponse[Any]:
     if not isinstance(payload, Mapping):
         raise ValueError("paginated response must be a JSON object")
 
