@@ -719,7 +719,7 @@ Subscribes an email to our email service that sends news about new Pubmed associ
 
 If you use any part of our code, or the tool itself is useful for your research, please consider citing:
 
-```
+```latex
 @article{marraco2021modulector,
   title={Modulector: una plataforma como servicio para el acceso a bases de datos de micro ARNs},
   author={Marraco, Agust{\'\i}n Daniel and Camele, Genaro and Hasperu{\'e}, Waldo and Menazzi, Sebasti{\'a}n and Abba, Mart{\'\i}n and Butti, Mat{\'\i}as},
