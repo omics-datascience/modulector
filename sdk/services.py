@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from collections.abc import Sequence
 from typing import Any, Final, Literal, TypedDict, cast
 
@@ -14,7 +15,7 @@ from .utils import (
     get_simple_response,
 )
 
-API_BASE_URL: Final[str] = "https://modulector.multiomix.org"
+MODULECTOR_API_BASE_URL: Final[str] = os.getenv("MODULECTOR_API_BASE_URL", "https://modulector.multiomix.org")
 FINDER_LIMIT_MAX: Final[int] = 3000
 
 Ordering = str | Sequence[str]
@@ -184,7 +185,7 @@ class SubscribePubmedsResponse(TypedDict):
 
 def get_mirna_target_interactions(
     *,
-    base_url: str = API_BASE_URL,
+    base_url: str = MODULECTOR_API_BASE_URL,
     mirna: str | None = None,
     gene: str | None = None,
     score: float | None = None,
@@ -246,7 +247,7 @@ def get_mirna_target_interactions(
 def get_mirna_details(
     mirna: str,
     *,
-    base_url: str = API_BASE_URL,
+    base_url: str = MODULECTOR_API_BASE_URL,
     headers: Headers = None,
     timeout: float = 30.0,
     session: requests.Session | None = None,
@@ -273,7 +274,7 @@ def get_mirna_details(
 
 def get_mirna_aliases(
     *,
-    base_url: str = API_BASE_URL,
+    base_url: str = MODULECTOR_API_BASE_URL,
     mature_mirna: str | None = None,
     mirbase_accession_id: str | None = None,
     previous_mature_mirna: str | None = None,
@@ -324,7 +325,7 @@ def get_mirna_aliases(
 def find_mirna_codes(
     query: str,
     *,
-    base_url: str = API_BASE_URL,
+    base_url: str = MODULECTOR_API_BASE_URL,
     limit: int | None = None,
     headers: Headers = None,
     timeout: float = 30.0,
@@ -358,7 +359,7 @@ def find_mirna_codes(
 def get_mirna_codes(
     mirna_codes: Sequence[str],
     *,
-    base_url: str = API_BASE_URL,
+    base_url: str = MODULECTOR_API_BASE_URL,
     headers: Headers = None,
     timeout: float = 30.0,
     session: requests.Session | None = None,
@@ -388,7 +389,7 @@ def get_mirna_codes(
 def find_methylation_sites(
     query: str,
     *,
-    base_url: str = API_BASE_URL,
+    base_url: str = MODULECTOR_API_BASE_URL,
     limit: int | None = None,
     headers: Headers = None,
     timeout: float = 30.0,
@@ -422,7 +423,7 @@ def find_methylation_sites(
 def get_methylation_sites(
     methylation_sites: Sequence[str],
     *,
-    base_url: str = API_BASE_URL,
+    base_url: str = MODULECTOR_API_BASE_URL,
     headers: Headers = None,
     timeout: float = 30.0,
     session: requests.Session | None = None,
@@ -452,7 +453,7 @@ def get_methylation_sites(
 def get_methylation_site_genes(
     methylation_sites: Sequence[str],
     *,
-    base_url: str = API_BASE_URL,
+    base_url: str = MODULECTOR_API_BASE_URL,
     headers: Headers = None,
     timeout: float = 30.0,
     session: requests.Session | None = None,
@@ -481,7 +482,7 @@ def get_methylation_site_genes(
 def get_methylation_details(
     methylation_site: str,
     *,
-    base_url: str = API_BASE_URL,
+    base_url: str = MODULECTOR_API_BASE_URL,
     headers: Headers = None,
     timeout: float = 30.0,
     session: requests.Session | None = None,
@@ -509,7 +510,7 @@ def get_methylation_details(
 
 def get_diseases(
     *,
-    base_url: str = API_BASE_URL,
+    base_url: str = MODULECTOR_API_BASE_URL,
     mirna: str | None = None,
     search: str | None = None,
     ordering: Ordering | None = None,
@@ -554,7 +555,7 @@ def get_diseases(
 
 def get_drugs(
     *,
-    base_url: str = API_BASE_URL,
+    base_url: str = MODULECTOR_API_BASE_URL,
     mirna: str | None = None,
     fda_approved: bool | None = None,
     search: str | None = None,
@@ -605,7 +606,7 @@ def subscribe_pubmeds(
     mirna: str,
     email: str,
     *,
-    base_url: str = API_BASE_URL,
+    base_url: str = MODULECTOR_API_BASE_URL,
     gene: str | None = None,
     headers: Headers = None,
     timeout: float = 30.0,
@@ -636,7 +637,7 @@ def subscribe_pubmeds(
 def unsubscribe_pubmeds(
     token: str,
     *,
-    base_url: str = API_BASE_URL,
+    base_url: str = MODULECTOR_API_BASE_URL,
     headers: Headers = None,
     timeout: float = 30.0,
     session: requests.Session | None = None,
@@ -726,7 +727,7 @@ def _validate_limit(limit: int | None) -> None:
 
 
 __all__ = [
-    "API_BASE_URL",
+    "MODULECTOR_API_BASE_URL",
     "MethylationDetailsResponse",
     "MirnaAlias",
     "MirnaDetailsResponse",
