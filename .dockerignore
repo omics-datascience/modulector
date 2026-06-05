@@ -5,6 +5,7 @@ frontend/static/frontend/node_modules
 frontend/static/frontend/dist
 docker-compose*.yml
 venv
+.venv
 static
 uploads
 .mypy_cache
