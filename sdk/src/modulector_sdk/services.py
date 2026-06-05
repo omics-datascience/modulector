@@ -15,7 +15,11 @@ from .utils import (
     get_simple_response,
 )
 
-MODULECTOR_API_BASE_URL: Final[str] = os.getenv("MODULECTOR_API_BASE_URL", "https://modulector.multiomix.org")
+MODULECTOR_API_BASE_URL: Final[str] = os.getenv(
+    "MODULECTOR_API_BASE_URL",
+    "https://modulector.multiomix.org",
+)
+API_BASE_URL: Final[str] = MODULECTOR_API_BASE_URL
 FINDER_LIMIT_MAX: Final[int] = 3000
 
 Ordering = str | Sequence[str]
@@ -727,6 +731,7 @@ def _validate_limit(limit: int | None) -> None:
 
 
 __all__ = [
+    "API_BASE_URL",
     "MODULECTOR_API_BASE_URL",
     "MethylationDetailsResponse",
     "MirnaAlias",

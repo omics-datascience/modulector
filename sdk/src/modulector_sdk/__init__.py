@@ -2,6 +2,7 @@
 
 from .services import (
     API_BASE_URL,
+    MODULECTOR_API_BASE_URL,
     MethylationDetailsResponse,
     MirnaAlias,
     MirnaDetailsResponse,
@@ -36,6 +37,7 @@ from .utils import (
 
 __all__ = [
     "API_BASE_URL",
+    "MODULECTOR_API_BASE_URL",
     "MethylationDetailsResponse",
     "MirnaAlias",
     "MirnaDetailsResponse",

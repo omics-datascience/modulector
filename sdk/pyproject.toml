@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "modulector-sdk"
+version = "2.3.0"
+description = "Typed Python SDK for the Modulector API."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "omicsdatascience" },
+]
+keywords = [
+    "api-client",
+    "bioinformatics",
+    "methylation",
+    "mirna",
+    "sdk",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Typing :: Typed",
+]
+dependencies = [
+    "requests==2.31.0",
+]
+
+[project.urls]
+API = "https://modulector.multiomix.org/"
+Homepage = "https://modulector.multiomix.org/"
+Issues = "https://github.com/omics-datascience/modulector/issues"
+Repository = "https://github.com/omics-datascience/modulector"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+modulector_sdk = ["py.typed"]

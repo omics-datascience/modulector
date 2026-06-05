@@ -7,6 +7,7 @@ Document content:
 - [Modulector](#modulector)
   - [Integrated databases](#integrated-databases)
   - [Usage](#usage)
+    - [Python SDK](#python-sdk)
     - [General](#general)
     - [Sorting](#sorting)
     - [Filters](#filters)
@@ -52,6 +53,16 @@ Modulector obtains information from different bioinformatics databases or resour
 Modulector can be used through the graphical interfaces provided in [Multiomix][multiomix-site], or it can be hosted on your server (read [DEPLOYING.md](DEPLOYING.md) for more information). We strongly recommend using this software through the Multiomix application.
 
 All services are available through a web API accessible from a browser or web client, or you can try Modulector from its [Swagger interface](https://modulector.multiomix.org/api/schema/swagger-ui/). All the responses are in JSON format. In addition to the information provided, sorting, filtering, searching, and paging functions are also available. How to use these functions is explained below:
+
+### Python SDK
+
+Install the lightweight Python SDK with `pip install modulector-sdk` and import it with `modulector_sdk`. The SDK package is maintained in the [`sdk`](sdk) directory and installs only the client runtime dependencies required to call the Modulector API.
+
+```python
+from modulector_sdk import get_mirna_details
+
+details = get_mirna_details("hsa-miR-21-5p")
+```
 
 ### General
 
