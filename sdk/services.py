@@ -25,86 +25,161 @@ class SourceLink(TypedDict):
     """External source link returned by detail endpoints."""
 
     source: str
+    """Name of the external database that contains related information."""
+
     url: str
+    """URL to access the external database entry."""
 
 
 class MirnaDetailsResponse(TypedDict):
     """Response returned by the miRNA details service."""
 
     aliases: list[str]
+    """miRNA aliases, including previous IDs according to miRBase."""
+
     mirna_sequence: str | None
+    """miRNA nucleotide sequence."""
+
     mirbase_accession_id: str
+    """miRNA accession ID according to miRBase."""
+
     links: list[SourceLink]
+    """External database links for the miRNA of interest."""
 
 
 class MirnaAlias(TypedDict):
     """One miRBase accession to mature miRNA alias record."""
 
     mirbase_accession_id: str
+    """miRBase accession ID for the miRNA."""
+
     mature_mirna: str
+    """Mature miRNA ID in the miRBase database."""
+
     previous_mature_mirna: str | None
+    """Previous mature miRNA identifier associated with the same accession ID."""
 
 
 class MirnaTargetInteraction(TypedDict):
     """One miRNA target interaction record."""
 
     id: int
+    """Record identifier in MirDIP."""
+
     mirna: str
+    """Standardized miRNA ID used by the interaction record."""
+
     mirna_aliases: list[str]
+    """Aliases and identifiers used to resolve the searched miRNA."""
+
     gene: str
+    """Target gene symbol."""
+
     gene_aliases: list[str]
+    """Aliases and symbols associated with the searched gene."""
+
     score: str
+    """MirDIP interaction score, with values between 0 and 1."""
+
     source_name: str
+    """Database from which the interaction was extracted."""
+
     pubmeds: list[str]
+    """PubMed URLs for the miRNA-gene interaction."""
+
     sources: list[str]
+    """Source database names used to calculate the MirDIP interaction score."""
+
     score_class: ScoreClass | None
+    """MirDIP score class for the interaction."""
 
 
 class MirnaDisease(TypedDict):
     """One miRNA disease association record."""
 
     id: int
+    """Internal ID of the record in the HMDD database."""
+
     category: str
+    """HMDD category code assigned to classify the disease association."""
+
     disease: str
+    """Name of the disease associated with the miRNA."""
+
     pubmed: str
+    """PubMed URL for the scientific article supporting the association."""
+
     description: str
+    """Short description of why the miRNA is related to the disease."""
 
 
 class MirnaDrug(TypedDict):
     """One miRNA drug association record."""
 
     id: int
+    """Internal ID of the record in the SM2miR database."""
+
     small_molecule: str
+    """Small molecule or drug name."""
+
     fda_approved: bool
+    """Whether the small molecule or drug is FDA approved."""
+
     detection_method: str
+    """Experimental method used to detect the miRNA expression effect."""
+
     condition: str
+    """Tissue or condition used for detection."""
+
     pubmed: str
+    """PubMed URL for the scientific article supporting the relationship."""
+
     reference: str
+    """Title of the scientific article supporting the relationship."""
+
     expression_pattern: str
+    """Expression pattern of the miRNA in the drug relationship."""
+
     support: str
+    """Supporting text for the drug-miRNA relationship."""
 
 
 class UcscCpgIsland(TypedDict):
     """UCSC CpG island relation for a methylation site."""
 
     cpg_island: str
+    """Chromosomal coordinates of the CpG island."""
+
     relation: str
+    """Relation of the methylation site to the CpG island."""
 
 
 class MethylationDetailsResponse(TypedDict):
     """Response returned by the methylation site details service."""
 
     name: str
+    """Methylation site name according to the Illumina Infinium MethylationEPIC
+    2.0 array.
+    """
+
     aliases: list[str]
+    """Other names for the same methylation site on Illumina arrays."""
+
     chromosome_position: str
+    """Chromosome, position, and strand where the methylation site is located."""
+
     ucsc_cpg_islands: list[UcscCpgIsland]
+    """CpG islands related to the methylation site according to UCSC."""
+
     genes: dict[str, list[str]]
+    """Genes related to the methylation site and their affected regions."""
 
 
 class SubscribePubmedsResponse(TypedDict):
     """Response returned after creating a PubMed news subscription."""
 
     token: str
+    """Subscription token."""
 
 
 def get_mirna_target_interactions(
