@@ -8,7 +8,7 @@ Django backend dependencies.
 ## Installation
 
 ```bash
-pip install modulector
+pip install modulector-sdk
 ```
 
 ## Usage
