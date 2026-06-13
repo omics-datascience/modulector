@@ -10,31 +10,27 @@ The entire contributing process consists in the following steps:
 1. Make a Pull Request in Github from your fork's branch to our master branch in the official repository.
 1. That's all!
 
-
 ## Requirements
 
 1. The entire deploy was configured to be simple from the tool Docker Compose. So you need to install:
     - [Docker](https://docs.docker.com/desktop/#download-and-install)
     - [Docker Compose](https://docs.docker.com/compose/install/)
 
-
 ## Pre-requisites
 
-- Python 3.8+
-
+- Python 3.10+
 
 ## Installation
 
-1. Create a Python's virtualenv to install the dependencies. In the project's root folder:
-    1. `python3 -m venv venv`
-    1. `source venv/bin/activate` (this command must be run every time you want to start the Django server, otherwise we won't have the dependencies available)
-    1. `pip install -r config/requirements.txt`
+Modulector uses [uv](https://docs.astral.sh/uv/) for Python dependency management.
+
+1. Install uv following the [official installation instructions](https://docs.astral.sh/uv/getting-started/installation/).
+1. Create the local environment and install the locked dependencies: `uv sync --locked`
 1. Fill the DB. Follow the instructions in the [DEPLOYING document](DEPLOYING.md#import).
    1. (Optional) create a super-user to work with the Django admin panel:
-       1. `python3 manage.py makemigrations`
-       1. `python3 manage.py migrate`
-       1. `python3 manage.py createsuperuser` (now you can access to \<URL:port\>/admin)
-
+       1. `python manage.py makemigrations`
+       1. `python manage.py migrate`
+       1. `python manage.py createsuperuser` (now you can access to \<URL:port\>/admin)
 
 ## Developing
 
@@ -42,8 +38,7 @@ The entire contributing process consists in the following steps:
     - This will start the DBMS service and an Adminer instance in the URL `http://127.0.0.1:8080` where you can enter the db and see its structure.
     - To stop all the service just run `docker compose -f docker-compose.dev.yml down`
 1. Start Django's development server:
-    1. In the project's root folder and with the virtualenv active, run: `python3 manage.py runserver`. The site will be available in __http://127.0.0.1:8000/__.
-
+    1. In the project's root folder, run: `python manage.py runserver`. The site will be available in __<http://127.0.0.1:8000/>__.
 
 ## Workflow
 
@@ -61,5 +56,4 @@ We use gitlab environment git workflow. The default branch is `dev` and the publ
 1. `dev` is merged into `main`.
 1. Automatic Action/Workflow for _Push_ events into `main` is executed to build a new Docker image for Modulector and publish it.
 
-
-[**More information**](https://docs.google.com/presentation/d/1c1PXM89HLXJyF-zHAEpW_bcxb0iE_Fv2XEpEXYV2Tj4/edit?usp=sharing)
+[__More information__](https://docs.google.com/presentation/d/1c1PXM89HLXJyF-zHAEpW_bcxb0iE_Fv2XEpEXYV2Tj4/edit?usp=sharing)

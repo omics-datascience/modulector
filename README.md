@@ -7,6 +7,8 @@ Document content:
 - [Modulector](#modulector)
   - [Integrated databases](#integrated-databases)
   - [Usage](#usage)
+    - [Python SDK](#python-sdk)
+    - [MCP server](#mcp-server)
     - [General](#general)
     - [Sorting](#sorting)
     - [Filters](#filters)
@@ -32,7 +34,6 @@ Document content:
   - [Sonarcloud](#sonarcloud)
   - [License](#license)
 
-
 ## Integrated databases
 
 Modulector obtains information from different bioinformatics databases or resources. These databases were installed locally to reduce data search time. The databases currently integrated to Modulector are:
@@ -48,18 +49,78 @@ Modulector obtains information from different bioinformatics databases or resour
 5. Methylation data: Illumina [Infinium MethylationEPIC 2.0](https://www.illumina.com/products/by-type/microarray-kits/infinium-methylation-epic.html) array.  
    The Infinium MethylationEPIC v2.0 BeadChip Kit is a genome-wide methylation screening tool that targets over 935,000 CpG sites in the most biologically significant regions of the human methylome. At Modulector we use the information provided by Illumina on its [product files](https://support.illumina.com/downloads/infinium-methylationepic-v2-0-product-files.html) website.  
 
-
 ## Usage
 
 Modulector can be used through the graphical interfaces provided in [Multiomix][multiomix-site], or it can be hosted on your server (read [DEPLOYING.md](DEPLOYING.md) for more information). We strongly recommend using this software through the Multiomix application.
 
 All services are available through a web API accessible from a browser or web client, or you can try Modulector from its [Swagger interface](https://modulector.multiomix.org/api/schema/swagger-ui/). All the responses are in JSON format. In addition to the information provided, sorting, filtering, searching, and paging functions are also available. How to use these functions is explained below:
 
+### Python SDK
+
+Install the lightweight Python SDK with `pip install modulector-sdk` and import it with `modulector_sdk`. The SDK package is maintained in the [`sdk`](sdk) directory and installs only the client runtime dependencies required to call the Modulector API.
+
+```python
+from modulector_sdk import get_mirna_details
+
+details = get_mirna_details("hsa-miR-21-5p")
+```
+
+### MCP server
+
+Install the SDK package before configuring an MCP client:
+
+```bash
+pip install modulector-sdk
+```
+
+The SDK installs a Model Context Protocol server for LLM clients. Run it with:
+
+```bash
+modulector-mcp
+```
+
+Use the same command values in Codex, Claude Code, or any stdio MCP client. For
+clients that accept JSON MCP configuration, configure the server like this:
+
+```json
+{
+  "mcpServers": {
+    "modulector": {
+      "command": "modulector-mcp"
+    }
+  }
+}
+```
+
+To target a custom Modulector deployment from the client configuration, set
+`MODULECTOR_API_BASE_URL` in the server environment:
+
+```json
+{
+  "mcpServers": {
+    "modulector": {
+      "command": "modulector-mcp",
+      "env": {
+        "MODULECTOR_API_BASE_URL": "https://your-modulector.example.org"
+      }
+    }
+  }
+}
+```
+
+For Streamable HTTP clients, run:
+
+```bash
+modulector-mcp --transport streamable-http --host 127.0.0.1 --port 8000
+```
+
+Then connect the client to `http://127.0.0.1:8000/mcp`. Set
+`MODULECTOR_API_BASE_URL` or use each tool's `base_url` argument to target a
+custom deployment.
 
 ### General
 
 All functions are used as a parameter in the URL. So if you want to access `https://modulector.multiomix.org/service/` by sending parameters to it, just add the following suffix to the end of the URL: `?parameter1=value&parameter2=value&parameter3=value`. The `?` indicates that the parameter section begins, these will be of the form `parameterName=parameterValue` and are separated, in case you need to send more than one, by a `&`.
-
 
 ### Sorting
 
@@ -69,20 +130,17 @@ For example, if you want to consume the [miRNA-target interactions](#mirna-targe
 
 `https://modulector.multiomix.org/mirna-target-interactions/?ordering=-score,gene`
 
-
 ### Filters
 
 To filter it is enough to specify the field and the value by which you want to filter. For example, if you want to consume the [miRNA aliases](#mirna-aliases) service keeping only the aliases of `MIMAT0000062` you could access the following resource:
 
 `https://modulector.multiomix.org/mirna-aliases/?mirbase_accession_id=MIMAT0000062`
 
-
 ### Search
 
 The search is done on the basis of a single parameter called `search` which must contain the value to be searched for. Unlike the filter, the search can be performed on multiple fields at once and is performed by *containing* the search term in the field and is case insensitive (while the filter is by exact value). The fields considered in the search are fixed and will be specified for each service later. For example, the [drugs](#drugs) service allows a search by the `condition`, `small_molecule`, and `expression_pattern` fields, then the following query could be performed:
 
 `https://modulector.multiomix.org/drugs/?mirna=miR-126*search=breast`
-
 
 ### Pagination
 
@@ -98,7 +156,6 @@ All the paginated responses contain the following fields:
 - `previous`: link to the previous page.
 - `results`: array of elements (the structure of each element depends on the service and is explained in detail in the [services](#services) section).
 
-
 ### Combining functions
 
 All of the above parameters can be used together! For example, if we wanted to consume the [diseases](#diseases) service by sorting ascending by disease, performing a disease search and keeping only the first 3 items, we could perform the following query (the order of the parameters **does not matter**):
@@ -107,9 +164,7 @@ All of the above parameters can be used together! For example, if we wanted to c
 
 **It will be indicated for each service which fields are available for filtering, sorting, and/or searching**.
 
-
 ## Services
-
 
 ### MiRNA target interactions
 
@@ -729,7 +784,7 @@ Subscribes an email to our email service that sends news about new Pubmed associ
 
 If you use any part of our code, or the tool itself is useful for your research, please consider citing:
 
-```
+```latex
 @article{marraco2021modulector,
   title={Modulector: una plataforma como servicio para el acceso a bases de datos de micro ARNs},
   author={Marraco, Agust{\'\i}n Daniel and Camele, Genaro and Hasperu{\'e}, Waldo and Menazzi, Sebasti{\'a}n and Abba, Mart{\'\i}n and Butti, Mat{\'\i}as},
