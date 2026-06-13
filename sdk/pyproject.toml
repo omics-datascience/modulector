@@ -36,6 +36,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
+    "mcp==1.27.2",
     "requests==2.31.0",
 ]
 
@@ -44,6 +45,9 @@ API = "https://modulector.multiomix.org/"
 Homepage = "https://modulector.multiomix.org/"
 Issues = "https://github.com/omics-datascience/modulector/issues"
 Repository = "https://github.com/omics-datascience/modulector"
+
+[project.scripts]
+modulector-mcp = "modulector_sdk.mcp_server:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

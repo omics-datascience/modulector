@@ -8,6 +8,7 @@ Document content:
   - [Integrated databases](#integrated-databases)
   - [Usage](#usage)
     - [Python SDK](#python-sdk)
+    - [MCP server](#mcp-server)
     - [General](#general)
     - [Sorting](#sorting)
     - [Filters](#filters)
@@ -63,6 +64,59 @@ from modulector_sdk import get_mirna_details
 
 details = get_mirna_details("hsa-miR-21-5p")
 ```
+
+### MCP server
+
+Install the SDK package before configuring an MCP client:
+
+```bash
+pip install modulector-sdk
+```
+
+The SDK installs a Model Context Protocol server for LLM clients. Run it with:
+
+```bash
+modulector-mcp
+```
+
+Use the same command values in Codex, Claude Code, or any stdio MCP client. For
+clients that accept JSON MCP configuration, configure the server like this:
+
+```json
+{
+  "mcpServers": {
+    "modulector": {
+      "command": "modulector-mcp"
+    }
+  }
+}
+```
+
+To target a custom Modulector deployment from the client configuration, set
+`MODULECTOR_API_BASE_URL` in the server environment:
+
+```json
+{
+  "mcpServers": {
+    "modulector": {
+      "command": "modulector-mcp",
+      "env": {
+        "MODULECTOR_API_BASE_URL": "https://your-modulector.example.org"
+      }
+    }
+  }
+}
+```
+
+For Streamable HTTP clients, run:
+
+```bash
+modulector-mcp --transport streamable-http --host 127.0.0.1 --port 8000
+```
+
+Then connect the client to `http://127.0.0.1:8000/mcp`. Set
+`MODULECTOR_API_BASE_URL` or use each tool's `base_url` argument to target a
+custom deployment.
 
 ### General
 
