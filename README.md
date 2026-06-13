@@ -139,7 +139,7 @@ If no gene symbol is entered, all miRNA interactions are returned. If a miRNA is
     - `gene_aliases`: list of aliases/symbols associated with the searched gene.
     - `score`: interaction score (according to mirDIP). Value range between 0 and 1.
     - `source_name`: database from which the interaction was extracted. For now you will always receive the `mirdip` value.  
-    - `pubmeds`: array of PubMed URLs for the miRNA-gene interaction (according to mirTaRBase).
+    - `pubmeds`: array of PubMed URLs for the miRNA-gene interaction (retrieved from Modulector's local PubMed records and, when enabled, complemented with NCBI PubMed API results).
     - `sources`: miRNA-Gene interaction sources. mirDIP score is based on the scores of those sources. This field is an array that contains the interaction score source names. The different source databases can be found on the [official miRDIP site](https://ophid.utoronto.ca/mirDIP/statistics.jsp).
     - `score_class`: score class according to mirDIP. The possible values are: `V` (Very high: Top 1%), `H` (High: Top 5%), `M` (Medium: Top 1/3) or `L` (Low: Bottom 2/3).
   - Example:
