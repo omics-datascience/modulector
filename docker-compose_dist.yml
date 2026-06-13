@@ -24,6 +24,7 @@ services:
             - "80:8000"
         volumes:
             - ./config/nginx/conf.d:/etc/nginx/conf.d
+            - static_data:/static:ro
         depends_on:
             - web_modulector
 
@@ -33,6 +34,8 @@ services:
         restart: always
         depends_on:
             - db_modulector
+        volumes:
+            - static_data:/src/static
         environment:
             # Django
             DJANGO_SETTINGS_MODULE: "ModulectorBackend.settings_prod"
@@ -51,3 +54,6 @@ volumes:
     postgres_data:
         external: true
         name: "modulector_postgres_data"
+    static_data:
+        external: true
+        name: "modulector_static_data"
