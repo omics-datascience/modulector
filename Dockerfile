@@ -3,10 +3,10 @@ FROM python:3.12-slim-bookworm
 COPY --from=ghcr.io/astral-sh/uv:0.8.23 /uv /uvx /bin/
 
 # Default value for deploying with modulector DB image
-ENV POSTGRES_USERNAME "modulector"
-ENV POSTGRES_PASSWORD "modulector"
-ENV POSTGRES_PORT 5432
-ENV POSTGRES_DB "modulector"
+ENV POSTGRES_USERNAME=modulector
+ENV POSTGRES_PASSWORD=modulector
+ENV POSTGRES_PORT=5432
+ENV POSTGRES_DB=modulector
 
 # App's folder creation
 RUN mkdir /src

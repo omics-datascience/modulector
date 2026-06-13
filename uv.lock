@@ -649,7 +649,7 @@ wheels = [
 
 [[package]]
 name = "modulector"
-version = "0.1.0"
+version = "2.4.0"
 source = { virtual = "." }
 dependencies = [
     { name = "daphne" },
