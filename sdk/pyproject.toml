@@ -3,7 +3,7 @@ requires = ["setuptools==80.9.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "modulector-sdk"
+name = "modulector"
 version = "2.3.0"
 description = "Typed Python SDK for the Modulector API."
 readme = "README.md"

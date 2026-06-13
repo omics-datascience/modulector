@@ -56,7 +56,7 @@ All services are available through a web API accessible from a browser or web cl
 
 ### Python SDK
 
-Install the lightweight Python SDK with `pip install modulector-sdk` and import it with `modulector_sdk`. The SDK package is maintained in the [`sdk`](sdk) directory and installs only the client runtime dependencies required to call the Modulector API.
+Install the lightweight Python SDK with `pip install modulector` and import it with `modulector_sdk`. The SDK package is maintained in the [`sdk`](sdk) directory and installs only the client runtime dependencies required to call the Modulector API.
 
 ```python
 from modulector_sdk import get_mirna_details
