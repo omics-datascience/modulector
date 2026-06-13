@@ -191,6 +191,15 @@ def _with_pagination_params(
     page: int | None,
     page_size: int | None,
 ) -> dict[str, Any] | None:
+    """
+    Return a new params dict with pagination parameters added, or None if no params.
+    :param params: Parameters to include in the request, or None for no parameters.
+    :param page: Page number to include in the request, or None for no page parameter.
+    :param page_size: Number of items per page to include in the request, or None for no page_size parameter.
+    :raises ValueError: If page is less than 1.
+    :raises ValueError: If page_size is not between 1 and 1000.
+    :return: A new params dict with pagination parameters added, or None if no params.
+    """
     if page is not None and page < 1:
         raise ValueError("page must be greater than 0")
     if page_size is not None and not 1 <= page_size <= 1000:
@@ -225,9 +234,7 @@ def _parse_paginated_response(payload: JSON) -> PaginatedResponse[Any]:
     if next_url is not None and not isinstance(next_url, str):
         raise ValueError("paginated response field 'next' must be a string or null")
     if previous_url is not None and not isinstance(previous_url, str):
-        raise ValueError(
-            "paginated response field 'previous' must be a string or null"
-        )
+        raise ValueError("paginated response field 'previous' must be a string or null")
 
     return PaginatedResponse(
         count=int(payload["count"]),
