@@ -118,6 +118,15 @@ Then connect the client to `http://127.0.0.1:8000/mcp`. Set
 `MODULECTOR_API_BASE_URL` or use each tool's `base_url` argument to target a
 custom deployment.
 
+The Docker deployment exposes the MCP server from the same ASGI web service as the API. After setting your public host in `docker-compose.yml`, connect web MCP clients to:
+
+```text
+https://<mydomain.com>/mcp
+```
+
+The web service uses `MODULECTOR_API_BASE_URL` for local backend calls and
+`MODULECTOR_PUBLIC_BASE_URL` for the public URL advertised by the MCP server.
+
 ### General
 
 All functions are used as a parameter in the URL. So if you want to access `https://modulector.multiomix.org/service/` by sending parameters to it, just add the following suffix to the end of the URL: `?parameter1=value&parameter2=value&parameter3=value`. The `?` indicates that the parameter section begins, these will be of the form `parameterName=parameterValue` and are separated, in case you need to send more than one, by a `&`.
