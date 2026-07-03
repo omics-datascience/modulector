@@ -32,6 +32,6 @@ RUN chmod +x tools/run.sh
 # Run app
 CMD ["/bin/bash","-c","tools/run.sh"]
 
-# Modulector port
-EXPOSE 8000
+# Modulector API and MCP port
+EXPOSE 8000 8001
 

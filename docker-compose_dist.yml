@@ -27,6 +27,7 @@ services:
             - static_data:/static:ro
         depends_on:
             - web_modulector
+            - mcp_modulector
 
     # Django Backend Server
     web_modulector:
@@ -44,11 +45,32 @@ services:
             # CSRF. Django 4.x need this.
             # Hosts separated by comma ('http://', 'https://' prefixes are mandatory)
             # Example: CSRF_TRUSTED_ORIGINS: 'http://127.0.0.1', 'http://127.0.0.1,https://127.0.0.1:8000', etc
-            CSRF_TRUSTED_ORIGINS: "http://modulector:8000,http://www.modulector:8000"
+            CSRF_TRUSTED_ORIGINS: "https://modulector.multiomix.org,https://www.modulector.multiomix.org,http://modulector.multiomix.org,http://www.modulector.multiomix.org"
 
             # Allowed host must include the ones set in the NGINX modulector.conf file. Localhost is included for
             # health-checks
             ALLOWED_HOSTS: "web,web_modulector,127.0.0.1,localhost"
+
+    # MCP Server
+    mcp_modulector:
+        image: omicsdatascience/modulector:2.4.0
+        restart: always
+        depends_on:
+            - web_modulector
+        command:
+            - python3
+            - -m
+            - modulector_sdk.mcp_server
+            - --transport
+            - streamable-http
+            - --host
+            - 0.0.0.0
+            - --port
+            - "8001"
+        environment:
+            PYTHONPATH: "/src/sdk/src"
+            MODULECTOR_API_BASE_URL: "https://modulector.multiomix.org"
+            MODULECTOR_PUBLIC_BASE_URL: "https://mcp.modulector.multiomix.org"
 
 volumes:
     postgres_data:

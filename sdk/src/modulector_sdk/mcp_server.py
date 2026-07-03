@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 from typing import Any, Final, Literal, TypeVar, cast
 
 from mcp.server.fastmcp import FastMCP
@@ -21,11 +22,15 @@ SERVER_INSTRUCTIONS: Final[str] = (
     "paginated tools with explicit identifiers. The returned data comes from "
     "the configured Modulector API deployment."
 )
+PUBLIC_BASE_URL: Final[str] = os.getenv(
+    "MODULECTOR_PUBLIC_BASE_URL",
+    services.MODULECTOR_API_BASE_URL,
+)
 
 mcp = FastMCP(
     name="modulector",
     instructions=SERVER_INSTRUCTIONS,
-    website_url=services.MODULECTOR_API_BASE_URL,
+    website_url=PUBLIC_BASE_URL,
 )
 
 
@@ -48,6 +53,7 @@ def about_modulector() -> str:
         "miRNA-drug associations, and Illumina Infinium MethylationEPIC 2.0 "
         "site annotations.\n\n"
         f"Default API base URL: `{services.MODULECTOR_API_BASE_URL}`\n\n"
+        f"Public website URL: `{PUBLIC_BASE_URL}`\n\n"
         "Use the finder tools for partial identifiers, then query detail or "
         "paginated tools with exact miRNA, gene, disease, drug, or methylation "
         "site filters."
@@ -126,7 +132,7 @@ def get_mirna_details(
     mirna: str,
     base_url: str | None = None,
     timeout: float = 30.0,
-) -> dict[str, Any]:
+) -> services.MirnaDetailsResponse:
     """Return sequence, aliases, accession, and source links for one miRNA.
 
     :param mirna: miRNA identifier, such as a mature miRNA ID or accession ID.
@@ -299,7 +305,7 @@ def get_methylation_details(
     methylation_site: str,
     base_url: str | None = None,
     timeout: float = 30.0,
-) -> dict[str, Any]:
+) -> services.MethylationDetailsResponse:
     """Return detailed annotations for one methylation site.
 
     :param methylation_site: Methylation site name from EPIC 2.0.

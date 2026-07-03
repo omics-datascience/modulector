@@ -70,6 +70,9 @@ disease associations, drug associations, and PubMed news subscriptions. Use
 `MODULECTOR_API_BASE_URL` or each tool's `base_url` argument to target a custom
 Modulector deployment.
 
+When deployed with the root Docker Compose stack, nginx proxies the MCP
+Streamable HTTP endpoint at `https://<mydomain.com>/mcp`.
+
 ## Development
 
 Build this SDK from the `sdk/` directory:

@@ -28,6 +28,9 @@ Below are the steps to perform a production deploy.
         - `MEDIA_URL`: URL of the `MEDIA_ROOT` folder. By default `<url>/media/`.
         - `ALLOWED_HOSTS`: list of allowed hosts (separated by commas) to access to Modulector. Default `web,localhost,127.0.0.1,::1'`
         - `PROCESS_POOL_WORKERS`: some request uses parallelized queries using ProcessPoolExecutor to improve performance. This parameter indicates the number of workers to be used. By default `4`.
+    - MCP:
+        - `MODULECTOR_API_BASE_URL`: base URL used by the MCP server to call the Modulector API. In Docker Compose this should normally stay as `https://modulector.multiomix.org`.
+        - `MODULECTOR_PUBLIC_BASE_URL`: public origin advertised by the MCP server. Set this to your public deployment URL, for example `https://mydomain.com`.
     - Postgres:
         - `POSTGRES_USERNAME` : Database username. By default, the docker image uses `modulector`.
         - `POSTGRES_PASSWORD` : Database username's password. By default, the docker image uses `modulector`.
@@ -43,6 +46,7 @@ Below are the steps to perform a production deploy.
     - [Docker Swarm](https://docs.docker.com/engine/swarm/):
         - Start: `docker stack deploy --compose-file docker-compose.yml modulector`
         - Stop: `docker stack rm modulector`
+1. The MCP tools are exposed by nginx at `<URL>/mcp` using Streamable HTTP.
 1. Import all the data following the instructions detailed in the [Import section](#import).
 1. (Optional) Create a superuser to access to the admin panel (`<URL>/admin`).
     1. Enter the running container: `docker container exec -it <backend_container_name> bash`. The name is usually `modulector-web_modulector-1` but you can check it with `docker container ps`.
