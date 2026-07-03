@@ -5,8 +5,10 @@ from __future__ import annotations
 import argparse
 import os
 from typing import Any, Final, Literal, TypeVar, cast
+from urllib.parse import urlparse
 
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 
 from . import services
 from .utils import PaginatedResponse
@@ -132,7 +134,7 @@ def get_mirna_details(
     mirna: str,
     base_url: str | None = None,
     timeout: float = 30.0,
-) -> services.MirnaDetailsResponse:
+) -> dict[str, Any]:
     """Return sequence, aliases, accession, and source links for one miRNA.
 
     :param mirna: miRNA identifier, such as a mature miRNA ID or accession ID.
@@ -141,10 +143,13 @@ def get_mirna_details(
     :return: miRNA detail record.
     """
 
-    return services.get_mirna_details(
-        mirna,
-        base_url=_base_url(base_url),
-        timeout=timeout,
+    return cast(
+        dict[str, Any],
+        services.get_mirna_details(
+            mirna,
+            base_url=_base_url(base_url),
+            timeout=timeout,
+        ),
     )
 
 
@@ -305,7 +310,7 @@ def get_methylation_details(
     methylation_site: str,
     base_url: str | None = None,
     timeout: float = 30.0,
-) -> services.MethylationDetailsResponse:
+) -> dict[str, Any]:
     """Return detailed annotations for one methylation site.
 
     :param methylation_site: Methylation site name from EPIC 2.0.
@@ -314,10 +319,13 @@ def get_methylation_details(
     :return: Methylation site detail record.
     """
 
-    return services.get_methylation_details(
-        methylation_site,
-        base_url=_base_url(base_url),
-        timeout=timeout,
+    return cast(
+        dict[str, Any],
+        services.get_methylation_details(
+            methylation_site,
+            base_url=_base_url(base_url),
+            timeout=timeout,
+        ),
     )
 
 
@@ -406,6 +414,7 @@ def main() -> None:
         mcp.settings.host = args.host
         mcp.settings.port = args.port
         mcp.settings.json_response = args.json_response
+        _configure_http_transport_security()
     mcp.run(transport=transport)
 
 
@@ -451,6 +460,63 @@ def _base_url(base_url: str | None) -> str:
     """
 
     return base_url or services.MODULECTOR_API_BASE_URL
+
+
+def _configure_http_transport_security() -> None:
+    """Configure DNS rebinding protection for HTTP MCP transports.
+
+    :return: None.
+    """
+
+    mcp.settings.transport_security = TransportSecuritySettings(
+        allowed_hosts=_allowed_hosts(),
+        allowed_origins=_allowed_origins(),
+    )
+
+
+def _allowed_hosts() -> list[str]:
+    """Return allowed Host headers for the MCP HTTP transport.
+
+    :return: Host header allow-list.
+    """
+
+    configured_hosts = _csv_env("MODULECTOR_MCP_ALLOWED_HOSTS")
+    if configured_hosts:
+        return configured_hosts
+
+    parsed_public_url = urlparse(PUBLIC_BASE_URL)
+    public_host = parsed_public_url.netloc
+    hosts = ["127.0.0.1:*", "localhost:*", "[::1]:*"]
+    if public_host:
+        hosts.append(public_host)
+    return hosts
+
+
+def _allowed_origins() -> list[str]:
+    """Return allowed Origin headers for the MCP HTTP transport.
+
+    :return: Origin header allow-list.
+    """
+
+    configured_origins = _csv_env("MODULECTOR_MCP_ALLOWED_ORIGINS")
+    if configured_origins:
+        return configured_origins
+
+    parsed_public_url = urlparse(PUBLIC_BASE_URL)
+    origins = ["http://127.0.0.1:*", "http://localhost:*", "http://[::1]:*"]
+    if parsed_public_url.scheme and parsed_public_url.netloc:
+        origins.append(f"{parsed_public_url.scheme}://{parsed_public_url.netloc}")
+    return origins
+
+
+def _csv_env(name: str) -> list[str]:
+    """Return comma-separated environment variable values.
+
+    :param name: Environment variable name.
+    :return: Non-empty stripped values.
+    """
+
+    return [value.strip() for value in os.getenv(name, "").split(",") if value.strip()]
 
 
 def _page_to_dict(page: PaginatedResponse[T]) -> dict[str, Any]:
