@@ -70,7 +70,9 @@ services:
         environment:
             PYTHONPATH: "/src/sdk/src"
             MODULECTOR_API_BASE_URL: "https://modulector.multiomix.org"
-            MODULECTOR_PUBLIC_BASE_URL: "https://mcp.modulector.multiomix.org"
+            MODULECTOR_PUBLIC_BASE_URL: "https://modulector.multiomix.org"
+            MODULECTOR_MCP_ALLOWED_HOSTS: "modulector.multiomix.org,www.modulector.multiomix.org"
+            MODULECTOR_MCP_ALLOWED_ORIGINS: "https://modulector.multiomix.org,https://www.modulector.multiomix.org"
 
 volumes:
     postgres_data:
