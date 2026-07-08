@@ -225,3 +225,21 @@ class SubscriptionItem(models.Model):
     gene = models.CharField(max_length=100, null=True)
     record_date = models.DateTimeField(auto_now_add=True)
     unsubscribe_token = models.CharField(max_length=200, blank=False)
+
+
+class MirTarBaseInteraction(models.Model):
+    # Represents the hsa_MTI.csv file (Version 11 - 2025)
+    mirtarbase_id = models.CharField(max_length=50) 
+    mirna = models.CharField(max_length=100, db_index=True)
+    gene = models.CharField(max_length=100, db_index=True)
+
+    # Stored as a string in the database (e.g.: "Reporter assay//Western blot")
+    experiments = models.TextField()
+
+    support_type = models.CharField(max_length=100)
+    pmid = models.CharField(max_length=50)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['mirna', 'gene']),
+        ]
