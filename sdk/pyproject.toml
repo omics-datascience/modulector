@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "modulector-sdk"
-version = "2.5.1"
+version = "2.5.2"
 description = "Typed Python SDK for the Modulector API."
 readme = "README.md"
 requires-python = ">=3.10"

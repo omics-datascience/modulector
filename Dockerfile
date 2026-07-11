@@ -2,6 +2,10 @@ FROM python:3.12-slim-bookworm
 
 COPY --from=ghcr.io/astral-sh/uv:0.8.23 /uv /uvx /bin/
 
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y curl \
+    && rm -rf /var/lib/apt/lists/*
+
 # Default value for deploying with modulector DB image
 ENV POSTGRES_USERNAME=modulector
 ENV POSTGRES_PASSWORD=modulector
@@ -22,9 +26,6 @@ RUN uv sync --locked --no-dev --no-install-project
 
 # Copy all source data
 COPY . .
-
-RUN echo 0 > tools/healthcheck/tries.txt
-HEALTHCHECK CMD python tools/healthcheck/check.py
 
 # Gives execution permissions to run.sh
 RUN chmod +x tools/run.sh
