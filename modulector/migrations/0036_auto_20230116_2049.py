@@ -64,6 +64,10 @@ def import_mirdip(apps, _schema_editor):
     parent_dir = pathlib.Path(__file__).parent.absolute().parent
     mirdip_file_path = os.path.join(parent_dir, "files/mirDIP_Unidirectional_search.txt")
 
+    if not os.path.isfile(mirdip_file_path):
+        print("Skipping mirDIP import: files/mirDIP_Unidirectional_search.txt is not available.")
+        return
+
     print("\nGetting Django models...")
     MirnaXGene = apps.get_model(app_label='modulector', model_name='MirnaXGene')
     Mirna = apps.get_model(app_label='modulector', model_name='Mirna')

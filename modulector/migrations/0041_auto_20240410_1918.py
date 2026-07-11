@@ -12,6 +12,11 @@ def update_hmdd_v4(apps, schema_editor):
     parent_dir = pathlib.Path(__file__).parent.absolute().parent
     print(parent_dir)
     file_path = os.path.join(parent_dir, "files/disease_hmdd.txt")
+
+    if not os.path.isfile(file_path):
+        print("Skipping HMDD import: files/disease_hmdd.txt is not available.")
+        return
+
     delimiter = "\t"
     # loading files
     data = pd.read_csv(filepath_or_buffer=file_path,

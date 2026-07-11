@@ -24,7 +24,7 @@ ENV UV_LINK_MODE=copy
 COPY pyproject.toml uv.lock ./
 RUN uv sync --locked --no-dev --no-install-project
 
-# Copy all source data
+# Copy source code and the data permitted for distribution.
 COPY . .
 
 # Gives execution permissions to run.sh

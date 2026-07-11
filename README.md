@@ -36,18 +36,18 @@ Document content:
 
 ## Integrated databases
 
-Modulector obtains information from different bioinformatics databases or resources. These databases were installed locally to reduce data search time. The databases currently integrated to Modulector are:
+Modulector obtains information from different bioinformatics databases or resources. These databases can be installed locally to reduce data search time. The source terms, required attribution, and distribution status for each dataset are recorded in [DATA-LICENSES.md](DATA-LICENSES.md). The MIT license applies to Modulector's code and project-authored documentation; it does not relicense upstream data.
 
 1. miRNA data: [mirDIP: microRNA Data Integration Portal](https://ophid.utoronto.ca/mirDIP/).  
-   mirDIP is an integrative database of human microRNA target predictions. Modulector uses mirDIP 5.2.  
+   mirDIP is an integrative database of human microRNA target predictions. Modulector uses mirDIP 5.2. Its data are not bundled because the source limits its redistribution to non-profit organizations and requires attribution.
 2. miRNA data: [miRBase: the microRNA database](https://mirbase.org/).  
-   miRBase is a searchable database of published miRNA sequences and annotations. Each entry in the miRBase Sequence database represents a predicted hairpin portion of a miRNA transcript (termed hairpin in the database), with information on the location and sequence of the mature miRNA (termed mature). Modulector uses miRBase 22.1.  
+   miRBase is a searchable database of published miRNA sequences and annotations. Each entry in the miRBase Sequence database represents a predicted hairpin portion of a miRNA transcript (termed hairpin in the database), with information on the location and sequence of the mature miRNA (termed mature). Modulector uses miRBase 22.1. miRBase states that its data are in the public domain; please cite it as requested by miRBase.
 3. Relationship data between miRNA and diseases: [HMDD: the Human microRNA Disease Database](https://www.cuilab.cn/hmdd).  
-   Increasing reports have shown that miRNAs play important roles in various critical biological processes. For their importance, the dysfunctions of miRNAs are associated with a broad spectrum of diseases. The Human microRNA Disease Database (HMDD) is a database that curated experiment-supported evidence for human microRNA (miRNA) and disease associations. Modulector uses HMDD v4.0.
+   Increasing reports have shown that miRNAs play important roles in various critical biological processes. For their importance, the dysfunctions of miRNAs are associated with a broad spectrum of diseases. The Human microRNA Disease Database (HMDD) is a database that curated experiment-supported evidence for human microRNA (miRNA) and disease associations. Modulector uses HMDD v4.0. HMDD data are not bundled: the source allows academic use and requires commercial users to contact its authors.
 4. Relationship data between miRNA and drugs: [SM2miR Database](http://www.jianglab.cn/SM2miR/).
-   Many studies have demonstrated that bioactive small molecules (or drugs) can regulate miRNA expression, which indicates that targeting miRNAs with small molecules is a new type of therapy for human diseases. SM2miR is a manually curated database that collects and incorporates the experimentally validated small molecules' effects on miRNA expression in 21 species from the published papers. Modulector uses leaked data from the SM2miR database for Homo Sapiens, in the version released on Apr. 27, 2015.
+   Many studies have demonstrated that bioactive small molecules (or drugs) can regulate miRNA expression, which indicates that targeting miRNAs with small molecules is a new type of therapy for human diseases. SM2miR is a manually curated database that collects and incorporates the experimentally validated small molecules' effects on miRNA expression in 21 species from the published papers. Its data are not bundled because no redistribution licence has been verified. Use requires an explicit licence or written permission from the rights holder.
 5. Methylation data: Illumina [Infinium MethylationEPIC 2.0](https://www.illumina.com/products/by-type/microarray-kits/infinium-methylation-epic.html) array.  
-   The Infinium MethylationEPIC v2.0 BeadChip Kit is a genome-wide methylation screening tool that targets over 935,000 CpG sites in the most biologically significant regions of the human methylome. At Modulector we use the information provided by Illumina on its [product files](https://support.illumina.com/downloads/infinium-methylationepic-v2-0-product-files.html) website.  
+   The Infinium MethylationEPIC v2.0 BeadChip Kit is a genome-wide methylation screening tool that targets over 935,000 CpG sites in the most biologically significant regions of the human methylome. At Modulector we use the information provided by Illumina on its [product files](https://support.illumina.com/downloads/infinium-methylationepic-v2-0-product-files.html) website. These files are not bundled and must be obtained from Illumina under the terms accompanying the download.
 
 ## Usage
 
@@ -817,6 +817,6 @@ We are using Sonarcloud to analyze repository code. We are not strictly followin
 
 ## License
 
-This repository is distributed under the terms of the MIT license.
+The Modulector source code and project-authored documentation are distributed under the terms of the MIT license. Upstream datasets, database contents, and data-derived records are excluded from that licence; see [DATA-LICENSES.md](DATA-LICENSES.md).
 
 [multiomix-site]: https://multiomix.org/

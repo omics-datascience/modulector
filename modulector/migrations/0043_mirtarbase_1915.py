@@ -15,6 +15,10 @@ def load_mirtarbase_data(apps, _schema_editor):
     parent_dir = pathlib.Path(__file__).parent.absolute().parent
     file_path = os.path.join(parent_dir, "files", "hsa_MTI.csv")
 
+    if not os.path.isfile(file_path):
+        print("Skipping miRTarBase import: files/hsa_MTI.csv is not available.")
+        return
+
     print("\nReading hsa_MTI.csv...")
     MirTarBaseInteraction = apps.get_model(app_label='modulector', model_name='MirTarBaseInteraction')
 

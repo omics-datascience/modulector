@@ -138,21 +138,26 @@ You can use set Modulector DB in two ways.
 
 ### Regenerating the data manually
 
-1. Download the files for the mirDIP database (version 5.2), Illumina 'Infinium MethylationEPIC 2.0' array and the Human MicroRNA Disease Database v4.0. The files can be freely downloaded from their respective web pages.  
+Before obtaining data, review [DATA-LICENSES.md](DATA-LICENSES.md) and the current upstream terms. Do not place third-party data in a public repository, container image, release asset, database dump, or hosted service unless the source has authorised that use. Migrations skip optional imports when their source file is absent.
+
+1. If your organisation and deployment are authorised to use them, obtain the files for mirDIP (version 5.2), Illumina Infinium MethylationEPIC 2.0, and HMDD v4.0 directly from their providers.
    **For the mirDIP database**:
       - Go to the [MirDIP download web page](https://ophid.utoronto.ca/mirDIP/download.jsp) and download the file called *"mirDIPweb/mirDIP Unidirectional search ver. 5.2"*.
       - Unzip the file.
       - Find the file called *"mirDIP_Unidirectional_search.txt"* and move it into the **"modulector/files/"** directory.  
+      - mirDIP permits this use only for academic/not-for-profit institutions and has attribution requirements; commercial users must contact the authors.
 
    **For the EPIC Methylation array**:
       - Go to the [Illumina product files web page](https://support.illumina.com/downloads/infinium-methylationepic-v2-0-product-files.html) and download the ZIP file called "*Infinium MethylationEPIC v2.0 Product Files (ZIP Format)*".
       - Unzip the file.
       - Within the unzipped files you will find one called "*EPIC.csv*". Move this file to the directory **"modulector/files/"**.
       - **NOTE:** the total weight of both files is about 5 GB.  
+      - Keep Illumina's accompanying licence and notices with the local copy.
 
     **For the HMDD database**:
       - Go to the [HMDD website](https://www.cuilab.cn/hmdd) and from the *Downloads* tab, download the *txt* file from the option "The whole dataset of miRNA-disease association data". Use version 4.0.
       - Rename the downloaded file as "*disease_hmdd.txt*". Move this file to the directory **"modulector/files/"**.  
+      - HMDD is free only for academic use. Obtain written permission before any commercial use or public distribution.
 
     **For the mirBase database**: this database is embedded as it weighs only a few MBs. Its data is processed in Django migrations during the execution of the `python3 manage.py migrate` command. So, you don't have to do manual steps to incorporate mirBase data inside Modulector.  
 2. Start up a PostgreSQL service. You can use the same service listed in the *docker-compose.dev.yml* file.
@@ -162,7 +167,7 @@ You can use set Modulector DB in two ways.
 
 If new versions of the databases used in modulector are released and you want to update them, follow the following steps:  
 
-- For **mirDIP**, **HDMM** and **Illumina EPIC array** you must follow the same steps described in the [Regenerating the data manually](#regenerating-the-data-manually) section, replacing the named files with the most recent versions that have been published on their sites.
+- For **mirDIP**, **HMDD**, and the **Illumina EPIC array**, first confirm that the updated source terms permit the intended use, then follow the same steps described in the [Regenerating the data manually](#regenerating-the-data-manually) section, replacing the named files with the most recent versions published by their providers.
 - For **miRBase**, follow the instructions below:
     1. Go to the [*Download* section on the website][mirbase-download-page].
     1. Download the file *mature.fa* from the latest version of the database.

@@ -18,3 +18,9 @@ config/postgres
 Dockerfile
 secretkey.txt
 db
+modulector/files/drugs.xls
+modulector/files/disease_hmdd.txt
+modulector/files/mirDIP_Unidirectional_search.txt
+modulector/files/EPIC.csv
+modulector/files/hsa_MTI.csv
+modulector/files/pubmed_file.xlsx

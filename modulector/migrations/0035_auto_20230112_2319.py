@@ -18,6 +18,11 @@ def import_methylation_epic_v2(apps, _schema_editor):
     parent_dir = pathlib.Path(__file__).parent.absolute().parent
     db_path = os.path.join(parent_dir, "files/EPIC.csv")  # Download DB from Infinium MethylationEPIC v2.0
     # Product Files in https://support.illumina.com/array/array_kits/infinium-methylationepic-beadchip-kit/downloads.html
+
+    if not os.path.isfile(db_path):
+        print("Skipping Illumina EPIC import: files/EPIC.csv is not available.")
+        return
+
     print("\nRemoving comments in file...")
     os.system('tail -n +8 ' + db_path + ' >modulector/files/tmp_db.csv')  # Removes first 7 rows
 
