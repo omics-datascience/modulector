@@ -50,6 +50,12 @@ services:
             # Allowed host must include the ones set in the NGINX modulector.conf file. Localhost is included for
             # health-checks
             ALLOWED_HOSTS: "web,web_modulector,127.0.0.1,localhost"
+        healthcheck:
+            test: ["CMD", "curl", "--fail", "--silent", "--show-error", "--max-time", "5", "http://localhost:8000/drugs/"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 30s
 
     # MCP Server
     mcp_modulector:
@@ -73,6 +79,28 @@ services:
             MODULECTOR_PUBLIC_BASE_URL: "https://modulector.multiomix.org"
             MODULECTOR_MCP_ALLOWED_HOSTS: "modulector.multiomix.org,www.modulector.multiomix.org"
             MODULECTOR_MCP_ALLOWED_ORIGINS: "https://modulector.multiomix.org,https://www.modulector.multiomix.org"
+        healthcheck:
+            test:
+                - CMD
+                - curl
+                - --fail
+                - --silent
+                - --show-error
+                - --max-time
+                - "5"
+                - --header
+                - "Host: modulector.multiomix.org"
+                - --header
+                - "Content-Type: application/json"
+                - --header
+                - "Accept: application/json, text/event-stream"
+                - --data-raw
+                - '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"healthcheck","version":"1.0"}}}'
+                - http://127.0.0.1:8001/mcp
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 30s
 
 volumes:
     postgres_data:
