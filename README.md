@@ -118,7 +118,7 @@ Then connect the client to `http://127.0.0.1:8000/mcp`. Set
 `MODULECTOR_API_BASE_URL` or use each tool's `base_url` argument to target a
 custom deployment.
 
-The Docker deployment exposes the MCP server from the same ASGI web service as the API. After setting your public host in `docker-compose.yml`, connect web MCP clients to:
+The Docker Compose deployment runs the MCP server in a dedicated `mcp_modulector` service using the same image as the API. Nginx proxies that service at `/mcp`. After setting your public host in `docker-compose.yml`, connect web MCP clients to:
 
 ```text
 https://<mydomain.com>/mcp
@@ -817,6 +817,6 @@ We are using Sonarcloud to analyze repository code. We are not strictly followin
 
 ## License
 
-This repository is distributed under the terms of the MIT license.
+The Modulector source code and project-authored documentation are distributed under the terms of the MIT license. Upstream datasets, database contents, and data-derived records are excluded from that licence; see [DATA-LICENSES.md](DATA-LICENSES.md).
 
 [multiomix-site]: https://multiomix.org/
