@@ -118,7 +118,7 @@ Then connect the client to `http://127.0.0.1:8000/mcp`. Set
 `MODULECTOR_API_BASE_URL` or use each tool's `base_url` argument to target a
 custom deployment.
 
-The Docker deployment exposes the MCP server from the same ASGI web service as the API. After setting your public host in `docker-compose.yml`, connect web MCP clients to:
+The Docker Compose deployment runs the MCP server in a dedicated `mcp_modulector` service using the same image as the API. Nginx proxies that service at `/mcp`. After setting your public host in `docker-compose.yml`, connect web MCP clients to:
 
 ```text
 https://<mydomain.com>/mcp
