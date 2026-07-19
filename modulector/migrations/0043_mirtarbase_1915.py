@@ -4,6 +4,7 @@ import os
 import pathlib
 import csv
 from django.db import migrations, models
+import django.contrib.postgres.fields
 from tqdm import tqdm
 
 
@@ -33,11 +34,19 @@ def load_mirtarbase_data(apps, _schema_editor):
             raw_pmid = row.get('References (PMID)', '')
             clean_pmid = str(int(float(raw_pmid))) if raw_pmid and str(raw_pmid).lower() != 'nan' else ''
 
+            # Clean Entrez ID (from "6541.0" to "6541")
+            raw_entrez = row.get('Target Gene (Entrez ID)', '')
+            clean_entrez = str(int(float(raw_entrez))) if raw_entrez and str(raw_entrez).lower() != 'nan' else ''
+
+            raw_experiments = row.get('Experiments', '')
+            experiments_list = [exp.strip() for exp in raw_experiments.split('//') if exp.strip()] if raw_experiments else []
+
             records.append(MirTarBaseInteraction(
                 mirtarbase_id=row.get('miRTarBase ID', ''),
                 mirna=row.get('miRNA', ''),
                 gene=row.get('Target Gene', ''),
-                experiments=row.get('Experiments', ''),
+                target_gene_entrez_id=clean_entrez,
+                experiments=experiments_list,
                 support_type=row.get('Support Type', ''),
                 pmid=clean_pmid
             ))
@@ -64,7 +73,8 @@ class Migration(migrations.Migration):
                 ('mirtarbase_id', models.CharField(max_length=50)),
                 ('mirna', models.CharField(db_index=True, max_length=100)),
                 ('gene', models.CharField(db_index=True, max_length=100)),
-                ('experiments', models.TextField()),
+                ('target_gene_entrez_id', models.CharField(blank=True, max_length=50, null=True)),
+                ('experiments', django.contrib.postgres.fields.ArrayField(base_field=models.CharField(max_length=200), help_text='List of experiments', size=None)),
                 ('support_type', models.CharField(max_length=100)),
                 ('pmid', models.CharField(max_length=50)),
             ],
@@ -72,5 +82,5 @@ class Migration(migrations.Migration):
                 'indexes': [models.Index(fields=['mirna', 'gene'], name='modulector__mirna_8c339f_idx')],
             },
         ),
-        migrations.RunPython(load_mirtarbase_data),
+        migrations.RunPython(load_mirtarbase_data, reverse_code=migrations.RunPython.noop),
     ]
