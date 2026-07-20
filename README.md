@@ -17,6 +17,7 @@ Document content:
     - [Combining functions](#combining-functions)
   - [Services](#services)
     - [MiRNA target interactions](#mirna-target-interactions)
+    - [MiRNA target validation](#mirna-target-validation)
     - [MiRNA details](#mirna-details)
     - [MiRNA aliases](#mirna-aliases)
     - [MiRNA codes finder](#mirna-codes-finder)
@@ -44,7 +45,9 @@ Modulector obtains information from different bioinformatics databases or resour
    miRBase is a searchable database of published miRNA sequences and annotations. Each entry in the miRBase Sequence database represents a predicted hairpin portion of a miRNA transcript (termed hairpin in the database), with information on the location and sequence of the mature miRNA (termed mature). Modulector uses miRBase 22.1.  
 3. Relationship data between miRNA and diseases: [HMDD: the Human microRNA Disease Database](https://www.cuilab.cn/hmdd).  
    Increasing reports have shown that miRNAs play important roles in various critical biological processes. For their importance, the dysfunctions of miRNAs are associated with a broad spectrum of diseases. The Human microRNA Disease Database (HMDD) is a database that curated experiment-supported evidence for human microRNA (miRNA) and disease associations. Modulector uses HMDD v4.0.
-4. Relationship data between miRNA and drugs: [SM2miR Database](http://www.jianglab.cn/SM2miR/).
+4. miRNA target validation data: [miRTarBase: the experimentally validated microRNA-target interactions database](https://awi.cuhk.edu.cn/miRTarBase/).  
+   miRTarBase is a manually curated database of experimentally validated miRNA-target interactions. Modulector uses MirTarBase version 11.0.  
+5. Relationship data between miRNA and drugs: [SM2miR Database](http://www.jianglab.cn/SM2miR/).
    Many studies have demonstrated that bioactive small molecules (or drugs) can regulate miRNA expression, which indicates that targeting miRNAs with small molecules is a new type of therapy for human diseases. SM2miR is a manually curated database that collects and incorporates the experimentally validated small molecules' effects on miRNA expression in 21 species from the published papers. Modulector uses leaked data from the SM2miR database for Homo Sapiens, in the version released on Apr. 27, 2015.
 5. Methylation data: Illumina [Infinium MethylationEPIC 2.0](https://www.illumina.com/products/by-type/microarray-kits/infinium-methylation-epic.html) array.  
    The Infinium MethylationEPIC v2.0 BeadChip Kit is a genome-wide methylation screening tool that targets over 935,000 CpG sites in the most biologically significant regions of the human methylome. At Modulector we use the information provided by Illumina on its [product files](https://support.illumina.com/downloads/infinium-methylationepic-v2-0-product-files.html) website.  
@@ -244,6 +247,63 @@ If no gene symbol is entered, all miRNA interactions are returned. If a miRNA is
                     "MiRNATIP"
                 ],
                 "score_class":"M"
+            }
+        ]
+      }
+    ```  
+
+- Error Response:
+  - Code: 400
+  - Content: `detail`: error description
+
+### MiRNA target validation
+
+Receives a miRNA and/or a gene symbol (target) and returns a paginated vector. Each vector entry represents a miRNA-Gene experimentally validated interaction in miRTarBase.
+If no gene symbol is entered, all experimentally validated targets for that miRNA are returned. If a miRNA is not entered, all miRNA interactions for that target are returned. If both are entered, the interactions of the mirna with the target are returned.
+
+- URL: `/mirna-target-validation`
+- Query params:
+  - `mirna`: miRNA to get its targets validation.
+  - `target`: Gene symbol (target) to get its interactions with different miRNAs.
+  - `support_type`: filter the validations by the type of support. Possible values: `Functional MTI`, `Functional MTI (Weak)`, `Non-Functional MTI`, `Non-Functional MTI (Weak)`.
+  - `experiment`: filter the validations by the type of experiment (e.g. `Western blot`). Case insensitive, partial match is supported.  
+  *NOTE*: `mirna` or `target` are required
+- Functions:
+  - Ordering fields: `mirna` and `gene`
+  - Filtering fields: `support_type` and `experiment`
+  - Searching fields: searching is not available for this service
+  - Pagination: yes
+- Success Response:
+  - Code: 200
+  - Content:
+    - `mirtarbase_id`: miRTarBase interaction ID.
+    - `mirna`: standardized miRNA ID.
+    - `gene`: target gene.
+    - `target_gene_entrez_id`: target gene Entrez ID.
+    - `experiments`: array of experiments validating the interaction.
+    - `support_type`: type of experimental support.
+    - `pmid`: PubMed ID of the publication supporting the validation.
+  - Example:
+    - URL: <https://modulector.multiomix.org/mirna-target-validation/?mirna=hsa-miR-122-5p&target=SLC7A1>
+    - Response:
+
+    ```JSON
+      {
+        "count": 1,
+        "next": null,
+        "previous": null,
+        "results": [
+            {
+                "mirtarbase_id": "MIRT003105",
+                "mirna": "hsa-miR-122-5p",
+                "gene": "SLC7A1",
+                "target_gene_entrez_id": "6541.0",
+                "experiments": [
+                    "Luciferase reporter assay",
+                    "Western blot"
+                ],
+                "support_type": "Functional MTI",
+                "pmid": "17179747.0"
             }
         ]
       }
