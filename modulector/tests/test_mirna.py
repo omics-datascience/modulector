@@ -154,6 +154,76 @@ class MiRNATests(TestCase):
         egfr_response = client.get('/mirna-target-interactions/', {'gene': 'EGFR'})
         self.assertEqual(response.data['count'], egfr_response.data['count'])
 
+    """ Testing /mirna-target-validation/ endpoint """
+
+    def testMirnaTargetValidation1(self) -> None:
+        """Tests with an invalid mirna"""
+        response = client.get(
+            '/mirna-target-validation/', {'mirna': 'goku_capo'})
+        self.assertEqual(response.status_code, 200)
+        self.__check_pagination(response)
+        self.__check_empty_pagination(response)
+
+    def testMirnaTargetValidation2(self) -> None:
+        """Tests with a valid mirna and target"""
+        response = client.get(
+            '/mirna-target-validation/', {'mirna': 'hsa-miR-122-5p', 'target': 'SLC7A1'})
+        self.assertEqual(response.status_code, 200)
+        self.__check_pagination(response)
+        # Checks all fields
+        data = response.data['results'][0]
+        self.assertIsInstance(data, dict)
+
+        self.assertTrue('id' in data)
+        self.assertIsInstance(data['id'], int)
+
+        self.assertTrue('mirtarbase_id' in data)
+        self.assertIsInstance(data['mirtarbase_id'], str)
+
+        self.assertTrue('mirna' in data)
+        self.assertIsInstance(data['mirna'], str)
+
+        self.assertTrue('gene' in data)
+        self.assertIsInstance(data['gene'], str)
+
+        self.assertTrue('target_gene_entrez_id' in data)
+        self.assertIsInstance(data['target_gene_entrez_id'], str)
+
+        self.assertTrue('experiments' in data)
+        self.assertIsInstance(data['experiments'], list)
+
+        self.assertTrue('support_type' in data)
+        self.assertIsInstance(data['support_type'], str)
+
+        self.assertTrue('pmid' in data)
+        self.assertIsInstance(data['pmid'], str)
+
+    def testMirnaTargetValidation3(self) -> None:
+        """Tests 400 error for mirna-target-validation endpoint due to not specifying parameters"""
+        response = client.get('/mirna-target-validation/')
+        self.assertEqual(response.status_code, 400)
+
+    def testMirnaTargetValidation4(self) -> None:
+        """Tests /mirna-target-validation/ with a valid mirna parameter"""
+        response = client.get('/mirna-target-validation/', {'mirna': 'hsa-miR-122-5p'})
+        self.assertEqual(response.status_code, 200)
+        self.__check_pagination(response)
+
+    def testMirnaTargetValidation5(self) -> None:
+        """Tests /mirna-target-validation/ with a target gene symbol parameter"""
+        response = client.get('/mirna-target-validation/', {'target': 'SLC7A1'})
+        self.assertEqual(response.status_code, 200)
+        self.__check_pagination(response)
+
+    def testMirnaTargetValidation6(self) -> None:
+        """Tests /mirna-target-validation/ with filtering parameters (support_type and experiment)"""
+        response = client.get(
+            '/mirna-target-validation/',
+            {'mirna': 'hsa-miR-122-5p', 'support_type': 'Functional MTI', 'experiment': 'Western blot'}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.__check_pagination(response)
+
     """ Testing /mirna-aliases/ endpoint """
 
     def testMirnaAliases1(self):
