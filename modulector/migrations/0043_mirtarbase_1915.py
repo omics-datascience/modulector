@@ -4,7 +4,7 @@ import os
 import pathlib
 import csv
 from django.db import migrations, models
-import django.contrib.postgres.fields
+from django.contrib.postgres.fields import ArrayField
 from tqdm import tqdm
 
 
@@ -74,7 +74,7 @@ class Migration(migrations.Migration):
                 ('mirna', models.CharField(db_index=True, max_length=100)),
                 ('gene', models.CharField(db_index=True, max_length=100)),
                 ('target_gene_entrez_id', models.CharField(blank=True, max_length=50, null=True)),
-                ('experiments', django.contrib.postgres.fields.ArrayField(base_field=models.CharField(max_length=200), help_text='List of experiments', size=None)),
+                ('experiments', ArrayField(base_field=models.CharField(max_length=200), help_text='List of experiments', size=None)),
                 ('support_type', models.CharField(max_length=100)),
                 ('pmid', models.CharField(max_length=50)),
             ],
