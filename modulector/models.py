@@ -238,7 +238,7 @@ class MirTarBaseInteraction(models.Model):
     # Stored as an array of strings in the database
     experiments = ArrayField(
         models.CharField(max_length=200),
-        help_text="List of experiments"
+        help_text="List of techniques used to experimentally validate the miRNA-target interaction"
     )
 
     support_type = models.CharField(max_length=100)

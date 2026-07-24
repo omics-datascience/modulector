@@ -270,17 +270,18 @@ If no gene symbol is entered, all experimentally validated targets for that miRN
   *NOTE*: `mirna` or `target` are required
 - Functions:
   - Ordering fields: `mirna` and `gene`
-  - Filtering fields: `support_type` and `experiment`
+  - Filtering fields: `mirna`, `target`, and `support_type` (exact match), and `experiment` (case-insensitive, partial match)
   - Searching fields: searching is not available for this service
   - Pagination: yes
 - Success Response:
   - Code: 200
   - Content:
+    - `id`: Internal ID of the record. 
     - `mirtarbase_id`: miRTarBase interaction ID.
     - `mirna`: standardized miRNA ID.
     - `gene`: target gene.
     - `target_gene_entrez_id`: target gene Entrez ID.
-    - `experiments`: array of experiments validating the interaction.
+    - `experiments`: array of techniques used to experimentally validate the miRNA-target interaction.
     - `support_type`: type of experimental support.
     - `pmid`: PubMed ID of the publication supporting the validation.
   - Example:
@@ -294,6 +295,7 @@ If no gene symbol is entered, all experimentally validated targets for that miRN
         "previous": null,
         "results": [
             {
+                "id": 10,
                 "mirtarbase_id": "MIRT003105",
                 "mirna": "hsa-miR-122-5p",
                 "gene": "SLC7A1",

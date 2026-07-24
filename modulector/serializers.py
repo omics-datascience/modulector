@@ -240,7 +240,7 @@ class MirTarBaseInteractionSerializer(serializers.ModelSerializer):
     class Meta:
         model = MirTarBaseInteraction
         fields = [
-            'mirtarbase_id', 'mirna', 'gene', 
+            'id', 'mirtarbase_id', 'mirna', 'gene', 
             'target_gene_entrez_id', 'experiments', 
             'support_type', 'pmid'
         ]

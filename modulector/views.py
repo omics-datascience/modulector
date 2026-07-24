@@ -98,7 +98,6 @@ class MirnaTargetInteractions(generics.ListAPIView):
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["gene", "score"]
     ordering = ["id"]
-    handler400 = "rest_framework.exceptions.bad_request"
 
     @staticmethod
     def __get_gene_aliases(gene: str) -> list[str]:
@@ -247,10 +246,10 @@ class MirnaTargetValidation(generics.ListAPIView):
 
     serializer_class = MirTarBaseInteractionSerializer
     pagination_class = StandardResultsSetPagination
-    filter_backends = [filters.OrderingFilter]
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
+    filterset_fields = ["mirna", "gene", "support_type"]
     ordering_fields = ["mirna", "gene"]
     ordering = ["id"]
-    handler400 = "rest_framework.exceptions.bad_request"
 
     @extend_schema(
         tags=["miRNA"],
@@ -301,7 +300,7 @@ class MirnaTargetValidation(generics.ListAPIView):
 
     def get_queryset(self):
         mirna = self.request.GET.get("mirna")
-        target = self.request.GET.get("target")
+        target = self.request.GET.get("target") or self.request.GET.get("gene")
         support_type = self.request.GET.get("support_type")
         experiment = self.request.GET.get("experiment")
 
@@ -314,13 +313,9 @@ class MirnaTargetValidation(generics.ListAPIView):
                 raise ParseError(detail=f"Invalid 'support_type'. Allowed values are: {', '.join(valid_support_types)}")
 
         data = MirTarBaseInteraction.objects.all()
-        
-        if mirna:
-            data = data.filter(mirna=mirna)
-        if target:
+        # The 'target' query parameter maps to the 'gene' field in the model
+        if self.request.GET.get("target") and not self.request.GET.get("gene"):
             data = data.filter(gene=target)
-        if support_type:
-            data = data.filter(support_type=support_type)
         if experiment:
             data = data.filter(experiments__icontains=experiment)
 
