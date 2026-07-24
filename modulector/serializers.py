@@ -4,7 +4,7 @@ from typing import List, Optional, Dict, Set
 from django.db.models import Q
 from rest_framework import serializers
 from ModulectorBackend.settings import USE_PUBMED_API, PUBMED_API_TIMEOUT
-from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrug
+from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrug, MirTarBaseInteraction
 from modulector.services import url_service, pubmed_service
 from modulector.utils import link_builder
 
@@ -234,3 +234,14 @@ def get_accession_from_mirna(mirna_code: str) -> Optional[str]:
         Q(previous_mature_mirna=mirna_code)
     ).only('mirbase_accession_id').first()
     return record.mirbase_accession_id if record is not None else None
+
+
+class MirTarBaseInteractionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MirTarBaseInteraction
+        fields = [
+            'id', 'mirtarbase_id', 'mirna', 'gene', 
+            'target_gene_entrez_id', 'experiments', 
+            'support_type', 'pmid'
+        ]
+

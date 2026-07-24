@@ -20,6 +20,7 @@ from modulector.models import (
     MirnaDrug,
     GeneAliases,
     MethylationEPIC,
+    MirTarBaseInteraction,
 )
 from modulector.pagination import StandardResultsSetPagination
 from modulector.serializers import (
@@ -31,6 +32,7 @@ from modulector.serializers import (
     get_mirna_from_accession,
     get_mirna_aliases,
     get_accession_from_mirna,
+    MirTarBaseInteractionSerializer,
 )
 from modulector.services import subscription_service
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
@@ -96,7 +98,6 @@ class MirnaTargetInteractions(generics.ListAPIView):
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["gene", "score"]
     ordering = ["id"]
-    handler400 = "rest_framework.exceptions.bad_request"
 
     @staticmethod
     def __get_gene_aliases(gene: str) -> list[str]:
@@ -238,6 +239,87 @@ class MirnaTargetInteractions(generics.ListAPIView):
             )
 
         return data.filter(score__gte=score) if score else data
+
+
+class MirnaTargetValidation(generics.ListAPIView):
+    """Returns a paginated response with all the validations of a specific miRNA and target (mirna-target-validation endpoint)"""
+
+    serializer_class = MirTarBaseInteractionSerializer
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
+    filterset_fields = ["mirna", "gene", "support_type"]
+    ordering_fields = ["mirna", "gene"]
+    ordering = ["id"]
+
+    @extend_schema(
+        tags=["miRNA"],
+        summary="Retrieve miRNA target validations",
+        parameters=[
+            OpenApiParameter(
+                name="mirna",
+                type=str,
+                description="miRNA to get its targets validation.",
+                required=False,
+                examples=[
+                    OpenApiExample(name="hsa-miR-21-5p", value="hsa-miR-21-5p"),
+                ],
+            ),
+            OpenApiParameter(
+                name="target",
+                type=str,
+                description="Gene symbol (target) to get its interactions with different miRNAs",
+                required=False,
+                examples=[
+                    OpenApiExample(name="EGFR", value="EGFR"),
+                ],
+            ),
+            OpenApiParameter(
+                name="support_type",
+                type=str,
+                description="Filter by support type.",
+                required=False,
+                enum=['Functional MTI', 'Functional MTI (Weak)', 'Non-Functional MTI', 'Non-Functional MTI (Weak)'],
+            ),
+            OpenApiParameter(
+                name="experiment",
+                type=str,
+                description="Filter by experiment type.",
+                required=False,
+            ),
+            # Exclude pagination and ordering parameters
+            OpenApiParameter(name="ordering", exclude=True),
+            OpenApiParameter(name="page", exclude=True),
+            OpenApiParameter(name="page_size", exclude=True),
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        Receives a miRNA and/or a target gene and returns a paginated vector. Each vector entry represents a miRNA-Gene validation interaction in MirTarBase. If no target is entered, all targets for that miRNA are returned. If a miRNA is not entered, all miRNA interactions for that target are returned. If both are entered, the interactions of the mirna with the target are returned.
+        """
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        mirna = self.request.GET.get("mirna")
+        target = self.request.GET.get("target") or self.request.GET.get("gene")
+        support_type = self.request.GET.get("support_type")
+        experiment = self.request.GET.get("experiment")
+
+        if not mirna and not target:
+            raise ParseError(detail="'mirna' or 'target' are mandatory")
+
+        if support_type:
+            valid_support_types = ['Functional MTI', 'Functional MTI (Weak)', 'Non-Functional MTI', 'Non-Functional MTI (Weak)']
+            if support_type not in valid_support_types:
+                raise ParseError(detail=f"Invalid 'support_type'. Allowed values are: {', '.join(valid_support_types)}")
+
+        data = MirTarBaseInteraction.objects.all()
+        # The 'target' query parameter maps to the 'gene' field in the model
+        if self.request.GET.get("target") and not self.request.GET.get("gene"):
+            data = data.filter(gene=target)
+        if experiment:
+            data = data.filter(experiments__icontains=experiment)
+
+        return data
 
 
 class MirnaAliasesList(generics.ListAPIView):
