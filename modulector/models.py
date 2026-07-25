@@ -1,5 +1,6 @@
 from typing import Optional
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 from django.db.models import QuerySet
 
 
@@ -232,9 +233,13 @@ class MirTarBaseInteraction(models.Model):
     mirtarbase_id = models.CharField(max_length=50) 
     mirna = models.CharField(max_length=100, db_index=True)
     gene = models.CharField(max_length=100, db_index=True)
+    target_gene_entrez_id = models.CharField(max_length=50, null=True, blank=True)
 
-    # Stored as a string in the database (e.g.: "Reporter assay//Western blot")
-    experiments = models.TextField()
+    # Stored as an array of strings in the database
+    experiments = ArrayField(
+        models.CharField(max_length=200),
+        help_text="List of techniques used to experimentally validate the miRNA-target interaction"
+    )
 
     support_type = models.CharField(max_length=100)
     pmid = models.CharField(max_length=50)

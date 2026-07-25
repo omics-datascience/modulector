@@ -1,47 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Modulector v{{ version }}</title>
 </head>
+
 <body>
-<h2>Modulector v{{ version }}</h2>
-<ul>
-    <li>
-        <a href="{% url 'mirna' %}">Mirna Details</a>
-    </li>
-    <li>
-        <a href="{% url 'mirna_target_interactions' %}">Mirna Target Interactions</a>
-    </li>
-    <li>
-        <a href="{% url 'mirna_aliases' %}">Mirna Aliases</a>
-    </li>
-    <li>
-        <a href="{% url 'mirna_codes' %}">Mirna Codes</a>
-    </li>
-    <li>
-        <a href="{% url 'mirna_codes_finder' %}">Mirna Codes Finder</a>
-    </li>
-    <li>
-        <a href="{% url 'diseases' %}">Diseases</a>
-    </li>
-    <li>
-        <a href="{% url 'drugs' %}">Drugs</a>
-    </li>
-    <li>
-        <a href="{% url 'methylation' %}">Methylation Details</a>
-    </li>
-    <li>
-        <a href="{% url 'methylation_sites_finder' %}">Illumina Methylation Sites Finder</a>
-    </li>
-    <li>
-        <a href="{% url 'methylation_sites' %}">Illumina Methylation Sites</a>
-    </li>
-    <li>
-        <a href="{% url 'methylation_sites_to_genes' %}">Illumina Methylation Sites to Genes</a>
-    </li>
-</ul>
-<h3>You can use modulector features from the <a href="/api/schema/swagger-ui/" target="_blank">documentation</a> in Swagger</h3>
-<h3><a href="/api/schema/redoc/" target="_blank">Documentation</a> in Redoc</h3>
+    <h2>Modulector v{{ version }}</h2>
+    <ul>
+        <li>
+            <a href="{% url 'mirna' %}">Mirna Details</a>
+        </li>
+        <li>
+            <a href="{% url 'mirna_target_interactions' %}">Mirna Target Interactions</a>
+        </li>
+        <li>
+            <a href="{% url 'mirna_target_validation' %}">Mirna Target Validation</a>
+        </li>
+        <li>
+            <a href="{% url 'mirna_aliases' %}">Mirna Aliases</a>
+        </li>
+        <li>
+            <a href="{% url 'mirna_codes' %}">Mirna Codes</a>
+        </li>
+        <li>
+            <a href="{% url 'mirna_codes_finder' %}">Mirna Codes Finder</a>
+        </li>
+        <li>
+            <a href="{% url 'diseases' %}">Diseases</a>
+        </li>
+        <li>
+            <a href="{% url 'drugs' %}">Drugs</a>
+        </li>
+        <li>
+            <a href="{% url 'methylation' %}">Methylation Details</a>
+        </li>
+        <li>
+            <a href="{% url 'methylation_sites_finder' %}">Illumina Methylation Sites Finder</a>
+        </li>
+        <li>
+            <a href="{% url 'methylation_sites' %}">Illumina Methylation Sites</a>
+        </li>
+        <li>
+            <a href="{% url 'methylation_sites_to_genes' %}">Illumina Methylation Sites to Genes</a>
+        </li>
+    </ul>
+    <h3>You can use modulector features from the <a href="/api/schema/swagger-ui/" target="_blank">documentation</a> in
+        Swagger</h3>
+    <h3><a href="/api/schema/redoc/" target="_blank">Documentation</a> in Redoc</h3>
 </body>
+
 </html>
