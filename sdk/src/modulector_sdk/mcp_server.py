@@ -11,14 +11,16 @@ from mcp.server.fastmcp import FastMCP
 from mcp.server.transport_security import TransportSecuritySettings
 
 from . import services
+from .services import SupportType
 from .utils import PaginatedResponse
 
 T = TypeVar("T")
 Transport = Literal["stdio", "sse", "streamable-http"]
 
 SERVER_INSTRUCTIONS: Final[str] = (
-    "Use Modulector to help researchers inspect human miRNA target "
-    "interactions, miRNA aliases, disease and drug associations, and "
+    "Use Modulector to help researchers inspect predicted and experimentally "
+    "validated human miRNA target interactions, miRNA aliases, disease and "
+    "drug associations, and "
     "Illumina methylation site annotations. Prefer finder tools when the "
     "user gives partial or uncertain identifiers, then use the detail or "
     "paginated tools with explicit identifiers. The returned data comes from "
@@ -50,8 +52,9 @@ def about_modulector() -> str:
 
     return (
         "# Modulector\n\n"
-        "Modulector provides programmatic access to curated human miRNA target "
-        "interactions, miRNA aliases, miRNA-disease associations, "
+        "Modulector provides programmatic access to predicted and "
+        "experimentally validated human miRNA target interactions, miRNA "
+        "aliases, miRNA-disease associations, "
         "miRNA-drug associations, and Illumina Infinium MethylationEPIC 2.0 "
         "site annotations.\n\n"
         f"Default API base URL: `{services.MODULECTOR_API_BASE_URL}`\n\n"
@@ -104,7 +107,7 @@ def get_mirna_target_interactions(
     :param gene: Gene symbol.
     :param score: Minimum MirDIP score between 0 and 1.
     :param include_pubmeds: Whether to include PubMed URLs for interactions.
-    :param ordering: Comma-separated ordering fields, such as ``-score,gene``.
+    :param ordering: Comma-separated ordering fields, such as `-score,gene`.
     :param search: Search term for supported server-side fields.
     :param page: Page number to request.
     :param page_size: Number of records to request.
@@ -122,6 +125,48 @@ def get_mirna_target_interactions(
             include_pubmeds=include_pubmeds,
             ordering=ordering,
             search=search,
+            page=page,
+            page_size=page_size,
+            timeout=timeout,
+        )
+    )
+
+
+@mcp.tool()
+def get_mirna_target_validations(
+    mirna: str | None = None,
+    target: str | None = None,
+    support_type: SupportType | None = None,
+    experiment: str | None = None,
+    ordering: str | None = None,
+    page: int | None = None,
+    page_size: int | None = None,
+    base_url: str | None = None,
+    timeout: float = 30.0,
+) -> dict[str, Any]:
+    """Return experimentally validated miRNA-target interactions.
+
+    :param mirna: Exact standardized miRNA identifier.
+    :param target: Exact target gene symbol.
+    :param support_type: Exact miRTarBase support classification.
+    :param experiment: Case-insensitive partial experiment name, such as
+        `Western blot`.
+    :param ordering: Comma-separated `mirna` or `gene` ordering fields.
+    :param page: Page number to request.
+    :param page_size: Number of records to request.
+    :param base_url: Optional Modulector API deployment URL.
+    :param timeout: Request timeout in seconds.
+    :return: Paginated miRTarBase validation records.
+    """
+
+    return _page_to_dict(
+        services.get_mirna_target_validations(
+            base_url=_base_url(base_url),
+            mirna=mirna,
+            target=target,
+            support_type=support_type,
+            experiment=experiment,
+            ordering=ordering,
             page=page,
             page_size=page_size,
             timeout=timeout,

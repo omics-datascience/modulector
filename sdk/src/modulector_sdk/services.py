@@ -24,6 +24,12 @@ FINDER_LIMIT_MAX: Final[int] = 3000
 
 Ordering = str | Sequence[str]
 ScoreClass = Literal["V", "H", "M", "L"]
+SupportType = Literal[
+    "Functional MTI",
+    "Functional MTI (Weak)",
+    "Non-Functional MTI",
+    "Non-Functional MTI (Weak)",
+]
 
 
 class SourceLink(TypedDict):
@@ -97,6 +103,34 @@ class MirnaTargetInteraction(TypedDict):
 
     score_class: ScoreClass | None
     """MirDIP score class for the interaction."""
+
+
+class MirnaTargetValidation(TypedDict):
+    """One experimentally validated miRNA-target interaction record."""
+
+    id: int
+    """Internal record identifier."""
+
+    mirtarbase_id: str
+    """Interaction identifier assigned by miRTarBase."""
+
+    mirna: str
+    """Standardized miRNA identifier."""
+
+    gene: str
+    """Target gene symbol."""
+
+    target_gene_entrez_id: str | None
+    """Entrez identifier for the target gene, when available."""
+
+    experiments: list[str]
+    """Techniques used to validate the miRNA-target interaction."""
+
+    support_type: SupportType
+    """Classification of the experimental support."""
+
+    pmid: str
+    """PubMed identifier for the supporting publication."""
 
 
 class MirnaDisease(TypedDict):
@@ -208,18 +242,18 @@ def get_mirna_target_interactions(
     :param mirna: miRNA accession ID or miRBase name.
     :param gene: Gene symbol.
     :param score: Minimum mirDIP interaction score. Valid values are between
-        ``0`` and ``1``.
+        `0` and `1`.
     :param include_pubmeds: Whether PubMed links should be included.
     :param ordering: Ordering field or comma-separated fields. Prefix a field
-        with ``-`` for descending order.
+        with `-` for descending order.
     :param search: Search term for supported server-side search fields.
     :param page: Page number to request.
     :param page_size: Number of records per page.
     :param headers: Optional HTTP headers.
     :param timeout: Request timeout in seconds.
-    :param session: Optional ``requests.Session`` to use for the request.
-    :raises ValueError: If neither ``mirna`` nor ``gene`` is provided, or if
-        ``score`` is outside the accepted range.
+    :param session: Optional `requests.Session` to use for the request.
+    :raises ValueError: If neither `mirna` nor `gene` is provided, or if
+        `score` is outside the accepted range.
     :return: Paginated miRNA target interaction records.
     """
 
@@ -248,6 +282,60 @@ def get_mirna_target_interactions(
     return cast(PaginatedResponse[MirnaTargetInteraction], response)
 
 
+def get_mirna_target_validations(
+    base_url: str = MODULECTOR_API_BASE_URL,
+    mirna: str | None = None,
+    target: str | None = None,
+    support_type: SupportType | None = None,
+    experiment: str | None = None,
+    ordering: Ordering | None = None,
+    page: int | None = None,
+    page_size: int | None = None,
+    headers: Headers = None,
+    timeout: float = 30.0,
+    session: requests.Session | None = None,
+) -> PaginatedResponse[MirnaTargetValidation]:
+    """Return experimentally validated miRNA-target interactions.
+
+    :param base_url: Base URL of the Modulector API.
+    :param mirna: Exact standardized miRNA identifier.
+    :param target: Exact target gene symbol.
+    :param support_type: Exact miRTarBase support classification.
+    :param experiment: Case-insensitive partial experiment name.
+    :param ordering: Ordering field or comma-separated fields. Supported fields
+        are `mirna` and `gene`; prefix a field with `-` for descending
+        order.
+    :param page: Page number to request.
+    :param page_size: Number of records per page.
+    :param headers: Optional HTTP headers.
+    :param timeout: Request timeout in seconds.
+    :param session: Optional `requests.Session` to use for the request.
+    :raises ValueError: If neither `mirna` nor `target` is provided.
+    :return: Paginated experimentally validated interaction records.
+    """
+
+    if mirna is None and target is None:
+        raise ValueError("mirna or target is required")
+
+    params = _request_params(
+        mirna=mirna,
+        target=target,
+        support_type=support_type,
+        experiment=experiment,
+        ordering=_format_ordering(ordering),
+    )
+    response = get_paginated_response(
+        _build_url(base_url, "mirna-target-validation"),
+        params=params,
+        page=page,
+        page_size=page_size,
+        headers=headers,
+        timeout=timeout,
+        session=session,
+    )
+    return cast(PaginatedResponse[MirnaTargetValidation], response)
+
+
 def get_mirna_details(
     mirna: str,
     *,
@@ -262,7 +350,7 @@ def get_mirna_details(
     :param base_url: Base URL of the Modulector API.
     :param headers: Optional HTTP headers.
     :param timeout: Request timeout in seconds.
-    :param session: Optional ``requests.Session`` to use for the request.
+    :param session: Optional `requests.Session` to use for the request.
     :return: miRNA aliases, sequence, accession ID, and source links.
     """
 
@@ -298,12 +386,12 @@ def get_mirna_aliases(
     :param previous_mature_mirna: Exact previous mature miRNA filter.
     :param search: Case-insensitive search across identifier fields.
     :param ordering: Ordering field or comma-separated fields. Prefix a field
-        with ``-`` for descending order.
+        with `-` for descending order.
     :param page: Page number to request.
     :param page_size: Number of records per page.
     :param headers: Optional HTTP headers.
     :param timeout: Request timeout in seconds.
-    :param session: Optional ``requests.Session`` to use for the request.
+    :param session: Optional `requests.Session` to use for the request.
     :return: Paginated miRNA alias records.
     """
 
@@ -340,12 +428,12 @@ def find_mirna_codes(
     :param query: miRNA search string.
     :param base_url: Base URL of the Modulector API.
     :param limit: Maximum number of returned values. The API accepts values up
-        to ``3000``.
+        to `3000`.
     :param headers: Optional HTTP headers.
     :param timeout: Request timeout in seconds.
-    :param session: Optional ``requests.Session`` to use for the request.
-    :raises ValueError: If ``limit`` is less than ``1`` or greater than
-        ``3000``.
+    :param session: Optional `requests.Session` to use for the request.
+    :raises ValueError: If `limit` is less than `1` or greater than
+        `3000`.
     :return: Matching miRNA IDs or accession IDs.
     """
 
@@ -374,9 +462,9 @@ def get_mirna_codes(
     :param base_url: Base URL of the Modulector API.
     :param headers: Optional HTTP headers.
     :param timeout: Request timeout in seconds.
-    :param session: Optional ``requests.Session`` to use for the request.
+    :param session: Optional `requests.Session` to use for the request.
     :return: Mapping from each requested identifier to its accession ID, or
-        ``None`` when no accession ID is found.
+        `None` when no accession ID is found.
     """
 
     payload = get_simple_response(
@@ -404,12 +492,12 @@ def find_methylation_sites(
     :param query: Methylation site search string.
     :param base_url: Base URL of the Modulector API.
     :param limit: Maximum number of returned values. The API accepts values up
-        to ``3000``.
+        to `3000`.
     :param headers: Optional HTTP headers.
     :param timeout: Request timeout in seconds.
-    :param session: Optional ``requests.Session`` to use for the request.
-    :raises ValueError: If ``limit`` is less than ``1`` or greater than
-        ``3000``.
+    :param session: Optional `requests.Session` to use for the request.
+    :raises ValueError: If `limit` is less than `1` or greater than
+        `3000`.
     :return: Matching methylation site names.
     """
 
@@ -438,7 +526,7 @@ def get_methylation_sites(
     :param base_url: Base URL of the Modulector API.
     :param headers: Optional HTTP headers.
     :param timeout: Request timeout in seconds.
-    :param session: Optional ``requests.Session`` to use for the request.
+    :param session: Optional `requests.Session` to use for the request.
     :return: Mapping from each requested identifier to matching EPIC 2.0 site
         names.
     """
@@ -468,7 +556,7 @@ def get_methylation_site_genes(
     :param base_url: Base URL of the Modulector API.
     :param headers: Optional HTTP headers.
     :param timeout: Request timeout in seconds.
-    :param session: Optional ``requests.Session`` to use for the request.
+    :param session: Optional `requests.Session` to use for the request.
     :return: Mapping from each requested identifier to associated genes.
     """
 
@@ -498,7 +586,7 @@ def get_methylation_details(
     :param base_url: Base URL of the Modulector API.
     :param headers: Optional HTTP headers.
     :param timeout: Request timeout in seconds.
-    :param session: Optional ``requests.Session`` to use for the request.
+    :param session: Optional `requests.Session` to use for the request.
     :return: Methylation site details, aliases, CpG island relations, and genes.
     """
 
@@ -531,12 +619,12 @@ def get_diseases(
         returned page by page.
     :param search: Case-insensitive search term for disease names.
     :param ordering: Ordering field or comma-separated fields. Prefix a field
-        with ``-`` for descending order.
+        with `-` for descending order.
     :param page: Page number to request.
     :param page_size: Number of records per page.
     :param headers: Optional HTTP headers.
     :param timeout: Request timeout in seconds.
-    :param session: Optional ``requests.Session`` to use for the request.
+    :param session: Optional `requests.Session` to use for the request.
     :return: Paginated miRNA disease association records.
     """
 
@@ -579,12 +667,12 @@ def get_drugs(
     :param search: Case-insensitive search term for condition, small molecule,
         and expression pattern fields.
     :param ordering: Ordering field or comma-separated fields. Prefix a field
-        with ``-`` for descending order.
+        with `-` for descending order.
     :param page: Page number to request.
     :param page_size: Number of records per page.
     :param headers: Optional HTTP headers.
     :param timeout: Request timeout in seconds.
-    :param session: Optional ``requests.Session`` to use for the request.
+    :param session: Optional `requests.Session` to use for the request.
     :return: Paginated miRNA drug association records.
     """
 
@@ -624,7 +712,7 @@ def subscribe_pubmeds(
     :param gene: Optional gene symbol filter for the subscription.
     :param headers: Optional HTTP headers.
     :param timeout: Request timeout in seconds.
-    :param session: Optional ``requests.Session`` to use for the request.
+    :param session: Optional `requests.Session` to use for the request.
     :return: Subscription token response.
     """
 
@@ -648,11 +736,11 @@ def unsubscribe_pubmeds(
 ) -> str:
     """Unsubscribe from PubMed news.
 
-    :param token: Subscription token returned by ``subscribe_pubmeds``.
+    :param token: Subscription token returned by `subscribe_pubmeds`.
     :param base_url: Base URL of the Modulector API.
     :param headers: Optional HTTP headers.
     :param timeout: Request timeout in seconds.
-    :param session: Optional ``requests.Session`` to use for the request.
+    :param session: Optional `requests.Session` to use for the request.
     :return: API confirmation message.
     """
 
@@ -678,10 +766,10 @@ def _build_url(base_url: str, endpoint: str) -> str:
 
 
 def _request_params(**params: Any) -> dict[str, Any]:
-    """Return request parameters without ``None`` values.
+    """Return request parameters without `None` values.
 
     :param params: Query parameters keyed by API parameter name.
-    :return: A dictionary containing only parameters with non-``None`` values.
+    :return: A dictionary containing only parameters with non-`None` values.
     """
 
     return {key: value for key, value in params.items() if value is not None}
@@ -691,7 +779,7 @@ def _bool_param(value: bool | None) -> str | None:
     """Convert an optional boolean to the API's lowercase string form.
 
     :param value: Boolean value to convert.
-    :return: ``"true"``, ``"false"``, or ``None``.
+    :return: `"true"`, `"false"`, or `None`.
     """
 
     if value is None:
@@ -704,7 +792,7 @@ def _format_ordering(ordering: Ordering | None) -> str | None:
 
     :param ordering: A comma-separated ordering string or a sequence of ordering
         fields.
-    :return: A comma-separated ordering string, or ``None``.
+    :return: A comma-separated ordering string, or `None`.
     """
 
     if ordering is None:
@@ -722,8 +810,8 @@ def _validate_limit(limit: int | None) -> None:
     """Validate finder service limit parameters.
 
     :param limit: Limit value to validate.
-    :raises ValueError: If ``limit`` is outside the API's accepted range.
-    :return: ``None``.
+    :raises ValueError: If `limit` is outside the API's accepted range.
+    :return: `None`.
     """
 
     if limit is not None and not 1 <= limit <= FINDER_LIMIT_MAX:
@@ -739,8 +827,10 @@ __all__ = [
     "MirnaDisease",
     "MirnaDrug",
     "MirnaTargetInteraction",
+    "MirnaTargetValidation",
     "SourceLink",
     "SubscribePubmedsResponse",
+    "SupportType",
     "UcscCpgIsland",
     "find_methylation_sites",
     "find_mirna_codes",
@@ -753,6 +843,7 @@ __all__ = [
     "get_mirna_codes",
     "get_mirna_details",
     "get_mirna_target_interactions",
+    "get_mirna_target_validations",
     "subscribe_pubmeds",
     "unsubscribe_pubmeds",
 ]
