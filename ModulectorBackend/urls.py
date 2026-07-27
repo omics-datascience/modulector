@@ -12,6 +12,8 @@ urlpatterns = [
     path('mirna/', views.MirnaList.as_view({'get': 'list'}), name='mirna'),
     path('mirna-target-interactions/', views.MirnaTargetInteractions.as_view(),
          name='mirna_target_interactions'),
+    path('mirna-target-validation/', views.MirnaTargetValidation.as_view(),
+         name='mirna_target_validation'),
     path('mirna-aliases/', views.MirnaAliasesList.as_view(), name='mirna_aliases'),
     path('mirna-codes/', views.MirnaCodes.as_view(), name='mirna_codes'),
     path('mirna-codes-finder/', views.MirnaCodesFinder.as_view(),
