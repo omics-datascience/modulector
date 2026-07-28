@@ -68,6 +68,14 @@ from modulector_sdk import get_mirna_details
 details = get_mirna_details("hsa-miR-21-5p")
 ```
 
+#### Publishing the SDK
+
+Pushes to `main` build the package from the [`sdk`](sdk) directory with
+`uv build` and publish the generated distributions to PyPI with `uv publish`.
+Before running the workflow, add a repository Actions secret named
+`PYPI_TOKEN` under **Settings > Secrets and variables > Actions** and set it to
+an API token created in PyPI for the `modulector-sdk` project.
+
 ### MCP server
 
 Install the SDK package before configuring an MCP client:
