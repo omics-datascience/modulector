@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 from modulector.models import (
     MethylationUCSC_CPGIsland,
     MethylationUCSCRefGene,
+    MethylationGencode,
     MirnaXGene,
     Mirna,
     MirbaseIdMirna,
@@ -894,16 +895,28 @@ class MethylationSitesToGenes(APIView):
         return list(res)
 
     @staticmethod
-    def __get_genes_from_methylation_epic_site(input_id: str) -> list[str]:
+    def __get_genes_from_methylation_epic_site(input_id: str, ref_database: str = "UCSCRefGene") -> list[str]:
         """
         Gets genes from a specific methylation CpG site
+
         :param input_id: String to query in the DB (CpG ID)
-        :return: Gene for the given input
+        :param ref_database: Reference database to use (default: UCSCRefGene)
+        :return: List of genes for the given input
         """
-        gene = MethylationUCSCRefGene.objects.filter(
-            Q(methylation_epic_v2_ilmnid=input_id)
-        ).values_list("ucsc_refgene_name", flat=True)
-        return list(gene)
+        db_map = {
+            "ucscrefgene": (MethylationUCSCRefGene, "ucsc_refgene_name"),
+            "gencode": (MethylationGencode, "gencode_name"),
+        }
+        target = db_map.get(ref_database.lower())
+        if not target:
+            return []
+
+        model, field_name = target
+        genes = model.objects.filter(
+            methylation_epic_v2_ilmnid=input_id
+        ).values_list(field_name, flat=True)
+        return list(genes)
+
 
     @extend_schema(
         tags=["Methylation"],
@@ -917,6 +930,11 @@ class MethylationSitesToGenes(APIView):
                             "type": "array",
                             "items": {"type": "string"},
                             "description": "list of Illumina array methylation site names or identifiers for which you want to know the gene(s).",
+                        },
+                        "ref_database": {
+                            "type": "string",
+                            "enum": ["Gencode", "UCSCRefGene"],
+                            "description": "Reference database format for gene names ('Gencode' or 'UCSCRefGene', default: UCSCRefGene).",
                         }
                     },
                     "required": ["methylation_sites"],
@@ -926,7 +944,8 @@ class MethylationSitesToGenes(APIView):
                         "cg17771854_BC11",
                         "cg22461615_TC11",
                         "name_007",
-                    ]
+                    ],
+                    "ref_database": "gencode"
                 },
             }
         },
@@ -946,6 +965,14 @@ class MethylationSitesToGenes(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        if "ref_database" in data:
+            ref_database = data["ref_database"]
+            if not isinstance(ref_database, str) or ref_database.lower() not in ("gencode", "ucscrefgene"):
+                return Response(
+                    {"detail": "'ref_database' must be 'Gencode' or 'UCSCRefGene'"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
         res = {}
         for methylation_name in methylation_sites:
             res[methylation_name] = []
@@ -954,8 +981,7 @@ class MethylationSitesToGenes(APIView):
             epics_ids = self.__get_methylation_epic_sites_ids(methylation_name)
             for site_id in epics_ids:
                 # For each identifier in the EPIC v2 array, I search for the genes involved:
-                genes_list = self.__get_genes_from_methylation_epic_site(site_id)
-
+                genes_list = self.__get_genes_from_methylation_epic_site(site_id, ref_database=data.get("ref_database", "UCSCRefGene"))
                 [
                     res[methylation_name].append(gen)
                     for gen in genes_list
@@ -990,6 +1016,14 @@ class MethylationDetails(APIView):
                     OpenApiExample(name="cg22461615", value="cg22461615"),
                     OpenApiExample(name="cg00000029", value="cg00000029"),
                 ],
+            ),
+            OpenApiParameter(
+                name="ref_database",
+                description="Reference database format for gene names ('Gencode' or 'UCSCRefGene', default: UCSCRefGene).",
+                required=False,
+                type=str,
+                location=OpenApiParameter.QUERY,
+                enum=["Gencode", "UCSCRefGene"],
             )
         ],
     )
@@ -997,6 +1031,14 @@ class MethylationDetails(APIView):
         methylation_site = self.request.GET.get("methylation_site")
         if not methylation_site:
             return Response(status=400, data={"'methylation_site' is mandatory"})
+
+        ref_database = self.request.GET.get("ref_database", "UCSCRefGene")
+        if not isinstance(ref_database, str) or ref_database.lower() not in ("gencode", "ucscrefgene"):
+            return Response(
+                {"detail": "'ref_database' must be 'Gencode' or 'UCSCRefGene'"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
 
         res = {}
         # search for id in array
@@ -1041,15 +1083,24 @@ class MethylationDetails(APIView):
                 )
 
             # searches and loads for genes relations
-            genes_data = MethylationUCSCRefGene.objects.filter(
-                Q(methylation_epic_v2_ilmnid=epic_data.id)
-            )
+            db_map = {
+                "ucscrefgene": (MethylationUCSCRefGene, "ucsc_refgene_name", "ucsc_refgene_group"),
+                "gencode": (MethylationGencode, "gencode_name", "gencode_group"),
+            }
+            target = db_map.get(ref_database.lower())
             res["genes"] = {}
-            for gene in genes_data:
-                if gene.ucsc_refgene_name not in res["genes"]:
-                    res["genes"][gene.ucsc_refgene_name] = []
-                if gene.ucsc_refgene_group not in res["genes"][gene.ucsc_refgene_name]:
-                    res["genes"][gene.ucsc_refgene_name].append(gene.ucsc_refgene_group)
+            if target:
+                model, name_field, group_field = target
+                genes_data = model.objects.filter(
+                    methylation_epic_v2_ilmnid=epic_data.id
+                )
+                for gene in genes_data:
+                    gene_name = getattr(gene, name_field)
+                    gene_group = getattr(gene, group_field)
+                    if gene_name not in res["genes"]:
+                        res["genes"][gene_name] = []
+                    if gene_group not in res["genes"][gene_name]:
+                        res["genes"][gene_name].append(gene_group)
 
             return Response(res)
         else:

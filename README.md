@@ -610,6 +610,8 @@ A service that searches from a list of CpG methylation site identifiers from dif
 - Method: POST
 - Required body params (in JSON format):
   - `methylation_sites`: list of Illumina array methylation site names or identifiers for which you want to know the gene(s).  
+- Optional body params (in JSON format):
+  - `ref_database`: reference database to specify the format for receiving gene names (`UCSCRefGene` [default] or `Gencode`, case-insensitive).
 - Functions:
   - Ordering fields: ordering is not available for this service
   - Filtering fields: filtering is not available for this service
@@ -629,7 +631,8 @@ A service that searches from a list of CpG methylation site identifiers from dif
               "cg17771854_BC11",
               "cg22461615_TC11",
               "name_007"
-          ]
+          ],
+          "ref_database": "gencode"
         }
       ```
 
@@ -660,6 +663,8 @@ Returns information on a methylation site.
 - URL: `/methylation`
 - Required query params:
   - `methylation_site`: methylation_site name from Illumina *Infinium MethylationEPIC 2.0* array
+- Optional query params:
+  - `ref_database`: reference database to specify the format for receiving gene names (`UCSCRefGene` [default] or `Gencode`, case-insensitive).
 - Functions:
   - Ordering fields: ordering is not available for this service
   - Filtering fields: filtering is not available for this service

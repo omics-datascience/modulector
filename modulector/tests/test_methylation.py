@@ -80,6 +80,22 @@ class MethylationTests(TestCase):
         self.assertTrue(len(data) == 1)
         self.assertIsInstance(list(data)[0], str)
 
+    def testMethylationDetailsValidRefDatabase(self):
+        """ Tests methylation endpoint with a valid ref_database parameter """
+        for ref_db in ["Gencode", "gencode", "GENCODE", "UCSCRefGene", "ucscrefgene"]:
+            response = client.get(
+                '/methylation/', {'methylation_site': 'cg22461615', 'ref_database': ref_db})
+            self.assertEqual(response.status_code, 200)
+
+    def testMethylationDetailsInvalidRefDatabase(self):
+        """ Tests methylation endpoint with an invalid ref_database parameter """
+        invalid_values = ["invalid_db", 123, True]
+        for val in invalid_values:
+            response = client.get(
+                '/methylation/', {'methylation_site': 'cg22461615', 'ref_database': val})
+            self.assertEqual(response.status_code, 400)
+            self.assertTrue("detail" in response.data)
+
     """ Testing /methylation-sites-finder/ endpoint """
 
     def testMethylationSitesFinder1(self):
@@ -188,3 +204,28 @@ class MethylationTests(TestCase):
         self.assertEqual(response.status_code, 400)
         data = response.data
         self.assertTrue("detail" in data)
+
+    def testMethylationSitesToGenesValidRefDatabase(self):
+        """ Tests with valid ref_database values (case-insensitive) """
+        for ref_db in ["Gencode", "gencode", "GENCODE", "UCSCRefGene", "ucscrefgene"]:
+            data_body = json.dumps({
+                "methylation_sites": ["cg17771854_BC11"],
+                "ref_database": ref_db
+            })
+            response = client.post('/methylation-sites-genes/', data=data_body,
+                                   content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+
+    def testMethylationSitesToGenesInvalidRefDatabase(self):
+        """ Tests with invalid ref_database values """
+        invalid_values = ["invalid_db", 123, True]
+        for val in invalid_values:
+            data_body = json.dumps({
+                "methylation_sites": ["cg17771854_BC11"],
+                "ref_database": val
+            })
+            response = client.post('/methylation-sites-genes/', data=data_body,
+                                   content_type='application/json')
+            self.assertEqual(response.status_code, 400)
+            self.assertTrue("detail" in response.data)
+
