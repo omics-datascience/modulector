@@ -1,4 +1,4 @@
-name: Prod enviroment workflow to build and push docker image
+name: Production build and publish
 on:
   push:
     branches:
@@ -26,3 +26,20 @@ jobs:
           context: .
           push: true
           tags: omicsdatascience/modulector:${{ env.VERSION }}
+  publish-sdk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.16"
+      - name: Build SDK package
+        working-directory: sdk
+        run: uv build
+      - name: Publish SDK package to PyPI
+        working-directory: sdk
+        run: uv publish
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
