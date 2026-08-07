@@ -82,7 +82,7 @@ class MethylationTests(TestCase):
 
     def testMethylationDetailsValidRefDatabase(self):
         """ Tests methylation endpoint with a valid ref_database parameter """
-        for ref_db in ["Gencode", "gencode", "GENCODE", "UCSCRefGene", "ucscrefgene"]:
+        for ref_db in ["gencode", "GENCODE", "refgene", "REFGENE"]:
             response = client.get(
                 '/methylation/', {'methylation_site': 'cg22461615', 'ref_database': ref_db})
             self.assertEqual(response.status_code, 200)
@@ -207,7 +207,7 @@ class MethylationTests(TestCase):
 
     def testMethylationSitesToGenesValidRefDatabase(self):
         """ Tests with valid ref_database values (case-insensitive) """
-        for ref_db in ["Gencode", "gencode", "GENCODE", "UCSCRefGene", "ucscrefgene"]:
+        for ref_db in ["gencode", "GENCODE", "refgene", "REFGENE"]:
             data_body = json.dumps({
                 "methylation_sites": ["cg17771854_BC11"],
                 "ref_database": ref_db

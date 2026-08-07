@@ -895,16 +895,16 @@ class MethylationSitesToGenes(APIView):
         return list(res)
 
     @staticmethod
-    def __get_genes_from_methylation_epic_site(input_id: str, ref_database: str = "UCSCRefGene") -> list[str]:
+    def __get_genes_from_methylation_epic_site(input_id: str, ref_database: str = "refgene") -> list[str]:
         """
         Gets genes from a specific methylation CpG site
 
         :param input_id: String to query in the DB (CpG ID)
-        :param ref_database: Reference database to use (default: UCSCRefGene)
+        :param ref_database: Reference database to use (default: refgene)
         :return: List of genes for the given input
         """
         db_map = {
-            "ucscrefgene": (MethylationUCSCRefGene, "ucsc_refgene_name"),
+            "refgene": (MethylationUCSCRefGene, "ucsc_refgene_name"),
             "gencode": (MethylationGencode, "gencode_name"),
         }
         target = db_map.get(ref_database.lower())
@@ -933,8 +933,8 @@ class MethylationSitesToGenes(APIView):
                         },
                         "ref_database": {
                             "type": "string",
-                            "enum": ["Gencode", "UCSCRefGene"],
-                            "description": "Reference database format for gene names ('Gencode' or 'UCSCRefGene', default: UCSCRefGene).",
+                            "enum": ["gencode", "refgene"],
+                            "description": "Reference database format for gene names ('gencode' or 'refgene', default: refgene).",
                         }
                     },
                     "required": ["methylation_sites"],
@@ -967,9 +967,9 @@ class MethylationSitesToGenes(APIView):
 
         if "ref_database" in data:
             ref_database = data["ref_database"]
-            if not isinstance(ref_database, str) or ref_database.lower() not in ("gencode", "ucscrefgene"):
+            if not isinstance(ref_database, str) or ref_database.lower() not in ("gencode", "refgene"):
                 return Response(
-                    {"detail": "'ref_database' must be 'Gencode' or 'UCSCRefGene'"},
+                    {"detail": "'ref_database' must be 'gencode' or 'refgene'"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -981,7 +981,7 @@ class MethylationSitesToGenes(APIView):
             epics_ids = self.__get_methylation_epic_sites_ids(methylation_name)
             for site_id in epics_ids:
                 # For each identifier in the EPIC v2 array, I search for the genes involved:
-                genes_list = self.__get_genes_from_methylation_epic_site(site_id, ref_database=data.get("ref_database", "UCSCRefGene"))
+                genes_list = self.__get_genes_from_methylation_epic_site(site_id, ref_database=data.get("ref_database", "refgene"))
                 [
                     res[methylation_name].append(gen)
                     for gen in genes_list
@@ -1019,11 +1019,11 @@ class MethylationDetails(APIView):
             ),
             OpenApiParameter(
                 name="ref_database",
-                description="Reference database format for gene names ('Gencode' or 'UCSCRefGene', default: UCSCRefGene).",
+                description="Reference database format for gene names ('gencode' or 'refgene', default: refgene).",
                 required=False,
                 type=str,
                 location=OpenApiParameter.QUERY,
-                enum=["Gencode", "UCSCRefGene"],
+                enum=["gencode", "refgene"],
             )
         ],
     )
@@ -1032,10 +1032,10 @@ class MethylationDetails(APIView):
         if not methylation_site:
             return Response(status=400, data={"'methylation_site' is mandatory"})
 
-        ref_database = self.request.GET.get("ref_database", "UCSCRefGene")
-        if not isinstance(ref_database, str) or ref_database.lower() not in ("gencode", "ucscrefgene"):
+        ref_database = self.request.GET.get("ref_database", "refgene")
+        if not isinstance(ref_database, str) or ref_database.lower() not in ("gencode", "refgene"):
             return Response(
-                {"detail": "'ref_database' must be 'Gencode' or 'UCSCRefGene'"},
+                {"detail": "'ref_database' must be 'gencode' or 'refgene'"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -1084,7 +1084,7 @@ class MethylationDetails(APIView):
 
             # searches and loads for genes relations
             db_map = {
-                "ucscrefgene": (MethylationUCSCRefGene, "ucsc_refgene_name", "ucsc_refgene_group"),
+                "refgene": (MethylationUCSCRefGene, "ucsc_refgene_name", "ucsc_refgene_group"),
                 "gencode": (MethylationGencode, "gencode_name", "gencode_group"),
             }
             target = db_map.get(ref_database.lower())
