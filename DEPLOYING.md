@@ -154,6 +154,21 @@ You can use set Modulector DB in two ways.
       - Go to the [HMDD website](https://www.cuilab.cn/hmdd) and from the *Downloads* tab, download the *txt* file from the option "The whole dataset of miRNA-disease association data". Use version 4.0.
       - Rename the downloaded file as "*disease_hmdd.txt*". Move this file to the directory **"modulector/files/"**.  
 
+    **For the HGNC gene terminology**:
+      - Go to the official HUGO gene nomenclature website at [https://www.genenames.org/](https://www.genenames.org/).
+      - Go to *Downloads* > *Data archive*.
+      - Navigate to the "Quick links to HGNC current release complete set files" section.
+      - Download the file "Current tab separated hgnc_complete_set file".
+      - If the downloaded file is not named "*hgnc_complete_set.txt*", rename it to this name.
+      - Move the file into the **"modulector/files/"** directory.
+
+    **For the miRNA-Drug interactions database (SM2miR)**:
+      - Go to the SM2miR database website at [http://www.jianglab.cn/SM2miR/](http://www.jianglab.cn/SM2miR/).
+      - Go to the *Downloads* section.
+      - Download the file "SM2miR (Apr. 27, 2015)".
+      - Rename the downloaded file as "*drugs.xls*". 
+      - Move the file into the **"modulector/files/"** directory.
+
     **For the mirBase database**: this database is embedded as it weighs only a few MBs. Its data is processed in Django migrations during the execution of the `python3 manage.py migrate` command. So, you don't have to do manual steps to incorporate mirBase data inside Modulector.  
 2. Start up a PostgreSQL service. You can use the same service listed in the *docker-compose.dev.yml* file.
 3. Run `python3 manage.py migrate` to apply all the migrations (**NOTE:** this can take a long time to finish).
@@ -162,7 +177,7 @@ You can use set Modulector DB in two ways.
 
 If new versions of the databases used in modulector are released and you want to update them, follow the following steps:  
 
-- For **mirDIP**, **HDMM** and **Illumina EPIC array** you must follow the same steps described in the [Regenerating the data manually](#regenerating-the-data-manually) section, replacing the named files with the most recent versions that have been published on their sites.
+- For **mirDIP**, **HDMM**, **Illumina EPIC array**, and **HGNC** you must follow the same steps described in the [Regenerating the data manually](#regenerating-the-data-manually) section, replacing the named files with the most recent versions that have been published on their sites.
 - For **miRBase**, follow the instructions below:
     1. Go to the [*Download* section on the website][mirbase-download-page].
     1. Download the file *mature.fa* from the latest version of the database.

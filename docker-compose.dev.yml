@@ -3,7 +3,7 @@ services:
     db_modulector:
         image: postgres:16
         container_name: modulector_dev_db
-        restart: always
+        restart: no
         ports:
             - '5432:5432'
         command: postgres -c 'config_file=/etc/postgresql/postgresql.conf'
