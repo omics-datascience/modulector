@@ -18,6 +18,7 @@ import django.db.models.deletion
 # modulector.migrations.0047_auto_20260807_1457
 
 import os
+import subprocess
 import csv
 import pathlib
 import pandas as pd
@@ -37,22 +38,16 @@ def import_methylation_epic_v2(apps, _schema_editor):
         modulector_methylation_gencode: info relating the methylation site to other genetic information such as genes and transcripts according to Gencode
     """
     parent_dir = pathlib.Path(__file__).parent.absolute().parent
-    db_path = os.path.join(parent_dir, "files/EPIC.csv")  # Download DB from Infinium MethylationEPIC v2.0
-    # Product Files in https://support.illumina.com/array/array_kits/infinium-methylationepic-beadchip-kit/downloads.html
+    db_path = os.path.join(parent_dir, "files/EPIC.csv")
     print("\nRemoving comments in file...")
-    os.system('tail -n +8 ' + db_path + ' >modulector/files/tmp_db.csv')  # Removes first 7 rows
+    with open('modulector/files/tmp_db.csv', 'w') as outfile:
+        subprocess.run(['tail', '-n', '+8', db_path], stdout=outfile, check=True)  # Removes first 7 rows
 
     print("\nGetting Django models...")
     MethylationEPIC = apps.get_model(app_label='modulector', model_name='MethylationEPIC')
     MethylationUCSC_CPGIsland = apps.get_model(app_label='modulector', model_name='MethylationUCSC_CPGIsland')
     MethylationUCSCRefGene = apps.get_model(app_label='modulector', model_name='MethylationUCSCRefGene')
     MethylationGencode = apps.get_model(app_label='modulector', model_name='MethylationGencode')
-
-    print("Removing old data...")
-    MethylationEPIC.objects.all().delete()
-    MethylationUCSC_CPGIsland.objects.all().delete()
-    MethylationUCSCRefGene.objects.all().delete()
-    MethylationGencode.objects.all().delete()
 
     print("Processing DB and uploading data...")
     with open("modulector/files/tmp_db.csv", "r") as record:
@@ -138,17 +133,6 @@ def import_mirbase(apps, _schema_editor):
     print("\nGetting Django models...")
     Mirna = apps.get_model(app_label='modulector', model_name='Mirna')
     MirbaseIdMirna = apps.get_model(app_label='modulector', model_name='MirbaseIdMirna')
-    MirnaXGene = apps.get_model(app_label='modulector', model_name='MirnaXGene')
-    num_mirna_records = Mirna.objects.all().count()
-    num_mirnaxgen_records = MirnaXGene.objects.all().count()
-
-    print(f"Removing old MirbaseIdMirna and MirnaXGene data (~{num_mirna_records * num_mirnaxgen_records} rows)...")
-    with connection.cursor() as cursor:
-        cursor.execute("TRUNCATE TABLE modulector_mirna CASCADE") # Deletes records from the modulector_mirna and modulector_mirnaxgen tables
-
-    num_mirbaseidmirna_records = MirbaseIdMirna.objects.all().count()
-    print(f"Removing old MirbaseIdMirna data ({num_mirbaseidmirna_records} rows)...")
-    MirbaseIdMirna.objects.all().delete()
 
     print("Processing latest version of mature miRNAs FASTA file...")
     for item in read_fasta(db_mature_path):
@@ -191,9 +175,6 @@ def import_mirdip(apps, _schema_editor):
     Mirna = apps.get_model(app_label='modulector', model_name='Mirna')
     MirnaSource = apps.get_model(app_label='modulector', model_name='MirnaSource')
 
-    print("Removing mirDIP 4.1 data...")
-    with connection.cursor() as cursor:
-        cursor.execute("TRUNCATE TABLE modulector_mirnaxgen")
 
     print("Reading mirDIP 5.1 data...")
     mirdip_data = pd.read_csv(
@@ -205,11 +186,22 @@ def import_mirdip(apps, _schema_editor):
     print("Saving mirDIP data in the DB...")
     source = MirnaSource.objects.filter(name='mirdip')
     if not source:
-        raise Exception("MirnaSource not found with name=mirdip in 'modulector_mirnasource' table")
+        from django.utils import timezone
+        source_mirdip = MirnaSource.objects.create(
+            name='mirdip',
+            site_url='http://ophid.utoronto.ca/mirDIP/',
+            min_score=0.0,
+            max_score=1.0,
+            score_interpretation='Higher is better',
+            description='mirDIP database',
+            synchronization_date=timezone.now(),
+            file_separator='\t'
+        )
     else:
-        not_found_count = 0
         source_mirdip = source[0]  # If there would be more than one, either of the two could be assigned
-        for idx, row in mirdip_data.iterrows():
+
+    not_found_count = 0
+    for idx, row in mirdip_data.iterrows():
             mirna_objects = Mirna.objects.filter(mirna_code=row['MICRORNA'])
             if mirna_objects:
                 mo = mirna_objects[0]  # Will always be the [0] because mirna_code is unique in the Mirna data model.
@@ -261,7 +253,6 @@ def update_hmdd_v4(apps, schema_editor):
         mirna_disease = MirnaDisease(category=category, mirna=mirna,
                                         disease=disease, pubmed_id=pmid, description=description)
         entities.append(mirna_disease)
-    MirnaDisease.objects.all().delete()
     MirnaDisease.objects.bulk_create(entities)
 
     assert MirnaDisease.objects.count() == data.shape[0]
@@ -280,10 +271,7 @@ def load_mirna_mature(apps, _schema_editor):
     parent_dir = pathlib.Path(__file__).parent.absolute().parent
     file_path = os.path.join(parent_dir, "files", "mirna_mature.txt")
 
-    print("\nReading mirna_mature.txt...")
     MirbaseIdMirna = apps.get_model(app_label='modulector', model_name='MirbaseIdMirna')
-
-    MirbaseIdMirna.objects.all().delete()
 
     batch_size = 5000
     records = []
@@ -332,10 +320,7 @@ def load_mirtarbase_data(apps, _schema_editor):
     parent_dir = pathlib.Path(__file__).parent.absolute().parent
     file_path = os.path.join(parent_dir, "files", "hsa_MTI.csv")
 
-    print("\nReading hsa_MTI.csv...")
     MirTarBaseInteraction = apps.get_model(app_label='modulector', model_name='MirTarBaseInteraction')
-
-    MirTarBaseInteraction.objects.all().delete()
 
     batch_size = 5000
     records = []
@@ -432,13 +417,9 @@ def load_gene_aliases(apps, schema_editor):
                 new_clean = str(new).replace('"', '').replace(',', '|')
                 aliases.extend([a.strip() for a in new_clean.split("|") if a.strip()])
                 
-            for alias in aliases:
+        for alias in aliases:
                 entities_to_insert.append(GeneAliases(gene_symbol=gene_symbol, alias=alias))
                 
-        from django.db import connection
-        with connection.cursor() as cursor:
-            cursor.execute("truncate table modulector_gene_aliases")
-            
         GeneAliases.objects.bulk_create(entities_to_insert)
         print("data inserted")
 
@@ -476,10 +457,6 @@ def load_drugs(apps, schema_editor):
                                    pubmed_id=pmid,
                                    reference=reference, support=suppport, expression_pattern=expression_pattern)
             entities.append(mirna_drug)
-            
-        from django.db import connection
-        with connection.cursor() as cursor:
-            cursor.execute("truncate table modulector_mirnadrugs")
             
         MirnaDrug.objects.bulk_create(entities)
         print("data inserted")

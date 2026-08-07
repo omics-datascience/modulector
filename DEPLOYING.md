@@ -142,13 +142,12 @@ You can use set Modulector DB in two ways.
    **For the mirDIP database**:
       - Go to the [MirDIP download web page](https://ophid.utoronto.ca/mirDIP/download.jsp) and download the file called *"mirDIPweb/mirDIP Unidirectional search ver. 5.2"*.
       - Unzip the file.
-      - Find the file called *"mirDIP_Unidirectional_search.txt"* and move it into the **"modulector/files/"** directory.  
+      - Find the file called "mirDIP_Unidirectional_search.txt" (rename if necessary to match this name), and move it into the **"modulector/files/"** directory.  
 
    **For the EPIC Methylation array**:
       - Go to the [Illumina product files web page](https://support.illumina.com/downloads/infinium-methylationepic-v2-0-product-files.html) and download the ZIP file called "*Infinium MethylationEPIC v2.0 Product Files (ZIP Format)*".
       - Unzip the file.
-      - Within the unzipped files you will find one called "*EPIC.csv*". Move this file to the directory **"modulector/files/"**.
-      - **NOTE:** the total weight of both files is about 5 GB.  
+      - Within the unzipped files you will find one called "*EPIC-8v2-0_A2.csv*". Rename it as "*EPIC.csv*" and move it into the **"modulector/files/"** directory.  
 
     **For the HMDD database**:
       - Go to the [HMDD website](https://www.cuilab.cn/hmdd) and from the *Downloads* tab, download the *txt* file from the option "The whole dataset of miRNA-disease association data". Use version 4.0.
