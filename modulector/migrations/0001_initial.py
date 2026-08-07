@@ -135,7 +135,7 @@ def import_mirbase(apps, _schema_editor):
     MirbaseIdMirna = apps.get_model(app_label='modulector', model_name='MirbaseIdMirna')
 
     print("Processing latest version of mature miRNAs FASTA file...")
-    for item in read_fasta(db_mature_path):
+    for item in tqdm(list(read_fasta(db_mature_path)), desc="Mature miRNAs"):
         defline = item.defline
         if "Homo sapiens" in defline:
             data = defline.split(" ")
@@ -146,7 +146,7 @@ def import_mirbase(apps, _schema_editor):
             MirbaseIdMirna.objects.create(mirbase_accession_id=mimat_id, mature_mirna=mirbase_id)
 
     print("Processing latest version of hairpin miRNAs FASTA file...")
-    for item in read_fasta(db_hairpin_path):
+    for item in tqdm(list(read_fasta(db_hairpin_path)), desc="Hairpin miRNAs"):
         defline = item.defline
         if "Homo sapiens" in defline:
             data = defline.split(" ")
@@ -176,13 +176,6 @@ def import_mirdip(apps, _schema_editor):
     MirnaSource = apps.get_model(app_label='modulector', model_name='MirnaSource')
 
 
-    print("Reading mirDIP 5.1 data...")
-    mirdip_data = pd.read_csv(
-        mirdip_file_path,
-        header=None,
-        names=['GENE_SYMBOL', 'MICRORNA', 'SOURCE_NUMBER', 'INTEGRATED_RANK', 'SOURCES', 'SCORE_CLASS']
-    )
-
     print("Saving mirDIP data in the DB...")
     source = MirnaSource.objects.filter(name='mirdip')
     if not source:
@@ -201,25 +194,55 @@ def import_mirdip(apps, _schema_editor):
         source_mirdip = source[0]  # If there would be more than one, either of the two could be assigned
 
     not_found_count = 0
-    for idx, row in mirdip_data.iterrows():
-            mirna_objects = Mirna.objects.filter(mirna_code=row['MICRORNA'])
-            if mirna_objects:
-                mo = mirna_objects[0]  # Will always be the [0] because mirna_code is unique in the Mirna data model.
-            else:
-                mo = Mirna.objects.create(mirna_code=row['MICRORNA'], mirna_sequence=None)
-                not_found_count = not_found_count + 1
+    chunk_size = 100000
 
-            MirnaXGene.objects.create(
-                gene=row['GENE_SYMBOL'],
-                score=row['INTEGRATED_RANK'],
-                sources=row['SOURCES'],
-                score_class=row['SCORE_CLASS'],
-                mirna_source=source_mirdip,
-                mirna=mo
-            )
+    print("Reading and saving mirDIP data in chunks (to reduce memory and speed up processing)...")
+    
+    try:
+        total_rows = int(subprocess.check_output(['wc', '-l', mirdip_file_path]).split()[0]) - 1
+        total_chunks = (total_rows // chunk_size) + 1
+    except Exception:
+        total_chunks = None
 
-            if idx % 1000000 == 0:
-                print(f'{datetime.now()}. Rows stored: {idx} of approximately 45 millions...')
+    chunks = pd.read_csv(
+        mirdip_file_path,
+        header=0,
+        names=['GENE_SYMBOL', 'MICRORNA', 'SOURCE_NUMBER', 'INTEGRATED_RANK', 'SOURCES', 'SCORE_CLASS'],
+        chunksize=chunk_size
+    )
+
+    for chunk in tqdm(chunks, total=total_chunks, desc='mirDIP chunks'):
+        unique_mirnas = chunk['MICRORNA'].dropna().unique()
+        
+        # Get existing miRNAs for this chunk
+        existing_mirnas = dict(Mirna.objects.filter(mirna_code__in=unique_mirnas).values_list('mirna_code', 'id'))
+        
+        # Find missing miRNAs
+        missing_mirna_codes = set(unique_mirnas) - set(existing_mirnas.keys())
+        if missing_mirna_codes:
+            not_found_count += len(missing_mirna_codes)
+            new_mirnas = [Mirna(mirna_code=code, mirna_sequence=None) for code in missing_mirna_codes]
+            Mirna.objects.bulk_create(new_mirnas)
+            
+            # Re-fetch the newly created ones to get their IDs
+            new_existing = dict(Mirna.objects.filter(mirna_code__in=missing_mirna_codes).values_list('mirna_code', 'id'))
+            existing_mirnas.update(new_existing)
+
+        # Prepare MirnaXGene records
+        mirnaxgenes = []
+        for _, row in chunk.iterrows():
+            if pd.notna(row['MICRORNA']):
+                mirnaxgenes.append(MirnaXGene(
+                    gene=row['GENE_SYMBOL'],
+                    score=row['INTEGRATED_RANK'],
+                    sources=row['SOURCES'],
+                    score_class=row['SCORE_CLASS'],
+                    mirna_source_id=source_mirdip.id,
+                    mirna_id=existing_mirnas[row['MICRORNA']]
+                ))
+        
+        # Bulk create MirnaXGene for this chunk
+        MirnaXGene.objects.bulk_create(mirnaxgenes)
 
     print("Loaded complete!")
     print(f'{not_found_count} miRNAs were found in mirDIP but not in mature miRBase miRNAs.')
@@ -239,7 +262,7 @@ def update_hmdd_v4(apps, schema_editor):
     data = pd.read_csv(filepath_or_buffer=file_path,
                        delimiter=delimiter, encoding="ISO-8859-1")
     entities = []
-    for index, row in data.iterrows():
+    for index, row in tqdm(data.iterrows(), total=len(data), desc="HMDD records"):
         category, pmid, mirna, disease, description = row
         # category is the Category codes assigned by the HMDD database to classify diseases
 
@@ -276,7 +299,7 @@ def load_mirna_mature(apps, _schema_editor):
     batch_size = 5000
     records = []
     with open(file_path, encoding='utf-8', errors='replace') as input_stream:
-        for line in input_stream:
+        for line in tqdm(input_stream, desc='Reading mature miRNAs'):
             parts = line.split()
             if len(parts) < 3:
                 continue
@@ -304,7 +327,8 @@ def load_mirna_mature(apps, _schema_editor):
                 ))
 
     print(f"Deleting existing records and loading {len(records)} hsa records...")
-    for i in range(0, len(records), batch_size):
+    total_batches = (len(records) + batch_size - 1) // batch_size
+    for i in tqdm(range(0, len(records), batch_size), desc="Inserting batches", total=total_batches, unit="batch"):
         MirbaseIdMirna.objects.bulk_create(records[i:i + batch_size])
 
     print(f"Done. {len(records)} records loaded into modulector_mirbaseidmirna.")
@@ -393,7 +417,7 @@ def load_gene_aliases(apps, schema_editor):
     entities_to_insert = []
     with transaction.atomic():
         print("inserting data")
-        for index, row in data.iterrows():
+        for index, row in tqdm(data.iterrows(), total=len(data), desc="Processing aliases"):
             gene_symbol = row['current']
             old = row['old']
             new = row['other']
@@ -443,7 +467,7 @@ def load_drugs(apps, schema_editor):
     entities = []
     with transaction.atomic():
         print("inserting data")
-        for index, row in data.iterrows():
+        for index, row in tqdm(data.iterrows(), total=len(data), desc="Processing drugs"):
             mature_mirna, mirbase_accession_id, small_molecule, fda, detection_method, condition, pmid, reference, suppport, expression_pattern = row
             # We must prepend the hsa because the file we process does not have it
             mature_mirna = 'hsa-' + str(mature_mirna)
@@ -727,13 +751,13 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.RunPython(
-            code=import_methylation_epic_v2,
-        ),
-        migrations.RunPython(
             code=import_mirbase,
         ),
         migrations.RunPython(
             code=import_mirdip,
+        ),
+        migrations.RunPython(
+            code=import_methylation_epic_v2,
         ),
         migrations.AlterField(
             model_name='genealiases',
