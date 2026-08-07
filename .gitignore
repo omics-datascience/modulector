@@ -148,3 +148,4 @@ docker-compose.yml
 *.sql.gz
 modulector/files/tmp_db.csv
 docker-compose.mauri_dev.yml
+code-clean.md
