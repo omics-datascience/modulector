@@ -39,9 +39,6 @@ def import_methylation_epic_v2(apps, _schema_editor):
     """
     parent_dir = pathlib.Path(__file__).parent.absolute().parent
     db_path = os.path.join(parent_dir, "files/EPIC.csv")
-    print("\nRemoving comments in file...")
-    with open('modulector/files/tmp_db.csv', 'w') as outfile:
-        subprocess.run(['tail', '-n', '+8', db_path], stdout=outfile, check=True)  # Removes first 7 rows
 
     print("\nGetting Django models...")
     MethylationEPIC = apps.get_model(app_label='modulector', model_name='MethylationEPIC')
@@ -49,77 +46,107 @@ def import_methylation_epic_v2(apps, _schema_editor):
     MethylationUCSCRefGene = apps.get_model(app_label='modulector', model_name='MethylationUCSCRefGene')
     MethylationGencode = apps.get_model(app_label='modulector', model_name='MethylationGencode')
 
+    batch_size = 5000
+    epic_batch = []
+    related_data_batch = []
+    
+    def process_batch():
+        if not epic_batch:
+            return
+            
+        # Bulk create MethylationEPIC. In PostgreSQL, this assigns the .id to the instances.
+        created_epics = MethylationEPIC.objects.bulk_create(epic_batch)
+        
+        islands_to_create = []
+        ucscrefseq_to_create = []
+        gencode_to_create = []
+
+        for epic, related_data in zip(created_epics, related_data_batch):
+            # CPG Islands
+            islands_values, relation_values = related_data['islands']
+            if len(islands_values) == len(relation_values) and len(relation_values) > 0:
+                islands_to_create.extend([
+                    MethylationUCSC_CPGIsland(
+                        ucsc_cpg_island_name=islands_values[i],
+                        relation_to_ucsc_cpg_island=relation_values[i],
+                        methylation_epic_v2_ilmnid=epic
+                    )
+                    for i in range(len(relation_values))
+                    if islands_values[i].startswith("chr")
+                ])
+                
+            # UCSC RefGene
+            ucscrefseq_group_values, ucscrefseq_name_values, ucscrefseq_accession_values = related_data['refseq']
+            if len(ucscrefseq_group_values) == len(ucscrefseq_name_values) == len(ucscrefseq_accession_values):
+                ucscrefseq_to_create.extend([
+                    MethylationUCSCRefGene(
+                        ucsc_refgene_group=ucscrefseq_group_values[u],
+                        ucsc_refgene_name=ucscrefseq_name_values[u],
+                        ucsc_refgene_accession=ucscrefseq_accession_values[u],
+                        methylation_epic_v2_ilmnid=epic
+                    )
+                    for u in range(len(ucscrefseq_name_values))
+                    if len(ucscrefseq_group_values[u]) > 0
+                ])
+
+            # Gencode
+            gencode_group_values, gencode_name_values, gencode_accession_values = related_data['gencode']
+            if len(gencode_group_values) == len(gencode_name_values) == len(gencode_accession_values):
+                gencode_to_create.extend([
+                    MethylationGencode(
+                        gencode_group=gencode_group_values[i],
+                        gencode_name=gencode_name_values[i],
+                        gencode_accession=gencode_accession_values[i],
+                        methylation_epic_v2_ilmnid=epic
+                    )
+                    for i in range(len(gencode_name_values))
+                    if len(gencode_group_values[i]) > 0
+                ])
+                
+        # Bulk create related records
+        if islands_to_create:
+            MethylationUCSC_CPGIsland.objects.bulk_create(islands_to_create)
+        if ucscrefseq_to_create:
+            MethylationUCSCRefGene.objects.bulk_create(ucscrefseq_to_create)
+        if gencode_to_create:
+            MethylationGencode.objects.bulk_create(gencode_to_create)
+            
+        epic_batch.clear()
+        related_data_batch.clear()
+
     print("Processing DB and uploading data...")
-    with open("modulector/files/tmp_db.csv", "r") as record:
+    with open(db_path, "r", encoding='utf-8') as record:
+        # Skip the first 7 commented rows
+        for _ in range(7):
+            next(record, None)
+            
         csvreader_object = csv.DictReader(record, dialect='excel', delimiter=",")
-        for row in tqdm_module.tqdm(csvreader_object):
-            if row["IlmnID"].startswith("cg"):
-                methyl_site = MethylationEPIC.objects.create(
+        
+        for row in tqdm_module.tqdm(csvreader_object, desc="EPIC records"):
+            if row.get("IlmnID", "").startswith("cg"):
+                epic = MethylationEPIC(
                     ilmnid=row["IlmnID"],
-                    name=row["Name"],
-                    strand_fr=row["Strand_FR"],
-                    chr=row["CHR"],
-                    mapinfo=row["MAPINFO"],
-                    methyl450_loci=row["Methyl450_Loci"],
-                    methyl27_loci=row["Methyl27_Loci"],
-                    epicv1_loci=row["EPICv1_Loci"]
+                    name=row.get("Name", ""),
+                    strand_fr=row.get("Strand_FR", ""),
+                    chr=row.get("CHR", ""),
+                    mapinfo=row.get("MAPINFO", 0) or 0,
+                    methyl450_loci=row.get("Methyl450_Loci", ""),
+                    methyl27_loci=row.get("Methyl27_Loci", ""),
+                    epicv1_loci=row.get("EPICv1_Loci", "")
                 )
-
-                islands_values = row["UCSC_CpG_Islands_Name"].split(";")
-                relation_values = row["Relation_to_UCSC_CpG_Island"].split(";")
-                len_islands_values = len(islands_values)
-                len_relation_values = len(relation_values)
-                if len_islands_values == len_relation_values and len_relation_values > 0:
-                    islands = [
-                        MethylationUCSC_CPGIsland(
-                            ucsc_cpg_island_name=islands_values[i],
-                            relation_to_ucsc_cpg_island=relation_values[i],
-                            methylation_epic_v2_ilmnid=methyl_site
-                        )
-                        for i in range(0, len_relation_values)
-                        if islands_values[i].startswith("chr")
-                    ]
-                    MethylationUCSC_CPGIsland.objects.bulk_create(islands)
-
-                ucscrefseq_group_values = row["UCSC_RefGene_Group"].split(";")
-                ucscrefseq_name_values = row["UCSC_RefGene_Name"].split(";")
-                ucscrefseq_accession_values = row["UCSC_RefGene_Accession"].split(";")
-                len_ucscrefseq_group_values = len(ucscrefseq_group_values)
-                len_ucscrefseq_name_values = len(ucscrefseq_name_values)
-                len_ucscrefseq_accession_values = len(ucscrefseq_accession_values)
-                if len_ucscrefseq_group_values == len_ucscrefseq_name_values and len_ucscrefseq_name_values == len_ucscrefseq_accession_values:
-                    ucscrefseq = [
-                        MethylationUCSCRefGene(
-                            ucsc_refgene_group=ucscrefseq_group_values[u],
-                            ucsc_refgene_name=ucscrefseq_name_values[u],
-                            ucsc_refgene_accession=ucscrefseq_accession_values[u],
-                            methylation_epic_v2_ilmnid=methyl_site
-                        )
-                        for u in range(0, len_ucscrefseq_name_values)
-                        if len(ucscrefseq_group_values[u]) > 0
-                    ]
-                    MethylationUCSCRefGene.objects.bulk_create(ucscrefseq)
-
-                gencode_group_values = row["GencodeV41_Group"].split(";")
-                gencode_name_values = row["GencodeV41_Name"].split(";")
-                gencode_accession_values = row["GencodeV41_Accession"].split(";")
-                len_gencode_group_values = len(gencode_group_values)
-                len_gencode_name_values = len(gencode_name_values)
-                len_gencode_accession_values = len(gencode_accession_values)
-                if len_gencode_group_values == len_gencode_name_values and len_gencode_name_values == len_gencode_accession_values:
-                    gencode = [
-                        MethylationGencode(
-                            gencode_group=gencode_group_values[i],
-                            gencode_name=gencode_name_values[i],
-                            gencode_accession=gencode_accession_values[i],
-                            methylation_epic_v2_ilmnid=methyl_site
-                        )
-                        for i in range(0, len_gencode_name_values)
-                        if len(gencode_group_values[i]) > 0
-                    ]
-                    MethylationGencode.objects.bulk_create(gencode)
-
-    os.remove("modulector/files/tmp_db.csv")
+                epic_batch.append(epic)
+                
+                related_data_batch.append({
+                    'islands': (row.get("UCSC_CpG_Islands_Name", "").split(";"), row.get("Relation_to_UCSC_CpG_Island", "").split(";")),
+                    'refseq': (row.get("UCSC_RefGene_Group", "").split(";"), row.get("UCSC_RefGene_Name", "").split(";"), row.get("UCSC_RefGene_Accession", "").split(";")),
+                    'gencode': (row.get("GencodeV41_Group", "").split(";"), row.get("GencodeV41_Name", "").split(";"), row.get("GencodeV41_Accession", "").split(";"))
+                })
+                
+                if len(epic_batch) >= batch_size:
+                    process_batch()
+                    
+        # Process any remaining records
+        process_batch()
 
 
 
@@ -348,41 +375,48 @@ def load_mirtarbase_data(apps, _schema_editor):
 
     batch_size = 5000
     records = []
+    total_inserted = 0
 
     with open(file_path, mode='r', encoding='utf-8-sig') as input_stream:
         reader = csv.DictReader(input_stream)
-        rows = list(reader)
+        
+        with tqdm(desc='Parsing and inserting CSV', unit='row') as pbar:
+            for row in reader:
+                # Clean PMID (from "17179747.0" to "17179747")
+                raw_pmid = row.get('References (PMID)', '')
+                clean_pmid = str(int(float(raw_pmid))) if raw_pmid and str(raw_pmid).lower() != 'nan' else ''
 
-    with tqdm(rows, desc='Parsing CSV', unit='row') as pbar:
-        for row in pbar:
-            # Clean PMID (from "17179747.0" to "17179747")
-            raw_pmid = row.get('References (PMID)', '')
-            clean_pmid = str(int(float(raw_pmid))) if raw_pmid and str(raw_pmid).lower() != 'nan' else ''
+                # Clean Entrez ID (from "6541.0" to "6541")
+                raw_entrez = row.get('Target Gene (Entrez ID)', '')
+                clean_entrez = str(int(float(raw_entrez))) if raw_entrez and str(raw_entrez).lower() != 'nan' else ''
 
-            # Clean Entrez ID (from "6541.0" to "6541")
-            raw_entrez = row.get('Target Gene (Entrez ID)', '')
-            clean_entrez = str(int(float(raw_entrez))) if raw_entrez and str(raw_entrez).lower() != 'nan' else ''
+                raw_experiments = row.get('Experiments', '')
+                experiments_list = [exp.strip() for exp in raw_experiments.split('//') if exp.strip()] if raw_experiments else []
 
-            raw_experiments = row.get('Experiments', '')
-            experiments_list = [exp.strip() for exp in raw_experiments.split('//') if exp.strip()] if raw_experiments else []
+                records.append(MirTarBaseInteraction(
+                    mirtarbase_id=row.get('miRTarBase ID', ''),
+                    mirna=row.get('miRNA', ''),
+                    gene=row.get('Target Gene', ''),
+                    target_gene_entrez_id=clean_entrez,
+                    experiments=experiments_list,
+                    support_type=row.get('Support Type', ''),
+                    pmid=clean_pmid
+                ))
+                
+                if len(records) >= batch_size:
+                    MirTarBaseInteraction.objects.bulk_create(records)
+                    total_inserted += len(records)
+                    records.clear()
+                    
+                pbar.update(1)
+                
+        # Insert any remaining records
+        if records:
+            MirTarBaseInteraction.objects.bulk_create(records)
+            total_inserted += len(records)
+            records.clear()
 
-            records.append(MirTarBaseInteraction(
-                mirtarbase_id=row.get('miRTarBase ID', ''),
-                mirna=row.get('miRNA', ''),
-                gene=row.get('Target Gene', ''),
-                target_gene_entrez_id=clean_entrez,
-                experiments=experiments_list,
-                support_type=row.get('Support Type', ''),
-                pmid=clean_pmid
-            ))
-
-    total_batches = (len(records) + batch_size - 1) // batch_size
-    print(f"Inserting {len(records)} HSA miRTarBase records in {total_batches} batches...")
-    with tqdm(range(0, len(records), batch_size), desc='Inserting batches', unit='batch', total=total_batches) as pbar:
-        for i in pbar:
-            MirTarBaseInteraction.objects.bulk_create(records[i:i + batch_size])
-
-    print(f"Done. {len(records)} records loaded into modulector_mirtarbaseinteraction.")
+    print(f"Done. {total_inserted} records loaded into modulector_mirtarbaseinteraction.")
 
 
 
