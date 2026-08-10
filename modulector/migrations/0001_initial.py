@@ -784,15 +784,7 @@ class Migration(migrations.Migration):
                 ('methylation_epic_v2_ilmnid', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='modulector.methylationepic')),
             ],
         ),
-        migrations.RunPython(
-            code=import_mirbase,
-        ),
-        migrations.RunPython(
-            code=import_mirdip,
-        ),
-        migrations.RunPython(
-            code=import_methylation_epic_v2,
-        ),
+
         migrations.AlterField(
             model_name='genealiases',
             name='id',
@@ -909,11 +901,6 @@ class Migration(migrations.Migration):
             field=models.CharField(db_index=True, max_length=15),
         ),
         migrations.AlterField(
-            model_name='methylationepic',
-            name='id',
-            field=models.IntegerField(db_index=True, primary_key=True, serialize=False),
-        ),
-        migrations.AlterField(
             model_name='mirnaxgene',
             name='gene',
             field=models.CharField(db_index=True, max_length=50),
@@ -923,18 +910,13 @@ class Migration(migrations.Migration):
             name='score',
             field=models.DecimalField(db_index=True, decimal_places=4, max_digits=20),
         ),
-        migrations.RunPython(
-            code=update_hmdd_v4,
-        ),
+
         migrations.AddField(
             model_name='mirbaseidmirna',
             name='previous_mature_mirna',
             field=models.CharField(blank=True, max_length=30, null=True),
         ),
-        migrations.RunPython(
-            code=load_mirna_mature,
-            reverse_code=django.db.migrations.operations.special.RunPython.noop,
-        ),
+
         migrations.CreateModel(
             name='MirTarBaseInteraction',
             fields=[
@@ -948,18 +930,10 @@ class Migration(migrations.Migration):
                 ('pmid', models.CharField(max_length=50)),
             ],
             options={
-                'indexes': [models.Index(fields=['mirna', 'gene'], name='modulector__mirna_8c339f_idx')],
+                'indexes': [models.Index(fields=['mirna', 'gene'], name='modulector__mirna_27e058_idx')],
             },
         ),
-        migrations.RunPython(
-            code=load_mirtarbase_data,
-            reverse_code=django.db.migrations.operations.special.RunPython.noop,
-        ),
-        migrations.RenameIndex(
-            model_name='mirtarbaseinteraction',
-            new_name='modulector__mirna_27e058_idx',
-            old_name='modulector__mirna_8c339f_idx',
-        ),
+
         migrations.DeleteModel(
             name='GeneSymbolMapping',
         ),
@@ -970,13 +944,5 @@ class Migration(migrations.Migration):
             model_name='mirtarbaseinteraction',
             name='experiments',
             field=django.contrib.postgres.fields.ArrayField(base_field=models.CharField(max_length=200), help_text='List of techniques used to experimentally validate the miRNA-target interaction', size=None),
-        ),
-        migrations.RunPython(
-            code=load_gene_aliases,
-            reverse_code=django.db.migrations.operations.special.RunPython.noop,
-        ),
-        migrations.RunPython(
-            code=load_drugs,
-            reverse_code=django.db.migrations.operations.special.RunPython.noop,
         ),
     ]
