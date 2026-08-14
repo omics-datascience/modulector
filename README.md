@@ -287,11 +287,14 @@ If no gene symbol is entered, all experimentally validated targets for that miRN
     - `id`: Internal ID of the record. 
     - `mirtarbase_id`: miRTarBase interaction ID.
     - `mirna`: standardized miRNA ID.
+    - `mirna_aliases`: list of aliases/identifiers used to resolve the searched miRNA.
     - `gene`: target gene.
     - `target_gene_entrez_id`: target gene Entrez ID.
     - `experiments`: array of techniques used to experimentally validate the miRNA-target interaction.
-    - `support_type`: type of experimental support.
-    - `pmid`: PubMed ID of the publication supporting the validation.
+    - `support_type`: Indicates the type of evidence supporting the validation (e.g. `Functional MTI`).
+    - `pmid`: PubMed ID of the publication supporting the interaction.
+    - `mirna_aliases`: List of alternate IDs found for the miRNA used to query.
+    - `gene_aliases`: List of alternate IDs found for the target gene used to query.
   - Example:
     - URL: <https://modulector.multiomix.org/mirna-target-validation/?mirna=hsa-miR-122-5p&target=SLC7A1>
     - Response:
@@ -313,7 +316,20 @@ If no gene symbol is entered, all experimentally validated targets for that miRN
                     "Western blot"
                 ],
                 "support_type": "Functional MTI",
-                "pmid": "17179747.0"
+                "pmid": "17179747.0",
+                "mirna_aliases": [
+                    "hsa-miR-122-5p",
+                    "hsa-miR-122",
+                    "MIMAT0000421"
+                ],
+                "gene_aliases": [
+                    "CAT1",
+                    "ERR",
+                    "HCAT1",
+                    "REC1",
+                    "ATRC1",
+                    "SLC7A1"
+                ]
             }
         ]
       }
@@ -734,6 +750,7 @@ This service provides information, with evidence supported by experiments, on th
   - Code: 200
   - Content:
     - `id`: Internal ID of the record in the HMDD database.
+    - `mirna`: Mature miRNA name associated with the disease.
     - `category`: Category codes assigned by the HMDD database to classify diseases. Possible codes can be found in the [database documentation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10767894/table/tbl1/?report=objectonly).
     - `disease`: Name of the disease associated with the miRNA used as a parameter.
     - `pubmed`: URL to the scientific article in the Pubmed database where the evidence that relates miRNA to the disease is found.
@@ -750,20 +767,23 @@ This service provides information, with evidence supported by experiments, on th
           "results":[
               {
                   "id": 4203307,
+                  "mirna": "hsa-miR-6511b-5p",
                   "category": "other",
                   "disease": "Lymphoma",
                   "pubmed": "https://pubmed.ncbi.nlm.nih.gov/36248425",
                   "description": "LncHOTAIR/hsa-miR-6511b-5p/ATG7 could regulate the proliferation, apoptosis, and autophagy of Raji and BJAB lymphoma cells."
               },
               {
-                  "id": 4207900,
-                  "category": "genetics_overexpression_promote",
+                  "id": 4241261,
+                  "mirna": "hsa-miR-6511b-5p",
+                  "category": "other",
                   "disease": "Colorectal Neoplasms",
                   "pubmed": "https://pubmed.ncbi.nlm.nih.gov/35590122",
                   "description": "In vitro, overexpression of miR-6511b-5p inhibited metastasis by decreasing CD44 expression via directly targeting BRG1 in colorectal cancer."
               },
               {
                   "id": 4241262,
+                  "mirna": "hsa-miR-6511b-5p",
                   "category": "other",
                   "disease": "gastric adenocarcinoma",
                   "pubmed": "https://pubmed.ncbi.nlm.nih.gov/31772663",
@@ -796,6 +816,7 @@ Returns a paginated response of experimentally validated small molecules (or dru
   - Code: 200
   - Content:
     - `id`: Internal ID of the record in the [SM2miR Database](http://www.jianglab.cn/SM2miR/).
+    - `mirna`: Mature miRNA name associated with the drug interaction.
     - `small_molecule`: Small molecule (or drug) name.
     - `fda_approved`: Indicates with a boolean whether the small molecule or drug is approved by the FDA.
     - `detection_method`: Experimental detection method. The different methods can be: `Northern blot`, `Luciferase reporter assay`, `Illumina HiSeq2000`, `TaqMan low-density array`, `Microarray`, `Northern blot`, `MiRNA PCR array`, `Quantitative real-time PCR` or `Microarray`.
@@ -816,6 +837,7 @@ Returns a paginated response of experimentally validated small molecules (or dru
           "results":[
               {
                   "id":275028,
+                  "mirna":"miR-126",
                   "small_molecule":"17beta-estradiol (E2)",
                   "fda_approved":true,
                   "detection_method":"Microarray",

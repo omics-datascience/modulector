@@ -19,6 +19,7 @@ class DiseaseTests(TestCase):
         self.assertTrue(len(response.data['results']) == 3)
         first_result = response.data['results'][0]
         self.assertTrue('id' in first_result)
+        self.assertTrue('mirna' in first_result)
         self.assertTrue('category' in first_result)
         self.assertTrue('disease' in first_result)
         self.assertTrue('pubmed' in first_result)

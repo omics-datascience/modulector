@@ -464,10 +464,10 @@ def load_gene_aliases(apps, schema_editor):
                 new_clean = str(new).replace('"', '').replace(',', '|')
                 aliases.extend([a.strip() for a in new_clean.split("|") if a.strip()])
                 
-        for alias in aliases:
+            for alias in aliases:
                 entities_to_insert.append(GeneAliases(gene_symbol=gene_symbol, alias=alias))
                 
-        GeneAliases.objects.bulk_create(entities_to_insert)
+        GeneAliases.objects.bulk_create(entities_to_insert, batch_size=5000)
 
 
 

@@ -198,6 +198,12 @@ class MiRNATests(TestCase):
         self.assertTrue('pmid' in data)
         self.assertIsInstance(data['pmid'], str)
 
+        self.assertTrue('mirna_aliases' in data)
+        self.assertIsInstance(data['mirna_aliases'], list)
+
+        self.assertTrue('gene_aliases' in data)
+        self.assertIsInstance(data['gene_aliases'], list)
+
     def testMirnaTargetValidation3(self) -> None:
         """Tests 400 error for mirna-target-validation endpoint due to not specifying parameters"""
         response = client.get('/mirna-target-validation/')

@@ -27,6 +27,7 @@ class DrugsTests(TestCase):
         # Checks all fields
         data = response.data['results'][0]
         self.assertTrue('id' in data)
+        self.assertTrue('mirna' in data)
         self.assertTrue('small_molecule' in data)
         self.assertTrue('fda_approved' in data)
         self.assertTrue('detection_method' in data)

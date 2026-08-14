@@ -33,6 +33,7 @@ from modulector.serializers import (
     get_mirna_from_accession,
     get_mirna_aliases,
     get_accession_from_mirna,
+    get_gene_aliases,
     MirTarBaseInteractionSerializer,
 )
 from modulector.services import subscription_service
@@ -100,25 +101,7 @@ class MirnaTargetInteractions(generics.ListAPIView):
     ordering_fields = ["gene", "score"]
     ordering = ["id"]
 
-    @staticmethod
-    def __get_gene_aliases(gene: str) -> list[str]:
-        """Retrieves the aliases for a gene based on the gene provided"""
-        match_gene = GeneAliases.objects.filter(
-            Q(alias=gene) | Q(gene_symbol=gene)
-        ).first()
-        if match_gene is None:
-            return []
 
-        gene_symbol = match_gene.gene_symbol
-        aliases = list(
-            GeneAliases.objects.filter(gene_symbol=gene_symbol)
-            .values_list("alias", flat=True)
-            .distinct()
-        )
-        # Adds the gene_symbol and the parameter to not omit them in the future search
-        aliases.append(gene_symbol)
-        aliases.append(gene)
-        return list(dict.fromkeys(aliases))  # Remove duplicates while preserving order
 
     def get_serializer_context(self):
         context = super(MirnaTargetInteractions, self).get_serializer_context()
@@ -216,7 +199,7 @@ class MirnaTargetInteractions(generics.ListAPIView):
         score = self.request.GET.get("score")
 
         self._mirna_aliases = get_mirna_aliases(mirna) if mirna else []
-        self._gene_aliases = self.__get_gene_aliases(gene) if gene else []
+        self._gene_aliases = get_gene_aliases(gene) if gene else []
 
         if score:
             try:
@@ -248,9 +231,15 @@ class MirnaTargetValidation(generics.ListAPIView):
     serializer_class = MirTarBaseInteractionSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
-    filterset_fields = ["mirna", "gene", "support_type"]
+    filterset_fields = ["gene", "support_type"]
     ordering_fields = ["mirna", "gene"]
     ordering = ["id"]
+
+    def get_serializer_context(self):
+        context = super(MirnaTargetValidation, self).get_serializer_context()
+        context["mirna_aliases"] = getattr(self, "_mirna_aliases", [])
+        context["gene_aliases"] = getattr(self, "_gene_aliases", [])
+        return context
 
     @extend_schema(
         tags=["miRNA"],
@@ -314,9 +303,15 @@ class MirnaTargetValidation(generics.ListAPIView):
                 raise ParseError(detail=f"Invalid 'support_type'. Allowed values are: {', '.join(valid_support_types)}")
 
         data = MirTarBaseInteraction.objects.all()
+        self._mirna_aliases = get_mirna_aliases(mirna) if mirna else []
+        self._gene_aliases = get_gene_aliases(target) if target else []
+
+        if mirna:
+            data = data.filter(mirna__in=self._mirna_aliases)
+
         # The 'target' query parameter maps to the 'gene' field in the model
         if self.request.GET.get("target") and not self.request.GET.get("gene"):
-            data = data.filter(gene=target)
+            data = data.filter(gene__in=self._gene_aliases)
         if experiment:
             data = data.filter(experiments__icontains=experiment)
 
@@ -364,6 +359,7 @@ class MirnaAliasesList(generics.ListAPIView):
             ),
             OpenApiParameter(
                 name="previous_mature_mirna",
+                location=OpenApiParameter.QUERY,
                 type=str,
                 description="Use to filter by a specific previous mature miRNA identifier.",
                 examples=[
@@ -374,6 +370,7 @@ class MirnaAliasesList(generics.ListAPIView):
             ),
             OpenApiParameter(
                 name="search",
+                location=OpenApiParameter.QUERY,
                 type=str,
                 description=(
                     "Search across all identifier types (miRBase accession ID, mature miRNA, "
@@ -383,7 +380,7 @@ class MirnaAliasesList(generics.ListAPIView):
                 examples=[
                     OpenApiExample(name="", value=""),
                     OpenApiExample(name="hsa-miR-17-5p", value="hsa-miR-17-5p"),
-                    OpenApiExample(name="hsa-miR-550*", value="hsa-miR-550*"),
+                    OpenApiExample(name="hsa-miR-550-star", value="hsa-miR-550*"),
                     OpenApiExample(name="MIMAT0000062", value="MIMAT0000062"),
                 ],
             ),
@@ -400,41 +397,7 @@ class MirnaAliasesList(generics.ListAPIView):
         """
         return super().get(request, *args, **kwargs)
 
-    @extend_schema(
-        tags=["miRNA"],
-        summary="Lists miRNA Accession and mature IDs from miRBase.",
-        parameters=[
-            OpenApiParameter(
-                name="mature_mirna",
-                type=str,
-                description="Use to show only a specific miRNAs matures ID.",
-                examples=[
-                    OpenApiExample(name="", value=""),
-                    OpenApiExample(name="hsa-miR-21-5p", value="hsa-miR-21-5p"),
-                    OpenApiExample(name="hsa-miR-155-5p", value="hsa-miR-155-5p"),
-                ],
-            ),
-            OpenApiParameter(
-                name="mirbase_accession_id",
-                type=str,
-                description="Use to show only a specific miRNAs Accession ID.",
-                examples=[
-                    OpenApiExample(name="", value=""),
-                    OpenApiExample(name="MIMAT0000062", value="MIMAT0000062"),
-                    OpenApiExample(name="MIMAT0000063", value="MIMAT0000063"),
-                ],
-            ),
-            # Exclude pagination and ordering parameters
-            OpenApiParameter(name="ordering", exclude=True),
-            OpenApiParameter(name="page", exclude=True),
-            OpenApiParameter(name="page_size", exclude=True),
-        ],
-    )
-    def get(self, request, *args, **kwargs):
-        """
-        Returns all associations between miRNAs Accessions IDs (MIMAT) and miRNAs matures IDs from the miRBase database.
-        """
-        return super().get(request, *args, **kwargs)
+
 
 
 class MirnaCodes(APIView):
@@ -1048,14 +1011,19 @@ class MethylationDetails(APIView):
             # Loads name to response
             res["name"] = epic_data.name
 
+            # Ensure chromosome prefix is present
+            chr_val = epic_data.chr
+            if chr_val and not chr_val.startswith("chr"):
+                chr_val = f"chr{chr_val}"
+
             # Loads chromosome data
             if epic_data.strand_fr == "F":
                 res["chromosome_position"] = (
-                    epic_data.chr + ":" + str(epic_data.mapinfo) + " [+]"
+                    chr_val + ":" + str(epic_data.mapinfo) + " [+]"
                 )
             elif epic_data.strand_fr == "R":
                 res["chromosome_position"] = (
-                    epic_data.chr + ":" + str(epic_data.mapinfo) + " [-]"
+                    chr_val + ":" + str(epic_data.mapinfo) + " [-]"
                 )
 
             # load aliases to response

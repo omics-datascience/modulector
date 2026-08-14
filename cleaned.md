@@ -75,3 +75,21 @@ Para el punto 2, enfocado en el modelo `GeneAliases`, se realizaron los siguient
 *   **Mensajes por Consola Uniformes**: Se estandarizaron los mensajes por terminal para todas las funciones de carga de datos. Ahora se imprime de manera explícita y unificada el inicio de cada proceso (ej. `--- Loading miRBase database ---`) y se estandarizaron las descripciones de las barras de progreso `tqdm` (ej. `desc="miRBase mature records"`).
 *   **Dependencias Estrictas**: Se agregó la librería `xlrd` (versión estricta `2.0.2`) en la sección de dependencias del archivo `pyproject.toml`. Esta librería es necesaria para que `pandas` pueda leer archivos Excel (utilizado en la carga de drogas).
 *   **Mayor Optimización en mirDIP**: Se refinó aún más la función `import_mirdip` al reemplazar la función `iterrows()` de pandas por el uso de comprensiones de listas con `itertuples()`, incrementando drásticamente la velocidad de procesamiento del chunking. Adicionalmente se le agregó un tamaño de lote (`batch_size=5000`) al método `bulk_create` para aliviar el consumo de memoria en PostgreSQL.
+
+## 13. Mejora en Endpoint de Drugs
+*   **Problema Original**: El endpoint `/drugs/` retornaba la información de las drogas pero omitía el miRNA asociado. Esto dificultaba la interpretación de resultados cuando no se filtraba por un microARN específico o se usaba el buscador abierto (`search`).
+*   **Solución Aplicada**: Se actualizó el serializador `MirnaDrugsSerializer` en `modulector/serializers.py` para incluir el campo `mature_mirna` en la respuesta JSON.
+*   **Documentación**: Se actualizó el archivo `README.md` detallando el nuevo campo en la estructura de respuesta del endpoint.
+
+## 14. Estandarización de Lógica de Alias para miRNAs en Validación
+*   **Problema Original**: El endpoint `/mirna-target-validation/` implementaba una búsqueda de texto exacta usando `DjangoFilterBackend`, lo cual impedía resolver alias de miRNAs o búsquedas por Accession ID. Adicionalmente, no retornaba la lista de alias encontrados como sí lo hacía `/mirna-target-interactions/`.
+*   **Solución Aplicada**: Se refactorizó la vista `MirnaTargetValidation` para usar la función centralizada `get_mirna_aliases()` de `serializers.py`, aplicando las búsquedas a través de un filtro `__in`. Adicionalmente, se actualizó `MirTarBaseInteractionSerializer` para incluir el campo `mirna_aliases` en la respuesta JSON y así proveer consistencia en el comportamiento de los endpoints de interacciones.
+
+## 15. Inclusión de miRNA en Endpoints de Diseases y Drugs
+*   **Problema Original**: Los endpoints `/diseases/` y `/drugs/` retornaban los resultados de la búsqueda pero omitían indicar a qué miRNA correspondía exactamente la respuesta, lo cual dificultaba la interpretación de resultados cuando se hacían búsquedas abiertas o cuando la base de datos resolvía identificadores internamente.
+*   **Solución Aplicada**: Se actualizaron los serializadores `MirnaDiseaseSerializer` y `MirnaDrugsSerializer` en `modulector/serializers.py` para incluir explícitamente el campo `mirna` en el JSON de respuesta.
+*   **Comportamiento Actualizado**: Se modificaron ambos endpoints para que cada registro retorne su respectivo `mirna`. Se documentó este cambio en `README.md` y se ajustaron los tests unitarios correspondientes.
+
+## 16. Inclusión de gene_aliases en mirna-target-validation
+*   **Problema Original**: El endpoint `/mirna-target-validation/` incorporaba `mirna_aliases` en su respuesta pero omitía `gene_aliases`, lo cual causaba una inconsistencia con el endpoint hermano `/mirna-target-interactions/`. Adicionalmente, el filtro por target (gene) se hacía con una coincidencia exacta de strings.
+*   **Solución Aplicada**: Se extrajo la función `__get_gene_aliases` desde `MirnaTargetInteractions` y se reubicó como una función compartida en `serializers.py` (`get_gene_aliases`). Luego, se utilizó esta función en `MirnaTargetValidation` para buscar los alias de genes en la DB y aplicar un filtro `__in`. Finalmente, se expuso la lista calculada en la respuesta JSON bajo la llave `gene_aliases` dentro del serializador `MirTarBaseInteractionSerializer`.
