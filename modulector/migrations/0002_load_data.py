@@ -5,18 +5,6 @@ from django.db import migrations, models
 import django.db.migrations.operations.special
 import django.db.models.deletion
 
-
-# Functions from the following migrations need manual copying.
-# Move them and any dependencies into this file, then update the
-# RunPython operations to refer to the local versions:
-# modulector.migrations.0035_auto_20230112_2319
-# modulector.migrations.0036_auto_20230116_2049
-# modulector.migrations.0041_auto_20240410_1918
-# modulector.migrations.0042_mirbaseidmirna_previous_mature_mirna
-# modulector.migrations.0043_mirtarbase_1915
-# modulector.migrations.0046_auto_20260807_1436
-# modulector.migrations.0047_auto_20260807_1457
-
 import os
 import subprocess
 import csv
