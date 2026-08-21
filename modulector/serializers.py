@@ -153,10 +153,14 @@ class MirnaSerializer(serializers.ModelSerializer):
 
 class MirnaDiseaseSerializer(serializers.ModelSerializer):
     pubmed = serializers.SerializerMethodField(method_name='get_pubmed')
+    mirna_aliases = serializers.SerializerMethodField(method_name='get_mirna_aliases')
 
     class Meta:
         model = MirnaDisease
-        fields = ['id', 'mirna', 'category', 'disease', 'pubmed', 'description']
+        fields = ['id', 'mirna', 'category', 'disease', 'pubmed', 'description', 'mirna_aliases']
+
+    def get_mirna_aliases(self, obj) -> List[str]:
+        return self.context.get('mirna_aliases', [])
 
     @staticmethod
     def get_pubmed(disease: MirnaDisease) -> str:
@@ -170,6 +174,7 @@ class MirnaDiseaseSerializer(serializers.ModelSerializer):
 
 class MirnaDrugsSerializer(serializers.ModelSerializer):
     pubmed = serializers.SerializerMethodField(method_name='get_pubmed')
+    mirna_aliases = serializers.SerializerMethodField(method_name='get_mirna_aliases')
 
     mirna = serializers.CharField(source='mature_mirna', read_only=True)
 
@@ -177,7 +182,10 @@ class MirnaDrugsSerializer(serializers.ModelSerializer):
         model = MirnaDrug
         fields = ['id', 'mirna', 'small_molecule', 'fda_approved',
                   'detection_method', 'condition',
-                  'pubmed', 'reference', 'expression_pattern', 'support']
+                  'pubmed', 'reference', 'expression_pattern', 'support', 'mirna_aliases']
+
+    def get_mirna_aliases(self, obj) -> List[str]:
+        return self.context.get('mirna_aliases', [])
 
     @staticmethod
     def get_pubmed(drug: MirnaDrug) -> str:

@@ -58,5 +58,6 @@ Para el modelo `GeneAliases`, se realizaron los siguientes cambios:
 *   **Problema**: El test `testMethylationDetails1` fallo con el error `AssertionError: '4:82900764 [+]' != 'chr4:82900764 [+]'`. Esto sucedió porque en la base de datos (y en el archivo CSV original de EPIC) los cromosomas se guardan ahora sin el prefijo "chr", pero el test esperaba que lo tuviera.
 *   **Solución**: Se corrigió el problema del prefijo "chr" directamente desde el código, manteniendo así la integridad y formato de la fuente original.
 
-# Tareas Pendientes
-*   **Estandarización de Identificadores**: Queda como única tarea pendiente estandarizar los endpoints de `/drugs/` y `/diseases/` para que tengan la misma lógica de resolución de identificadores y alias de miRNAs que ya se implementó en los endpoints de interacciones y validación.
+## 10. Inclusión de Archivo `mirna_mature.txt`
+*   **Motivo**: El archivo `modulector/files/mirna_mature.txt` ya no se encuentra disponible en la nueva versión oficial de descarga de la base de datos de mirBase.
+*   **Solución**: Se añadió físicamente el archivo al repositorio para asegurar que las migraciones y la aplicación puedan seguir funcionando sin depender de que el usuario lo consiga de fuentes externas.

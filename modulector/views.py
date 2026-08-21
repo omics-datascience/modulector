@@ -124,7 +124,6 @@ class MirnaTargetInteractions(generics.ListAPIView):
                 required=False,
                 examples=[
                     OpenApiExample(name="hsa-miR-891a-5p", value="hsa-miR-891a-5p"),
-                    OpenApiExample(name="hsa-miR-891a-3p", value="hsa-miR-891a-3p"),
                     OpenApiExample(name="MIMAT0004979", value="MIMAT0004979"),
                     OpenApiExample(name="hsa-miR-550*", value="hsa-miR-550*"),
                 ],
@@ -252,6 +251,8 @@ class MirnaTargetValidation(generics.ListAPIView):
                 required=False,
                 examples=[
                     OpenApiExample(name="hsa-miR-21-5p", value="hsa-miR-21-5p"),
+                    OpenApiExample(name="MIMAT0000076", value="MIMAT0000076"),
+                    OpenApiExample(name="hsa-miR-21", value="hsa-miR-21"),
                 ],
             ),
             OpenApiParameter(
@@ -588,20 +589,18 @@ class MirnaDiseaseList(generics.ListAPIView):
     ordering = ["id"]
     search_fields = ["disease"]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["mirna_aliases"] = getattr(self, "_mirna_aliases", [])
+        return context
+
     def get_queryset(self):
         mirna = self.request.GET.get("mirna")
 
         result = MirnaDisease.objects.all()
+        self._mirna_aliases = get_mirna_aliases(mirna) if mirna else []
         if mirna:
-            if mirna.startswith("MI"):
-                mirna = get_mirna_from_accession(mirna)
-                result = result.filter(mirna__in=mirna)
-            else:
-                # This regex is implemented in case that we received a mature mirna
-                # that also -5p or -3p (for example) suffix, we remove it to search
-                if mirna.count("-") == 3:
-                    mirna = re.sub(regex, "", mirna)
-                result = result.filter(mirna__contains=mirna)
+            result = result.filter(mirna__in=self._mirna_aliases)
         return result
 
     @extend_schema(
@@ -615,8 +614,9 @@ class MirnaDiseaseList(generics.ListAPIView):
                 required=False,
                 examples=[
                     OpenApiExample(name="", value=""),
-                    OpenApiExample(name="hsa-miR-891a-5p", value="hsa-miR-891a-5p"),
                     OpenApiExample(name="hsa-miR-21-5p", value="hsa-miR-21-5p"),
+                    OpenApiExample(name="MIMAT0000076", value="MIMAT0000076"),
+                    OpenApiExample(name="hsa-miR-21", value="hsa-miR-21"),
                 ],
             ),
             OpenApiParameter(
@@ -665,15 +665,17 @@ class MirnaDrugsList(generics.ListAPIView):
     search_fields = ["condition", "small_molecule", "expression_pattern"]
     filterset_fields = ["fda_approved"]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["mirna_aliases"] = getattr(self, "_mirna_aliases", [])
+        return context
+
     def get_queryset(self):
         mirna = self.request.GET.get("mirna")
         query_set = MirnaDrug.objects.all()
+        self._mirna_aliases = get_mirna_aliases(mirna) if mirna else []
         if mirna:
-            if mirna.startswith("MI"):
-                mirna = get_mirna_from_accession(mirna)
-                query_set = query_set.filter(mature_mirna__in=mirna)
-
-            query_set = query_set.filter(mature_mirna__contains=mirna)
+            query_set = query_set.filter(mature_mirna__in=self._mirna_aliases)
         return query_set
 
     @extend_schema(
@@ -687,9 +689,9 @@ class MirnaDrugsList(generics.ListAPIView):
                 required=False,
                 examples=[
                     OpenApiExample(name="", value=""),
-                    OpenApiExample(name="miR-126*", value="miR-126*"),
-                    OpenApiExample(name="miR-21", value="miR-21"),
-                    OpenApiExample(name="miR-155", value="miR-155"),
+                    OpenApiExample(name="hsa-miR-21-5p", value="hsa-miR-21-5p"),
+                    OpenApiExample(name="MIMAT0000076", value="MIMAT0000076"),
+                    OpenApiExample(name="hsa-miR-21", value="hsa-miR-21"),
                 ],
             ),
             OpenApiParameter(
@@ -867,8 +869,8 @@ class MethylationSitesToGenes(APIView):
         :return: List of genes for the given input
         """
         db_map = {
-            "refgene": (MethylationUCSCRefGene, "ucsc_refgene_name"),
-            "gencode": (MethylationGencode, "gencode_name"),
+            "refgene": (MethylationUCSCRefGene, "ucsc_refgene_accession"),
+            "gencode": (MethylationGencode, "gencode_accession"),
         }
         target = db_map.get(ref_database.lower())
         if not target:
@@ -1075,6 +1077,98 @@ class MethylationDetails(APIView):
             return Response(
                 status=400, data={methylation_site + " is not a valid methylation site"}
             )
+
+
+class MethylationGenesTranslator(APIView):
+    """
+    Service that translates a list of gene accession IDs from GENCODE to UCSC RefGene, or vice versa,
+    using the Infinium MethylationEPIC V2.0 array as a bridge.
+    """
+
+    serializer_class = None  # To prevent warnings from the drf-spectacular package
+
+    @extend_schema(
+        tags=["Methylation"],
+        summary="Translate gene identifiers between GENCODE and UCSC RefGene",
+        request={
+            "application/json": {
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "genes": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "description": "List of gene accession IDs to translate.",
+                        },
+                        "direction": {
+                            "type": "string",
+                            "enum": ["gencode_to_refgene", "refgene_to_gencode"],
+                            "description": "Direction of the translation.",
+                        },
+                    },
+                    "required": ["genes", "direction"],
+                },
+                "example": {
+                    "genes": ["ENST00000489061.1"],
+                    "direction": "gencode_to_refgene",
+                },
+            }
+        },
+    )
+    def post(self, request):
+        data = request.data
+        if "genes" not in data or "direction" not in data:
+            return Response(
+                {"detail": "'genes' and 'direction' are mandatory"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        genes = data["genes"]
+        if not isinstance(genes, list):
+            return Response(
+                {"detail": "'genes' must be of list type"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        direction = data["direction"]
+        if direction not in ["gencode_to_refgene", "refgene_to_gencode"]:
+            return Response(
+                {"detail": "'direction' must be 'gencode_to_refgene' or 'refgene_to_gencode'"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        res = {}
+        for gene in genes:
+            if direction == "gencode_to_refgene":
+                # Find the EPIC ids from Gencode
+                epic_ids = MethylationGencode.objects.filter(
+                    gencode_accession=gene
+                ).values_list("methylation_epic_v2_ilmnid", flat=True)
+
+                # Find the RefGene records for these EPIC ids
+                targets = MethylationUCSCRefGene.objects.filter(
+                    methylation_epic_v2_ilmnid__in=epic_ids
+                ).values_list("ucsc_refgene_accession", flat=True).distinct()
+
+                if targets:
+                    res[gene] = list(targets)
+
+            else:
+                # Find the EPIC ids from RefGene
+                epic_ids = MethylationUCSCRefGene.objects.filter(
+                    ucsc_refgene_accession=gene
+                ).values_list("methylation_epic_v2_ilmnid", flat=True)
+
+                # Find the Gencode records for these EPIC ids
+                targets = MethylationGencode.objects.filter(
+                    methylation_epic_v2_ilmnid__in=epic_ids
+                ).values_list("gencode_accession", flat=True).distinct()
+
+                if targets:
+                    res[gene] = list(targets)
+
+        return Response(res)
+
 
 
 def index(request: HttpRequest):

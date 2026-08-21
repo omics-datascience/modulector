@@ -168,6 +168,11 @@ You can use set Modulector DB in two ways.
       - Rename the downloaded file as "*drugs.xls*". 
       - Move the file into the **"modulector/files/"** directory.
 
+    **For the miRTarBase database**:
+      - Go to the miRTarBase website at [https://awi.cuhk.edu.cn/miRTarBase/downloads/](https://awi.cuhk.edu.cn/miRTarBase/downloads/).
+      - Download the file for *homo sapiens* called "hsa_MTI.csv".
+      - Move the file into the **"modulector/files/"** directory.
+
     **For the mirBase database**: this database is embedded as it weighs only a few MBs. Its data is processed in Django migrations during the execution of the `python3 manage.py migrate` command. So, you don't have to do manual steps to incorporate mirBase data inside Modulector.  
 2. Start up a PostgreSQL service. You can use the same service listed in the *docker-compose.dev.yml* file.
 3. Run `python3 manage.py migrate` to apply all the migrations (**NOTE:** this can take a long time to finish).
@@ -176,13 +181,14 @@ You can use set Modulector DB in two ways.
 
 If new versions of the databases used in modulector are released and you want to update them, follow the following steps:  
 
-- For **mirDIP**, **HDMM**, **Illumina EPIC array**, and **HGNC** you must follow the same steps described in the [Regenerating the data manually](#regenerating-the-data-manually) section, replacing the named files with the most recent versions that have been published on their sites.
+- For **mirDIP**, **HDMM**, **Illumina EPIC array**, **HGNC** and **miRTarBase** you must follow the same steps described in the [Regenerating the data manually](#regenerating-the-data-manually) section, replacing the named files with the most recent versions that have been published on their sites.
 - For **miRBase**, follow the instructions below:
     1. Go to the [*Download* section on the website][mirbase-download-page].
     1. Download the file *mature.fa* from the latest version of the database.
     1. Replace the file inside the *modulector/files/* directory with the one downloaded in the previous step.
     1. Go to <https://www.mirbase.org/download/CURRENT/database_files>.
     1. Download the file `mirna_mature.txt` and replace the file inside `modulector/files/`.
+       - *Note: Modern versions of miRBase do not include the `mirna_mature.txt` file, which is why it is already included in the repository. The included file corresponds to miRBase version 22. In Modulector, this file is used to handle aliases or previous identifiers of miRNAs, so the provided version 22 file should be sufficient.*
     1. Start up a PostgreSQL service. You can use the same service listed in the *docker-compose.dev.yml* file.
     1. Run the command `python3 manage.py migrate` to apply all the migrations (**NOTE:** this can take a long time to finish).
     1. The import will load only `hsa` mature miRNAs and will split multiple `previous_mature_mirna` values separated by `;` into separate DB rows.
