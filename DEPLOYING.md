@@ -149,6 +149,12 @@ You can use set Modulector DB in two ways.
       - Unzip the file.
       - Within the unzipped files you will find one called "*EPIC-8v2-0_A2.csv*". Rename it as "*EPIC.csv*" and move it into the **"modulector/files/"** directory.  
 
+    **For the GENCODE database**:
+      - This file is used to improve gene nomenclature for methylation sites.
+      - Download the compressed *GTF* file named "*gencode.v41.annotation.gtf.gz*" from [https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_41/](https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_41/).
+      - Move the downloaded file "*gencode.v41.annotation.gtf.gz*" into the **"modulector/files/"** directory (do not decompress it, the migration will do it automatically).
+
+
     **For the HMDD database**:
       - Go to the [HMDD website](https://www.cuilab.cn/hmdd) and from the *Downloads* tab, download the *txt* file from the option "The whole dataset of miRNA-disease association data". Use version 4.0.
       - Rename the downloaded file as "*disease_hmdd.txt*". Move this file to the directory **"modulector/files/"**.  

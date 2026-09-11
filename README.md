@@ -200,6 +200,8 @@ As a result, a search for `hsa-miR-21-5p` successfully returns older database re
 
 *Note: Because this is an exact match against known aliases, searching for incomplete names (like `miR-21` instead of `hsa-miR-21`) may yield 0 results, as the partial string won't resolve to any formal miRBase aliases.*
 
+*Note on `/mirna` endpoint: Unlike the list endpoints mentioned above which aggregate results, the `/mirna` details endpoint returns a single matching record. Due to alias expansion, if multiple distinct records exist in the database for different aliases of the same miRNA (e.g., `hsa-miR-548ai` and `hsa-miR-548ai-5p`), the endpoint prioritizes returning the record that exactly matches your queried string to prevent multiple object errors.*
+
 ## Services
 
 ### MiRNA target interactions
@@ -643,7 +645,7 @@ A service that searches from a list of CpG methylation site identifiers from dif
 - Required body params (in JSON format):
   - `methylation_sites`: list of Illumina array methylation site names or identifiers for which you want to know the gene(s).  
 - Optional body params (in JSON format):
-  - `ref_database`: reference database to specify the format for receiving gene accessions (`refgene` [default] or `gencode`, case-insensitive).
+  - `ref_database`: reference database to specify the format for receiving gene accessions (`refgene` [default] or `gencode` (v41), case-insensitive).
 - Functions:
   - Ordering fields: ordering is not available for this service
   - Filtering fields: filtering is not available for this service
@@ -696,7 +698,7 @@ Returns information on a methylation site.
 - Required query params:
   - `methylation_site`: methylation_site name from Illumina *Infinium MethylationEPIC 2.0* array
 - Optional query params:
-  - `ref_database`: reference database to specify the format for receiving gene names (`refgene` [default] or `gencode`, case-insensitive).
+  - `ref_database`: reference database to specify the format for receiving gene names (`refgene` [default] or `gencode` (v41), case-insensitive).
 - Functions:
   - Ordering fields: ordering is not available for this service
   - Filtering fields: filtering is not available for this service
@@ -707,7 +709,7 @@ Returns information on a methylation site.
   - Content:
     - `name`: name of methylation site according to the Illumina Infinium MethylationEPIC 2.0 array.
     - `aliases`: list of other names for the same methylation site on other Illumina arrays (EPIC v2, EPIC v1, Methyl450, and Methyl27).
-    - `chromosome_position`: String with information about the chromosome, position, and strand on which the site is located. Format: `chr:position [strand]`
+    - `chromosome_position`: String with information about the chromosome, position, and strand on which the site is located. Note: Coordinates are based on the GRCh38 reference genome. Format: `chr:position [strand]`
     - `ucsc_cpg_islands`: List of islands related to the methylation site according to the UCSC database. Each element in the view is a JSON with the following content:  
       - `cpg_island`: chromosomal coordinates where the island is located. Format: `chr:start position-end position`
       - `relation`: Relation of the site to the CpG island. The values it can take are `Island`=within boundaries of a CpG Island, `N_Shore`=0-2kb 5' of Island, `N_Shelf`=2kb-4kb 5' of Island, `S_Shore`=0-2kb 3' of Island, `S_Shelf`=2kb-4kb 3' of Island.
@@ -749,51 +751,6 @@ Returns information on a methylation site.
   - Code: 400
   - Content: error explanation text  
 
-### Methylation genes translator
-
-A service that translates a list of gene accessions from GENCODE to UCSC RefGene, or vice versa, using the Infinium MethylationEPIC V2.0 array as a bridge.
-
-- URL: `/methylation-genes-translator`
-- Method: POST
-- Required body params (in JSON format):
-  - `genes`: list of gene accessions to translate.
-  - `direction`: direction of the translation. Possible values are `gencode_to_refgene` or `refgene_to_gencode`.
-- Functions:
-  - Ordering fields: ordering is not available for this service
-  - Filtering fields: filtering is not available for this service
-  - Searching fields: searching is not available for this service
-  - Pagination: no
-- Success Response:
-  - Code: 200
-  - Content:
-    - Returns a JSON with as many keys as there are genes in the body. For each gene, the value is a list of translated gene names in the target database.
-  - Example:
-    - URL: <https://modulector.multiomix.org/methylation-genes-translator/>
-    - body:
-
-      ```JSON
-        {
-          "genes":[
-              "ENST00000489061.1"
-          ],
-          "direction": "gencode_to_refgene"
-        }
-      ```
-
-    - Response:
-
-      ```JSON
-        {
-          "ENST00000489061.1":[
-              "NM_014652.4"
-          ]
-        }
-      ```  
-
-- Error Response:
-  - Code: 400
-  - Content:
-    - `detail`: a text with information about the error.  
 
 ### Diseases
 

@@ -566,7 +566,17 @@ class MirnaList(viewsets.ReadOnlyModelViewSet):
         if not mirna:
             raise Http404
         aliases = get_mirna_aliases(mirna)
-        instance = generics.get_object_or_404(Mirna, mirna_code__in=aliases)
+        try:
+            instance = generics.get_object_or_404(Mirna, mirna_code__in=aliases)
+        except Mirna.MultipleObjectsReturned:
+            try:
+                instance = Mirna.objects.get(mirna_code=mirna)
+            except (Mirna.DoesNotExist, Mirna.MultipleObjectsReturned):
+                mirnas = list(Mirna.objects.filter(mirna_code__in=aliases).values_list('mirna_code', flat=True))
+                return Response(
+                    {"detail": f"Multiple miRNAs found. Please specify one of: {mirnas}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
@@ -574,7 +584,13 @@ class MirnaList(viewsets.ReadOnlyModelViewSet):
         mirna = self.request.GET.get("mirna")
         if mirna:
             aliases = get_mirna_aliases(mirna)
-            return generics.get_object_or_404(Mirna, mirna_code__in=aliases)
+            try:
+                return generics.get_object_or_404(Mirna, mirna_code__in=aliases)
+            except Mirna.MultipleObjectsReturned:
+                try:
+                    return Mirna.objects.get(mirna_code=mirna)
+                except (Mirna.DoesNotExist, Mirna.MultipleObjectsReturned):
+                    return generics.get_object_or_404(Mirna, mirna_code__in=aliases)
         else:
             raise Http404
 
@@ -869,8 +885,8 @@ class MethylationSitesToGenes(APIView):
         :return: List of genes for the given input
         """
         db_map = {
-            "refgene": (MethylationUCSCRefGene, "ucsc_refgene_accession"),
-            "gencode": (MethylationGencode, "gencode_accession"),
+            "refgene": (MethylationUCSCRefGene, "ucsc_refgene_name"),
+            "gencode": (MethylationGencode, "gencode_name"),
         }
         target = db_map.get(ref_database.lower())
         if not target:
@@ -1077,98 +1093,6 @@ class MethylationDetails(APIView):
             return Response(
                 status=400, data={methylation_site + " is not a valid methylation site"}
             )
-
-
-class MethylationGenesTranslator(APIView):
-    """
-    Service that translates a list of gene accession IDs from GENCODE to UCSC RefGene, or vice versa,
-    using the Infinium MethylationEPIC V2.0 array as a bridge.
-    """
-
-    serializer_class = None  # To prevent warnings from the drf-spectacular package
-
-    @extend_schema(
-        tags=["Methylation"],
-        summary="Translate gene identifiers between GENCODE and UCSC RefGene",
-        request={
-            "application/json": {
-                "schema": {
-                    "type": "object",
-                    "properties": {
-                        "genes": {
-                            "type": "array",
-                            "items": {"type": "string"},
-                            "description": "List of gene accession IDs to translate.",
-                        },
-                        "direction": {
-                            "type": "string",
-                            "enum": ["gencode_to_refgene", "refgene_to_gencode"],
-                            "description": "Direction of the translation.",
-                        },
-                    },
-                    "required": ["genes", "direction"],
-                },
-                "example": {
-                    "genes": ["ENST00000489061.1"],
-                    "direction": "gencode_to_refgene",
-                },
-            }
-        },
-    )
-    def post(self, request):
-        data = request.data
-        if "genes" not in data or "direction" not in data:
-            return Response(
-                {"detail": "'genes' and 'direction' are mandatory"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        genes = data["genes"]
-        if not isinstance(genes, list):
-            return Response(
-                {"detail": "'genes' must be of list type"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        direction = data["direction"]
-        if direction not in ["gencode_to_refgene", "refgene_to_gencode"]:
-            return Response(
-                {"detail": "'direction' must be 'gencode_to_refgene' or 'refgene_to_gencode'"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        res = {}
-        for gene in genes:
-            if direction == "gencode_to_refgene":
-                # Find the EPIC ids from Gencode
-                epic_ids = MethylationGencode.objects.filter(
-                    gencode_accession=gene
-                ).values_list("methylation_epic_v2_ilmnid", flat=True)
-
-                # Find the RefGene records for these EPIC ids
-                targets = MethylationUCSCRefGene.objects.filter(
-                    methylation_epic_v2_ilmnid__in=epic_ids
-                ).values_list("ucsc_refgene_accession", flat=True).distinct()
-
-                if targets:
-                    res[gene] = list(targets)
-
-            else:
-                # Find the EPIC ids from RefGene
-                epic_ids = MethylationUCSCRefGene.objects.filter(
-                    ucsc_refgene_accession=gene
-                ).values_list("methylation_epic_v2_ilmnid", flat=True)
-
-                # Find the Gencode records for these EPIC ids
-                targets = MethylationGencode.objects.filter(
-                    methylation_epic_v2_ilmnid__in=epic_ids
-                ).values_list("gencode_accession", flat=True).distinct()
-
-                if targets:
-                    res[gene] = list(targets)
-
-        return Response(res)
-
 
 
 def index(request: HttpRequest):

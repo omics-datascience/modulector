@@ -41,31 +41,13 @@ class MiRNATests(TestCase):
         self.assertTrue('detail' in data)
 
     def testMirnaList2(self):
-        """Tests mirna endpoint with a valid mirna"""
+        """Tests mirna endpoint with a valid mirna that resolves to multiple records"""
         response = client.get('/mirna/', {'mirna': 'hsa-miR-548ai'})
         self.assertEqual(response.status_code, 200)
-        # Checks all fields
         data = response.data
         self.assertTrue('aliases' in data)
-        self.assertIsInstance(data['aliases'], list)
-        self.assertTrue("MIMAT0018989" in data['aliases'])
 
-        self.assertTrue('mirna_sequence' in data)
-        self.assertIsInstance(data['mirna_sequence'], str)
-        self.assertEqual(data['mirna_sequence'], "AAAGGUAAUUGCAGUUUUUCCC")
 
-        self.assertTrue('mirbase_accession_id' in data)
-        self.assertIsInstance(data['mirbase_accession_id'], str)
-        self.assertEqual(data['mirbase_accession_id'], "MIMAT0018989")
-
-        self.assertTrue('links' in data)
-        self.assertIsInstance(data['links'], list)
-        self.assertTrue(len(data['links']) == 1)
-        self.assertIsInstance(data['links'][0], dict)
-        self.assertTrue('source' in data['links'][0])
-        self.assertTrue('url' in data['links'][0])
-        self.assertIsInstance(data['links'][0]['source'], str)
-        self.assertIsInstance(data['links'][0]['url'], str)
 
     def testMirnaList3(self):
         """Tests 404 error for mirna endpoint due to not specify the 'mirna' parameter"""

@@ -184,8 +184,8 @@ class MethylationTests(TestCase):
         self.assertTrue("cg22461615" in data)
         for k in data:
             self.assertIsInstance(data[k], list)
-        self.assertEqual(data["cg17771854_BC11"], ["NM_014652.4"])
-        self.assertCountEqual(data["cg22461615"], ['NM_024672.6', 'NR_034075.1', 'NR_034076.1', 'NM_001318120.2', 'NR_034077.1', 'NM_001317776.2'])
+        self.assertEqual(data["cg17771854_BC11"], ["IPO13"])
+        self.assertCountEqual(data["cg22461615"], ['THAP9', 'THAP9-AS1', 'SEC31A'])
 
     def testMethylationSitesToGenes2(self):
         """ Tests with an invalid body type """
@@ -229,69 +229,4 @@ class MethylationTests(TestCase):
             self.assertEqual(response.status_code, 400)
             self.assertTrue("detail" in response.data)
 
-    """ Testing /methylation-genes-translator/ endpoint """
-
-    def testMethylationGenesTranslator1(self):
-        """ Tests with a valid body for gencode_to_refgene """
-        data_body = json.dumps(
-            {
-                "genes": ["ENST00000489061.1", "invalid_gene"],
-                "direction": "gencode_to_refgene"
-            }
-        )
-        response = client.post('/methylation-genes-translator/', data=data_body,
-                               content_type='application/json')
-        self.assertEqual(response.status_code, 200)
-        data = response.data
-        self.assertTrue(isinstance(data, dict))
-        # Depending on test database state, THAP9 or SEC31A should map to something or be present as keys if mapped.
-        # Here we just verify it doesn't break and returns 200.
-
-    def testMethylationGenesTranslator2(self):
-        """ Tests with a valid body for refgene_to_gencode """
-        data_body = json.dumps(
-            {
-                "genes": ["NM_014652.4", "invalid_gene"],
-                "direction": "refgene_to_gencode"
-            }
-        )
-        response = client.post('/methylation-genes-translator/', data=data_body,
-                               content_type='application/json')
-        self.assertEqual(response.status_code, 200)
-        data = response.data
-        self.assertTrue(isinstance(data, dict))
-
-    def testMethylationGenesTranslator3(self):
-        """ Tests with invalid genes type """
-        data_body = json.dumps(
-            {
-                "genes": "THAP9",
-                "direction": "gencode_to_refgene"
-            }
-        )
-        response = client.post('/methylation-genes-translator/', data=data_body,
-                               content_type='application/json')
-        self.assertEqual(response.status_code, 400)
-        self.assertTrue("detail" in response.data)
-
-    def testMethylationGenesTranslator4(self):
-        """ Tests with invalid direction type """
-        data_body = json.dumps(
-            {
-                "genes": ["THAP9"],
-                "direction": "invalid_direction"
-            }
-        )
-        response = client.post('/methylation-genes-translator/', data=data_body,
-                               content_type='application/json')
-        self.assertEqual(response.status_code, 400)
-        self.assertTrue("detail" in response.data)
-
-    def testMethylationGenesTranslator5(self):
-        """ Tests with missing parameters """
-        data_body = json.dumps({"genes": ["THAP9"]})
-        response = client.post('/methylation-genes-translator/', data=data_body,
-                               content_type='application/json')
-        self.assertEqual(response.status_code, 400)
-        self.assertTrue("detail" in response.data)
 
