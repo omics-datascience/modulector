@@ -15,10 +15,11 @@ class DiseaseTests(TestCase):
         """ Test the disease endpoint for a valid mirna """
         response = client.get('/diseases/', {"mirna": "hsa-miR-6511b"})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['count'], 3)
-        self.assertTrue(len(response.data['results']) == 3)
+        self.assertEqual(response.data['count'], 2)
+        self.assertTrue(len(response.data['results']) == 2)
         first_result = response.data['results'][0]
         self.assertTrue('id' in first_result)
+        self.assertTrue('mirna' in first_result)
         self.assertTrue('category' in first_result)
         self.assertTrue('disease' in first_result)
         self.assertTrue('pubmed' in first_result)

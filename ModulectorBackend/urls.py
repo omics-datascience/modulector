@@ -29,5 +29,6 @@ urlpatterns = [
          name='methylation_sites'),
     path('methylation-sites-genes/', views.MethylationSitesToGenes.as_view(),
          name='methylation_sites_to_genes'),
+
     path('', views.index)
 ]
