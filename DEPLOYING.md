@@ -142,17 +142,42 @@ You can use set Modulector DB in two ways.
    **For the mirDIP database**:
       - Go to the [MirDIP download web page](https://ophid.utoronto.ca/mirDIP/download.jsp) and download the file called *"mirDIPweb/mirDIP Unidirectional search ver. 5.2"*.
       - Unzip the file.
-      - Find the file called *"mirDIP_Unidirectional_search.txt"* and move it into the **"modulector/files/"** directory.  
+      - Find the file called "mirDIP_Unidirectional_search.txt" (rename if necessary to match this name), and move it into the **"modulector/files/"** directory.  
 
    **For the EPIC Methylation array**:
       - Go to the [Illumina product files web page](https://support.illumina.com/downloads/infinium-methylationepic-v2-0-product-files.html) and download the ZIP file called "*Infinium MethylationEPIC v2.0 Product Files (ZIP Format)*".
       - Unzip the file.
-      - Within the unzipped files you will find one called "*EPIC.csv*". Move this file to the directory **"modulector/files/"**.
-      - **NOTE:** the total weight of both files is about 5 GB.  
+      - Within the unzipped files you will find one called "*EPIC-8v2-0_A2.csv*". Rename it as "*EPIC.csv*" and move it into the **"modulector/files/"** directory.  
+
+    **For the GENCODE database**:
+      - This file is used to improve gene nomenclature for methylation sites.
+      - Download the compressed *GTF* file named "*gencode.v41.annotation.gtf.gz*" from [https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_41/](https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_41/).
+      - Move the downloaded file "*gencode.v41.annotation.gtf.gz*" into the **"modulector/files/"** directory (do not decompress it, the migration will do it automatically).
+
 
     **For the HMDD database**:
       - Go to the [HMDD website](https://www.cuilab.cn/hmdd) and from the *Downloads* tab, download the *txt* file from the option "The whole dataset of miRNA-disease association data". Use version 4.0.
       - Rename the downloaded file as "*disease_hmdd.txt*". Move this file to the directory **"modulector/files/"**.  
+
+    **For the HGNC gene terminology**:
+      - Go to the official HUGO gene nomenclature website at [https://www.genenames.org/](https://www.genenames.org/).
+      - Go to *Downloads* > *Data archive*.
+      - Navigate to the "Quick links to HGNC current release complete set files" section.
+      - Download the file "Current tab separated hgnc_complete_set file".
+      - If the downloaded file is not named "*hgnc_complete_set.txt*", rename it to this name.
+      - Move the file into the **"modulector/files/"** directory.
+
+    **For the miRNA-Drug interactions database (SM2miR)**:
+      - Go to the SM2miR database website at [http://www.jianglab.cn/SM2miR/](http://www.jianglab.cn/SM2miR/).
+      - Go to the *Downloads* section.
+      - Download the file "SM2miR (Apr. 27, 2015)".
+      - Rename the downloaded file as "*drugs.xls*". 
+      - Move the file into the **"modulector/files/"** directory.
+
+    **For the miRTarBase database**:
+      - Go to the miRTarBase website at [https://awi.cuhk.edu.cn/miRTarBase/downloads/](https://awi.cuhk.edu.cn/miRTarBase/downloads/).
+      - Download the file for *homo sapiens* called "hsa_MTI.csv".
+      - Move the file into the **"modulector/files/"** directory.
 
     **For the mirBase database**: this database is embedded as it weighs only a few MBs. Its data is processed in Django migrations during the execution of the `python3 manage.py migrate` command. So, you don't have to do manual steps to incorporate mirBase data inside Modulector.  
 2. Start up a PostgreSQL service. You can use the same service listed in the *docker-compose.dev.yml* file.
@@ -162,13 +187,14 @@ You can use set Modulector DB in two ways.
 
 If new versions of the databases used in modulector are released and you want to update them, follow the following steps:  
 
-- For **mirDIP**, **HDMM** and **Illumina EPIC array** you must follow the same steps described in the [Regenerating the data manually](#regenerating-the-data-manually) section, replacing the named files with the most recent versions that have been published on their sites.
+- For **mirDIP**, **HDMM**, **Illumina EPIC array**, **HGNC** and **miRTarBase** you must follow the same steps described in the [Regenerating the data manually](#regenerating-the-data-manually) section, replacing the named files with the most recent versions that have been published on their sites.
 - For **miRBase**, follow the instructions below:
     1. Go to the [*Download* section on the website][mirbase-download-page].
     1. Download the file *mature.fa* from the latest version of the database.
     1. Replace the file inside the *modulector/files/* directory with the one downloaded in the previous step.
     1. Go to <https://www.mirbase.org/download/CURRENT/database_files>.
     1. Download the file `mirna_mature.txt` and replace the file inside `modulector/files/`.
+       - *Note: Modern versions of miRBase do not include the `mirna_mature.txt` file, which is why it is already included in the repository. The included file corresponds to miRBase version 22. In Modulector, this file is used to handle aliases or previous identifiers of miRNAs, so the provided version 22 file should be sufficient.*
     1. Start up a PostgreSQL service. You can use the same service listed in the *docker-compose.dev.yml* file.
     1. Run the command `python3 manage.py migrate` to apply all the migrations (**NOTE:** this can take a long time to finish).
     1. The import will load only `hsa` mature miRNAs and will split multiple `previous_mature_mirna` values separated by `;` into separate DB rows.

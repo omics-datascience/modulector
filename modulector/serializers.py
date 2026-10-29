@@ -4,7 +4,7 @@ from typing import List, Optional, Dict, Set
 from django.db.models import Q
 from rest_framework import serializers
 from ModulectorBackend.settings import USE_PUBMED_API, PUBMED_API_TIMEOUT
-from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrug, MirTarBaseInteraction
+from modulector.models import MirnaXGene, MirnaSource, Mirna, MirnaColumns, MirbaseIdMirna, MirnaDisease, MirnaDrug, MirTarBaseInteraction, GeneAliases
 from modulector.services import url_service, pubmed_service
 from modulector.utils import link_builder
 
@@ -153,10 +153,14 @@ class MirnaSerializer(serializers.ModelSerializer):
 
 class MirnaDiseaseSerializer(serializers.ModelSerializer):
     pubmed = serializers.SerializerMethodField(method_name='get_pubmed')
+    mirna_aliases = serializers.SerializerMethodField(method_name='get_mirna_aliases')
 
     class Meta:
         model = MirnaDisease
-        fields = ['id', 'category', 'disease', 'pubmed', 'description']
+        fields = ['id', 'mirna', 'category', 'disease', 'pubmed', 'description', 'mirna_aliases']
+
+    def get_mirna_aliases(self, obj) -> List[str]:
+        return self.context.get('mirna_aliases', [])
 
     @staticmethod
     def get_pubmed(disease: MirnaDisease) -> str:
@@ -170,12 +174,18 @@ class MirnaDiseaseSerializer(serializers.ModelSerializer):
 
 class MirnaDrugsSerializer(serializers.ModelSerializer):
     pubmed = serializers.SerializerMethodField(method_name='get_pubmed')
+    mirna_aliases = serializers.SerializerMethodField(method_name='get_mirna_aliases')
+
+    mirna = serializers.CharField(source='mature_mirna', read_only=True)
 
     class Meta:
         model = MirnaDrug
-        fields = ['id', 'small_molecule', 'fda_approved',
+        fields = ['id', 'mirna', 'small_molecule', 'fda_approved',
                   'detection_method', 'condition',
-                  'pubmed', 'reference', 'expression_pattern', 'support']
+                  'pubmed', 'reference', 'expression_pattern', 'support', 'mirna_aliases']
+
+    def get_mirna_aliases(self, obj) -> List[str]:
+        return self.context.get('mirna_aliases', [])
 
     @staticmethod
     def get_pubmed(drug: MirnaDrug) -> str:
@@ -215,11 +225,10 @@ def get_mirna_from_accession(accession_id: str) -> List[str]:
     :param accession_id: Accession id to make the query
     :return: List of related mature miRNA identifiers
     """
-    return list(
-        MirbaseIdMirna.objects.filter(
-        mirbase_accession_id=accession_id
-        ).values_list('mature_mirna', flat=True).distinct()
-    )
+    qs = MirbaseIdMirna.objects.filter(mirbase_accession_id=accession_id)
+    mature = list(qs.values_list('mature_mirna', flat=True).distinct())
+    previous = list(qs.values_list('previous_mature_mirna', flat=True).distinct())
+    return [m for m in mature + previous if m]
 
 
 def get_accession_from_mirna(mirna_code: str) -> Optional[str]:
@@ -236,12 +245,48 @@ def get_accession_from_mirna(mirna_code: str) -> Optional[str]:
     return record.mirbase_accession_id if record is not None else None
 
 
+def get_gene_aliases(gene: str) -> List[str]:
+    """Retrieves the aliases for a gene based on the gene provided"""
+    match_gene = GeneAliases.objects.filter(
+        Q(alias=gene) | Q(gene_symbol=gene)
+    ).first()
+    if match_gene is None:
+        return []
+
+    gene_symbol = match_gene.gene_symbol
+    aliases = list(
+        GeneAliases.objects.filter(gene_symbol=gene_symbol)
+        .values_list("alias", flat=True)
+        .distinct()
+    )
+    # Adds the gene_symbol and the parameter to not omit them in the future search
+    aliases.append(gene_symbol)
+    aliases.append(gene)
+    return list(dict.fromkeys(aliases))  # Remove duplicates while preserving order
+
+
 class MirTarBaseInteractionSerializer(serializers.ModelSerializer):
+    mirna_aliases = serializers.SerializerMethodField(method_name='get_mirna_aliases')
+    gene_aliases = serializers.SerializerMethodField(method_name='get_gene_aliases')
+
     class Meta:
         model = MirTarBaseInteraction
         fields = [
             'id', 'mirtarbase_id', 'mirna', 'gene', 
             'target_gene_entrez_id', 'experiments', 
-            'support_type', 'pmid'
+            'support_type', 'pmid', 'mirna_aliases', 'gene_aliases'
         ]
 
+    def get_mirna_aliases(self, interaction: MirTarBaseInteraction) -> List[str]:
+        """
+        Gets the list of mirna aliases found during the search.
+        :return: The list of mirna aliases or empty list if not in context
+        """
+        return self.context.get('mirna_aliases', [])
+
+    def get_gene_aliases(self, interaction: MirTarBaseInteraction) -> List[str]:
+        """
+        Gets the list of gene aliases found during the search.
+        :return: The list of gene aliases or empty list if not in context
+        """
+        return self.context.get('gene_aliases', [])

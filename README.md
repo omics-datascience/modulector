@@ -15,6 +15,7 @@ Document content:
     - [Search](#search)
     - [Pagination](#pagination)
     - [Combining functions](#combining-functions)
+    - [miRNA parameter search logic](#mirna-parameter-search-logic)
   - [Services](#services)
     - [MiRNA target interactions](#mirna-target-interactions)
     - [MiRNA target validation](#mirna-target-validation)
@@ -42,9 +43,9 @@ Modulector obtains information from different bioinformatics databases or resour
 1. miRNA data: [mirDIP: microRNA Data Integration Portal](https://ophid.utoronto.ca/mirDIP/).  
    mirDIP is an integrative database of human microRNA target predictions. Modulector uses mirDIP 5.2.  
 2. miRNA data: [miRBase: the microRNA database](https://mirbase.org/).  
-   miRBase is a searchable database of published miRNA sequences and annotations. Each entry in the miRBase Sequence database represents a predicted hairpin portion of a miRNA transcript (termed hairpin in the database), with information on the location and sequence of the mature miRNA (termed mature). Modulector uses miRBase 22.1.  
+   miRBase is a searchable database of published miRNA sequences and annotations. Each entry in the miRBase Sequence database represents a predicted hairpin portion of a miRNA transcript (termed hairpin in the database), with information on the location and sequence of the mature miRNA (termed mature). Modulector uses miRBase version 23, released August 2026.  
 3. Relationship data between miRNA and diseases: [HMDD: the Human microRNA Disease Database](https://www.cuilab.cn/hmdd).  
-   Increasing reports have shown that miRNAs play important roles in various critical biological processes. For their importance, the dysfunctions of miRNAs are associated with a broad spectrum of diseases. The Human microRNA Disease Database (HMDD) is a database that curated experiment-supported evidence for human microRNA (miRNA) and disease associations. Modulector uses HMDD v4.0.
+   Increasing reports have shown that miRNAs play important roles in various critical biological processes. For their importance, the dysfunctions of miRNAs are associated with a broad spectrum of diseases. The Human microRNA Disease Database (HMDD) is a database that curated experiment-supported evidence for human microRNA (miRNA) and disease associations. Modulector uses HMDD version 4.0.
 4. miRNA target validation data: [miRTarBase: the experimentally validated microRNA-target interactions database](https://awi.cuhk.edu.cn/miRTarBase/).  
    miRTarBase is a manually curated database of experimentally validated miRNA-target interactions. Modulector uses MirTarBase version 11.0.  
 5. Relationship data between miRNA and drugs: [SM2miR Database](http://www.jianglab.cn/SM2miR/).
@@ -184,6 +185,23 @@ All of the above parameters can be used together! For example, if we wanted to c
 
 **It will be indicated for each service which fields are available for filtering, sorting, and/or searching**.
 
+### miRNA parameter search logic
+
+In the following endpoints (`/mirna-target-interactions`, `/mirna-target-validation`, `/diseases`, and `/drugs`), the `mirna` parameter uses an **exact match with alias expansion** logic (unlike other fields that use partial matches). 
+
+This feature is crucial to prevent data loss due to shifting miRNA nomenclatures. For example, if you search for `mirna=hsa-miR-21-5p`, the logic operates in 4 steps:
+
+1. **Accession ID Resolution:** The system queries the internal miRBase database and finds that the unique Accession ID for `hsa-miR-21-5p` is `MIMAT0000076`.
+2. **Alias Gathering:** It then asks the database for **all** mature names (current and historical) that point to `MIMAT0000076`.
+3. **List Construction:** The database returns a consolidated list of aliases, for example: `['hsa-miR-21-5p', 'hsa-miR-21', 'MIMAT0000076']` (notably including `hsa-miR-21`, the older name for this molecule before the -5p/-3p distinction was added).
+4. **Exact Match Filtering:** Finally, Modulector queries the target dataset (e.g., diseases from HMDD) seeking exact matches (`IN`) against **any** item in that list. 
+
+As a result, a search for `hsa-miR-21-5p` successfully returns older database records that were originally saved under the name `hsa-miR-21`, because Modulector knows they are biologically the same molecule.
+
+*Note: Because this is an exact match against known aliases, searching for incomplete names (like `miR-21` instead of `hsa-miR-21`) may yield 0 results, as the partial string won't resolve to any formal miRBase aliases.*
+
+*Note on `/mirna` endpoint: Unlike the list endpoints mentioned above which aggregate results, the `/mirna` details endpoint returns a single matching record. Due to alias expansion, if multiple distinct records exist in the database for different aliases of the same miRNA (e.g., `hsa-miR-548ai` and `hsa-miR-548ai-5p`), the endpoint prioritizes returning the record that exactly matches your queried string to prevent multiple object errors.*
+
 ## Services
 
 ### MiRNA target interactions
@@ -287,11 +305,14 @@ If no gene symbol is entered, all experimentally validated targets for that miRN
     - `id`: Internal ID of the record. 
     - `mirtarbase_id`: miRTarBase interaction ID.
     - `mirna`: standardized miRNA ID.
+    - `mirna_aliases`: list of aliases/identifiers used to resolve the searched miRNA.
     - `gene`: target gene.
     - `target_gene_entrez_id`: target gene Entrez ID.
     - `experiments`: array of techniques used to experimentally validate the miRNA-target interaction.
-    - `support_type`: type of experimental support.
-    - `pmid`: PubMed ID of the publication supporting the validation.
+    - `support_type`: Indicates the type of evidence supporting the validation (e.g. `Functional MTI`).
+    - `pmid`: PubMed ID of the publication supporting the interaction.
+    - `mirna_aliases`: List of alternate IDs found for the miRNA used to query.
+    - `gene_aliases`: List of alternate IDs found for the target gene used to query.
   - Example:
     - URL: <https://modulector.multiomix.org/mirna-target-validation/?mirna=hsa-miR-122-5p&target=SLC7A1>
     - Response:
@@ -313,7 +334,20 @@ If no gene symbol is entered, all experimentally validated targets for that miRN
                     "Western blot"
                 ],
                 "support_type": "Functional MTI",
-                "pmid": "17179747.0"
+                "pmid": "17179747.0",
+                "mirna_aliases": [
+                    "hsa-miR-122-5p",
+                    "hsa-miR-122",
+                    "MIMAT0000421"
+                ],
+                "gene_aliases": [
+                    "CAT1",
+                    "ERR",
+                    "HCAT1",
+                    "REC1",
+                    "ATRC1",
+                    "SLC7A1"
+                ]
             }
         ]
       }
@@ -610,6 +644,8 @@ A service that searches from a list of CpG methylation site identifiers from dif
 - Method: POST
 - Required body params (in JSON format):
   - `methylation_sites`: list of Illumina array methylation site names or identifiers for which you want to know the gene(s).  
+- Optional body params (in JSON format):
+  - `ref_database`: reference database to specify the format for receiving gene accessions (`refgene` [default] or `gencode` (v41), case-insensitive).
 - Functions:
   - Ordering fields: ordering is not available for this service
   - Filtering fields: filtering is not available for this service
@@ -629,7 +665,8 @@ A service that searches from a list of CpG methylation site identifiers from dif
               "cg17771854_BC11",
               "cg22461615_TC11",
               "name_007"
-          ]
+          ],
+          "ref_database": "gencode"
         }
       ```
 
@@ -638,12 +675,12 @@ A service that searches from a list of CpG methylation site identifiers from dif
       ```JSON
         {
           "cg17771854_BC11":[
-              "IPO13"
+              "ENST00000489061.1"
           ],
           "cg22461615_TC11":[
-              "THAP9",
-              "THAP9-AS1",
-              "SEC31A"
+              "ENST00000505901.1",
+              "ENST00000513581.5",
+              "ENST00000506495.5"
           ]
         }
       ```  
@@ -660,6 +697,8 @@ Returns information on a methylation site.
 - URL: `/methylation`
 - Required query params:
   - `methylation_site`: methylation_site name from Illumina *Infinium MethylationEPIC 2.0* array
+- Optional query params:
+  - `ref_database`: reference database to specify the format for receiving gene names (`refgene` [default] or `gencode` (v41), case-insensitive).
 - Functions:
   - Ordering fields: ordering is not available for this service
   - Filtering fields: filtering is not available for this service
@@ -670,7 +709,7 @@ Returns information on a methylation site.
   - Content:
     - `name`: name of methylation site according to the Illumina Infinium MethylationEPIC 2.0 array.
     - `aliases`: list of other names for the same methylation site on other Illumina arrays (EPIC v2, EPIC v1, Methyl450, and Methyl27).
-    - `chromosome_position`: String with information about the chromosome, position, and strand on which the site is located. Format: `chr:position [strand]`
+    - `chromosome_position`: String with information about the chromosome, position, and strand on which the site is located. Note: Coordinates are based on the GRCh38 reference genome. Format: `chr:position [strand]`
     - `ucsc_cpg_islands`: List of islands related to the methylation site according to the UCSC database. Each element in the view is a JSON with the following content:  
       - `cpg_island`: chromosomal coordinates where the island is located. Format: `chr:start position-end position`
       - `relation`: Relation of the site to the CpG island. The values it can take are `Island`=within boundaries of a CpG Island, `N_Shore`=0-2kb 5' of Island, `N_Shelf`=2kb-4kb 5' of Island, `S_Shore`=0-2kb 3' of Island, `S_Shelf`=2kb-4kb 3' of Island.
@@ -712,7 +751,9 @@ Returns information on a methylation site.
   - Code: 400
   - Content: error explanation text  
 
+
 ### Diseases
+
 
 This service provides information, with evidence supported by experiments, on the relationships between miRNAs and human diseases.
 
@@ -729,10 +770,12 @@ This service provides information, with evidence supported by experiments, on th
   - Code: 200
   - Content:
     - `id`: Internal ID of the record in the HMDD database.
+    - `mirna`: Mature miRNA name associated with the disease.
     - `category`: Category codes assigned by the HMDD database to classify diseases. Possible codes can be found in the [database documentation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10767894/table/tbl1/?report=objectonly).
     - `disease`: Name of the disease associated with the miRNA used as a parameter.
     - `pubmed`: URL to the scientific article in the Pubmed database where the evidence that relates miRNA to the disease is found.
     - `description`: Short description of why this miRNA is related to this disease.
+    - `mirna_aliases`: List of alternate IDs found for the miRNA used to query.
   - Example:
     - URL: <https://modulector.multiomix.org/diseases/?mirna=hsa-miR-6511b>
     - Response:
@@ -745,24 +788,39 @@ This service provides information, with evidence supported by experiments, on th
           "results":[
               {
                   "id": 4203307,
+                  "mirna": "hsa-miR-6511b-5p",
                   "category": "other",
                   "disease": "Lymphoma",
                   "pubmed": "https://pubmed.ncbi.nlm.nih.gov/36248425",
-                  "description": "LncHOTAIR/hsa-miR-6511b-5p/ATG7 could regulate the proliferation, apoptosis, and autophagy of Raji and BJAB lymphoma cells."
+                  "description": "LncHOTAIR/hsa-miR-6511b-5p/ATG7 could regulate the proliferation, apoptosis, and autophagy of Raji and BJAB lymphoma cells.",
+                  "mirna_aliases": [
+                      "hsa-miR-6511b-5p",
+                      "MIMAT0025847"
+                  ]
               },
               {
-                  "id": 4207900,
-                  "category": "genetics_overexpression_promote",
+                  "id": 4241261,
+                  "mirna": "hsa-miR-6511b-5p",
+                  "category": "other",
                   "disease": "Colorectal Neoplasms",
                   "pubmed": "https://pubmed.ncbi.nlm.nih.gov/35590122",
-                  "description": "In vitro, overexpression of miR-6511b-5p inhibited metastasis by decreasing CD44 expression via directly targeting BRG1 in colorectal cancer."
+                  "description": "In vitro, overexpression of miR-6511b-5p inhibited metastasis by decreasing CD44 expression via directly targeting BRG1 in colorectal cancer.",
+                  "mirna_aliases": [
+                      "hsa-miR-6511b-5p",
+                      "MIMAT0025847"
+                  ]
               },
               {
                   "id": 4241262,
+                  "mirna": "hsa-miR-6511b-5p",
                   "category": "other",
                   "disease": "gastric adenocarcinoma",
                   "pubmed": "https://pubmed.ncbi.nlm.nih.gov/31772663",
-                  "description": "2) were recognized as prognostic and used for the construction of a STAD prognostic signature."
+                  "description": "2) were recognized as prognostic and used for the construction of a STAD prognostic signature.",
+                  "mirna_aliases": [
+                      "hsa-miR-6511b-5p",
+                      "MIMAT0025847"
+                  ]
               }
           ]
         }
@@ -791,6 +849,7 @@ Returns a paginated response of experimentally validated small molecules (or dru
   - Code: 200
   - Content:
     - `id`: Internal ID of the record in the [SM2miR Database](http://www.jianglab.cn/SM2miR/).
+    - `mirna`: Mature miRNA name associated with the drug interaction.
     - `small_molecule`: Small molecule (or drug) name.
     - `fda_approved`: Indicates with a boolean whether the small molecule or drug is approved by the FDA.
     - `detection_method`: Experimental detection method. The different methods can be: `Northern blot`, `Luciferase reporter assay`, `Illumina HiSeq2000`, `TaqMan low-density array`, `Microarray`, `Northern blot`, `MiRNA PCR array`, `Quantitative real-time PCR` or `Microarray`.
@@ -799,6 +858,7 @@ Returns a paginated response of experimentally validated small molecules (or dru
     - `reference`: Title of the scientific article where the evidence that relates miRNA to the small molecule is found.
     - `expression_pattern`: Expression pattern of miRNA. The different methods can be: `up-regualted`or `down-regualted`.
     - `support`: Brief text with supporting information for this drug-miRNA relationship.
+    - `mirna_aliases`: List of alternate IDs found for the miRNA used to query.
   - Example:
     - URL: <https://modulector.multiomix.org/drugs/?mirna=miR-126>*
     - Response:
@@ -811,6 +871,7 @@ Returns a paginated response of experimentally validated small molecules (or dru
           "results":[
               {
                   "id":275028,
+                  "mirna":"miR-126",
                   "small_molecule":"17beta-estradiol (E2)",
                   "fda_approved":true,
                   "detection_method":"Microarray",
@@ -818,7 +879,10 @@ Returns a paginated response of experimentally validated small molecules (or dru
                   "pubmed":"https://pubmed.ncbi.nlm.nih.gov/19528081",
                   "reference":"Estradiol-regulated microRNAs control estradiol response in breast cancer cells.",
                   "expression_pattern":"down-regulated",
-                  "support":"To investigate this possibility, we determined microRNA-expression patterns in MCF-7p and MCF-7AKT cells with and without E2 treatment for 4 h. We observed 21 E2-inducible and 7 E2-repressible microRNAs in MCF-7p cells (statistical cutoff P-value <0.05 and fold change >1.5 or <0.7) (Table 1)."
+                  "support":"To investigate this possibility, we determined microRNA-expression patterns in MCF-7p and MCF-7AKT cells with and without E2 treatment for 4 h. We observed 21 E2-inducible and 7 E2-repressible microRNAs in MCF-7p cells (statistical cutoff P-value <0.05 and fold change >1.5 or <0.7) (Table 1).",
+                  "mirna_aliases":[
+                      "miR-126*"
+                  ]
               }
           ]
         }
