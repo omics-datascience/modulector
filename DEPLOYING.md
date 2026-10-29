@@ -12,7 +12,7 @@ Below are the steps to perform a production deploy.
     uv sync --locked
     ```
 
-1. Merge the changes into `main`. This triggers the GitHub tag and release process and publishes the Docker image to Docker Hub.
+1. Merge the changes into `main`. This triggers the Docker image to Docker Hub and PyPI publishing process.
 
 ## Requirements
 
