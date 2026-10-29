@@ -2,6 +2,18 @@
 
 Below are the steps to perform a production deploy.
 
+## Create a new version
+
+1. Increase the version number in `ModulectorBackend/settings.py`, the root `pyproject.toml`, `sdk/pyproject.toml` and `docker-compose_dist.yml`.
+1. From the project root, update and verify the lock file:
+
+    ```bash
+    uv lock
+    uv sync --locked
+    ```
+
+1. Merge the changes into `main`. This triggers the GitHub tag and release process and publishes the Docker image to Docker Hub.
+
 ## Requirements
 
 1. The entire deploy was configured to be simple from the tool Docker Compose. So you need to install:
