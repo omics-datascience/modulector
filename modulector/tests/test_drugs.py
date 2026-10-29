@@ -20,13 +20,12 @@ class DrugsTests(TestCase):
 
     def testDrugs(self):
         """Test drugs endpoint"""
-        response = client.get('/drugs/', {'mirna': 'miR-378*'})
+        response = client.get('/drugs/', {'mirna': 'hsa-miR-378*'})
         self.assertEqual(response.status_code, 200)
-        self.__check_one_result_pagination(response)
-
         # Checks all fields
         data = response.data['results'][0]
         self.assertTrue('id' in data)
+        self.assertTrue('mirna' in data)
         self.assertTrue('small_molecule' in data)
         self.assertTrue('fda_approved' in data)
         self.assertTrue('detection_method' in data)

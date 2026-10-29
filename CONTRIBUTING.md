@@ -56,4 +56,13 @@ We use gitlab environment git workflow. The default branch is `dev` and the publ
 1. `dev` is merged into `main`.
 1. Automatic Action/Workflow for _Push_ events into `main` is executed to build a new Docker image for Modulector and publish it.
 
+## Testing
+
+Before submitting a Pull Request, please make sure to run the test suite to ensure that your changes haven't broken any existing functionality.
+To run the automated tests, execute the following command in the project's root folder:
+
+```bash
+python manage.py test
+```
+
 [__More information__](https://docs.google.com/presentation/d/1c1PXM89HLXJyF-zHAEpW_bcxb0iE_Fv2XEpEXYV2Tj4/edit?usp=sharing)
