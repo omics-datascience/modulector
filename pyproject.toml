@@ -22,7 +22,7 @@ description = "Open platform for miRNA, gene, and methylation site information."
 name = "modulector"
 readme = "README.md"
 requires-python = ">=3.10"
-version = "2.6.3"
+version = "2.6.4"
 
 [dependency-groups]
 dev = [
